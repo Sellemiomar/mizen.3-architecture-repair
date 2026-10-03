@@ -21,13 +21,9 @@ export const FinancingStackPanel: React.FC<FinancingStackPanelProps> = ({ result
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <WalletCards className="w-4 h-4 text-blue-700" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">
-                  {isArabic ? 'تركيبة التمويل' : 'Structure de financement'}
-                </span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700">{isArabic ? 'تركيبة التمويل' : 'Structure de financement'}</span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-slate-900">
-                {isArabic ? 'مزيج تمويل قابل للدفاع عنه' : 'Combinaison de financement défendable'}
-              </h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900">{isArabic ? 'مزيج تمويل قابل للدفاع عنه' : 'Combinaison de financement défendable'}</h2>
             </div>
             <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${candidate.overallStatus === 'VERIFIED' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>
               {candidate.overallStatus === 'VERIFIED' ? (isArabic ? 'موثق' : 'Vérifié') : (isArabic ? 'مشروط' : 'Conditionnel')}
@@ -65,14 +61,22 @@ export const FinancingStackPanel: React.FC<FinancingStackPanelProps> = ({ result
             </div>
           ))}
 
+          {candidate.fundingGap.unresolvedCashSources.length > 0 && (
+            <div className="flex gap-2.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-amber-700" />
+              <div>
+                <strong>{isArabic ? 'قدرة تمويل غير محسومة' : 'Capacité de financement non résolue'}</strong>
+                <p className="mt-1 leading-relaxed">{isArabic ? 'لا يتم اعتبار هذه القيمة تمويلاً نقدياً حتى تتوفر أدلة صريحة على السقف.' : 'Aucune valeur numérique n’est comptée tant qu’une capacité vérifiée n’est pas explicitement établie.'}</p>
+              </div>
+            </div>
+          )}
+
           {candidate.unresolvedAssumptions.length > 0 && (
             <div className="flex gap-2.5 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-950">
               <AlertTriangle className="w-4 h-4 shrink-0 text-amber-700" />
               <div>
                 <strong>{isArabic ? 'نقاط تتطلب التأكيد' : 'Points à confirmer'}</strong>
-                <ul className="mt-1 space-y-1 list-disc pl-4">
-                  {candidate.unresolvedAssumptions.map((item, index) => <li key={index}>{item}</li>)}
-                </ul>
+                <ul className="mt-1 space-y-1 list-disc pl-4">{candidate.unresolvedAssumptions.map((item, index) => <li key={index}>{item}</li>)}</ul>
               </div>
             </div>
           )}
@@ -83,9 +87,7 @@ export const FinancingStackPanel: React.FC<FinancingStackPanelProps> = ({ result
               {isArabic ? 'التغطية النقدية مكتملة وفق المعطيات والأدلة الحالية.' : 'La couverture cash est complète selon les données et preuves actuelles.'}
             </div>
           ) : (
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              {isArabic ? 'هذه ليست موافقة ائتمانية. الضمانات لا تُحتسب كتمويل نقدي، وأي نقطة غير موثقة تبقى مشروطة.' : 'Ce résultat ne constitue pas une approbation de crédit. Les garanties ne sont pas comptées comme financement cash et les éléments non vérifiés restent conditionnels.'}
-            </p>
+            <p className="text-[11px] text-slate-500 leading-relaxed">{isArabic ? 'هذه ليست موافقة ائتمانية. الضمانات لا تُحتسب كتمويل نقدي، وأي نقطة غير موثقة تبقى مشروطة.' : 'Ce résultat ne constitue pas une approbation de crédit. Les garanties ne sont pas comptées comme financement cash et les éléments non vérifiés restent conditionnels.'}</p>
           )}
         </div>
       </div>
