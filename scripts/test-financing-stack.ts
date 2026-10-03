@@ -56,11 +56,7 @@ assert(potential.status === 'POTENTIALLY_COMPATIBLE', 'BFPME + SOTUGAR remains c
 const unknown = getStackCompatibility('startup_grant_air', 'bh_bank_loan');
 assert(unknown.status === 'UNKNOWN', 'Undocumented grant + debt compatibility remains UNKNOWN');
 
-const bfpmEPlusSotugar = generateFinancingStacks({
-  requiredFunding: 1000000,
-  components,
-  maxComponentsPerStack: 2
-});
+const bfpmEPlusSotugar = generateFinancingStacks({ requiredFunding: 1000000, components, maxComponentsPerStack: 2 });
 const conditional = bfpmEPlusSotugar.candidates.find(c => c.components.length === 2);
 assert(conditional?.overallStatus === 'CONDITIONAL', 'Potential compatibility cannot become VERIFIED');
 assert(conditional?.fundingGap.cashCovered === 650000, 'Stack cash coverage remains 650k with SOTUGAR guarantee');
@@ -77,6 +73,17 @@ const verifiedStack = generateFinancingStacks({
 });
 assert(verifiedStack.candidates[0]?.overallStatus === 'VERIFIED', 'Verified-compatible stack ranks as VERIFIED');
 assert(verifiedStack.candidates[0]?.fundingGap.remainingGap === 0, 'Verified-compatible stack can fully cover the funding need');
+
+const unresolvedEligibilityStack = generateFinancingStacks({
+  requiredFunding: 1000000,
+  components: [
+    { ...components[0], unresolvedEligibility: ['Current eligibility requires lender confirmation'] },
+    { sourceId: 'commercial-bank', programId: 'bh_bank_loan', role: 'DEBT', cashAmount: 350000, verifiedCapacity: 350000, evidenceStatus: 'VERIFIED_CURRENT' }
+  ],
+  maxComponentsPerStack: 2
+});
+assert(unresolvedEligibilityStack.candidates[0]?.overallStatus === 'CONDITIONAL', 'Critical eligibility uncertainty prevents a VERIFIED stack');
+assert(unresolvedEligibilityStack.candidates[0]?.confidence === 'LOW', 'Critical eligibility uncertainty lowers stack confidence');
 
 const unknownStack = generateFinancingStacks({
   requiredFunding: 1000000,
