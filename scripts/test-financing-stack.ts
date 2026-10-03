@@ -1,4 +1,5 @@
-import { calculateFundingGap } from '../src/engine/financingStackEngine';
+import { calculateFundingGap, generateFinancingStacks } from '../src/engine/financingStackEngine';
+import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 import { StackComponent } from '../src/types/financingStack';
 
 let passed = true;
@@ -34,5 +35,39 @@ const gap = calculateFundingGap(1000000, components);
 assert(gap.cashCovered === 650000, 'Guarantee does not count as cash financing');
 assert(gap.remainingGap === 350000, 'Funding gap remains 350k after 650k debt');
 assert(gap.supportCoverage === 75, 'Guarantee support remains separately visible');
+
+const duplicateGap = calculateFundingGap(1000000, [...components, { ...components[0], cashAmount: 650000 }]);
+assert(duplicateGap.cashCovered === 650000, 'Duplicate source is never double-counted');
+assert(duplicateGap.diagnostics.some(d => d.includes('Duplicate funding source')), 'Duplicate source produces an explicit diagnostic');
+
+const verified = getStackCompatibility('bfpme_creation', 'bh_bank_loan');
+assert(verified.status === 'VERIFIED_COMPATIBLE', 'BFPME + commercial bank is explicitly verified compatible');
+
+const potential = getStackCompatibility('bfpme_creation', 'sotugar_guarantee');
+assert(potential.status === 'POTENTIALLY_COMPATIBLE', 'BFPME + SOTUGAR remains conditional/potential');
+
+const unknown = getStackCompatibility('startup_grant_air', 'bh_bank_loan');
+assert(unknown.status === 'UNKNOWN', 'Undocumented grant + debt compatibility remains UNKNOWN');
+
+const bfpmEPlusSotugar = generateFinancingStacks({
+  requiredFunding: 1000000,
+  components,
+  maxComponentsPerStack: 2
+});
+const conditional = bfpmEPlusSotugar.candidates.find(c => c.components.length === 2);
+assert(conditional?.overallStatus === 'CONDITIONAL', 'Potential compatibility cannot become VERIFIED');
+assert(conditional?.fundingGap.cashCovered === 650000, 'Stack cash coverage remains 650k with SOTUGAR guarantee');
+assert(conditional?.fundingGap.remainingGap === 350000, 'SOTUGAR guarantee does not erase the 350k funding gap');
+assert(conditional?.confidence === 'LOW', 'Potential compatibility prevents HIGH confidence');
+
+const unknownStack = generateFinancingStacks({
+  requiredFunding: 1000000,
+  components: [
+    components[0],
+    { sourceId: 'unknown-grant', programId: 'startup_grant_air', role: 'GRANT', cashAmount: 100000, verifiedCapacity: 100000, evidenceStatus: 'VERIFIED_CURRENT' }
+  ],
+  maxComponentsPerStack: 2
+});
+assert(unknownStack.candidates.every(c => c.components.length !== 2), 'UNKNOWN compatibility cannot generate a stack candidate');
 
 if (!passed) process.exit(1);
