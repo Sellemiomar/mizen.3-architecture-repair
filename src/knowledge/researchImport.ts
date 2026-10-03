@@ -1,18 +1,9 @@
-/**
- * Mizen - Research Import & Claim Management Pipeline
- * Manages research updates, normalization, validation, and conflict resolution.
- * 
- * Pipeline:
- * RESEARCH -> NORMALIZE -> VALIDATE -> COMPARE WITH CURRENT CLAIM -> FLAG CONFLICT IF NEEDED -> APPROVE -> UPDATE CANONICAL KNOWLEDGE
- */
-
-import { 
-  KnowledgeClaim, 
-  KnowledgeRuleStatus, 
-  RuleEvidence, 
-  SourceReference, 
-  UnknownReason,
-  FinancingProduct 
+import {
+  KnowledgeClaim,
+  KnowledgeRuleStatus,
+  RuleEvidence,
+  SourceReference,
+  UnknownReason
 } from '../types/knowledge';
 
 export interface ResearchFactInput {
@@ -29,10 +20,7 @@ export interface ResearchFactInput {
     effectiveFrom?: string;
   };
   unknownReason?: UnknownReason;
-  notes?: {
-    fr: string;
-    ar: string;
-  };
+  notes?: { fr: string; ar: string };
 }
 
 export interface ImportConflict {
@@ -51,16 +39,28 @@ export interface ImportResult {
   auditTrail: string[];
 }
 
-export class ResearchImportPipeline {
-  private claimsRegistry: Map<string, KnowledgeClaim[]> = new Map();
+function evidenceRank(status: KnowledgeRuleStatus, strength?: string): number {
+  if (status === 'VERIFIED_CURRENT' && strength === 'DIRECT_PRIMARY_CURRENT') return 100;
+  if (status === 'VERIFIED_CURRENT') return 90;
+  if (status === 'PARTIALLY_VERIFIED') return 60;
+  if (status === 'UNKNOWN') return 50;
+  if (status === 'VERIFIED_HISTORICAL' || status === 'OUTDATED') return 10;
+  return 20;
+}
 
-  constructor(initialClaims?: KnowledgeClaim[]) {
-    if (initialClaims) {
-      for (const c of initialClaims) {
-        const list = this.claimsRegistry.get(c.programId) || [];
-        list.push(c);
-        this.claimsRegistry.set(c.programId, list);
-      }
+function existingRank(claim: KnowledgeClaim): number {
+  const evidence = claim.evidence?.[0];
+  return evidenceRank(claim.status, evidence?.evidenceStrength);
+}
+
+export class ResearchImportPipeline {
+  private claimsRegistry = new Map<string, KnowledgeClaim[]>();
+
+  constructor(initialClaims: KnowledgeClaim[] = []) {
+    for (const claim of initialClaims) {
+      const list = this.claimsRegistry.get(claim.programId) || [];
+      list.push(claim);
+      this.claimsRegistry.set(claim.programId, list);
     }
   }
 
@@ -74,13 +74,15 @@ export class ResearchImportPipeline {
       const currentClaim = existingClaims.find(c => c.field === fact.field && c.isCurrent);
 
       const sourceRef: SourceReference = {
-        id: `src_${fact.programId}_${fact.field}_${Date.now()}`,
+        id: `src_${fact.programId}_${fact.field}_${fact.source.checkedAt}`,
         url: fact.source.url,
         title: fact.source.title,
         publisher: fact.source.publisher,
-        sourceType: fact.source.sourceType,
+        sourceType: fact.source.sourceType as SourceReference['sourceType'],
         retrievedAt: fact.source.checkedAt,
-        evidenceStatus: fact.status
+        evidenceStatus: fact.status === 'VERIFIED_CURRENT' ? 'VERIFIED' :
+          fact.status === 'VERIFIED_HISTORICAL' ? 'OUTDATED' :
+          fact.status === 'PARTIALLY_VERIFIED' ? 'PARTIALLY_VERIFIED' : 'UNVERIFIED'
       };
 
       const ruleEvidence: RuleEvidence = {
@@ -90,57 +92,18 @@ export class ResearchImportPipeline {
         sourceUrl: fact.source.url,
         sourceTitle: fact.source.title,
         sourceType: fact.source.sourceType,
-        evidenceStrength: fact.source.sourceType.includes('CURRENT') 
-          ? 'DIRECT_PRIMARY_CURRENT' 
-          : 'DIRECT_PRIMARY_HISTORICAL',
+        evidenceStrength: fact.status === 'VERIFIED_CURRENT'
+          ? 'DIRECT_PRIMARY_CURRENT'
+          : fact.status === 'VERIFIED_HISTORICAL'
+          ? 'DIRECT_PRIMARY_HISTORICAL'
+          : 'SECONDARY',
         checkedAt: fact.source.checkedAt,
         effectiveFrom: fact.source.effectiveFrom,
         unknownReason: fact.unknownReason,
         notes: fact.notes
       };
 
-      if (currentClaim) {
-        // Compare with current claim for conflicts
-        if (JSON.stringify(currentClaim.value) !== JSON.stringify(fact.value)) {
-          conflicts.push({
-            programId: fact.programId,
-            field: fact.field,
-            existingClaim: currentClaim,
-            incomingFact: fact,
-            reason: 'VALUE_MISMATCH'
-          });
-
-          auditTrail.push(`[CONFLICT] ${fact.programId}.${fact.field}: Existing (${JSON.stringify(currentClaim.value)}) vs Incoming (${JSON.stringify(fact.value)})`);
-          
-          // Mark previous claim as superseded when new stronger source arrives
-          currentClaim.isCurrent = false;
-          currentClaim.status = 'OUTDATED';
-
-          const newClaim: KnowledgeClaim = {
-            id: `claim_${fact.programId}_${fact.field}_v${existingClaims.length + 1}`,
-            programId: fact.programId,
-            field: fact.field,
-            value: fact.value,
-            status: fact.status,
-            evidence: [ruleEvidence],
-            createdAt: fact.source.checkedAt,
-            reviewedAt: new Date().toISOString().split('T')[0],
-            supersedesClaimId: currentClaim.id,
-            isCurrent: true,
-            notes: fact.notes
-          };
-
-          existingClaims.push(newClaim);
-          importedClaims.push(newClaim);
-          auditTrail.push(`[SUPERSEDED] Claim ${currentClaim.id} superseded by ${newClaim.id}`);
-        } else {
-          // Same value, enrich evidence
-          currentClaim.evidence.push(ruleEvidence);
-          currentClaim.reviewedAt = fact.source.checkedAt;
-          auditTrail.push(`[ENRICHED] Claim ${currentClaim.id} evidence refreshed`);
-        }
-      } else {
-        // New claim
+      if (!currentClaim) {
         const newClaim: KnowledgeClaim = {
           id: `claim_${fact.programId}_${fact.field}_v1`,
           programId: fact.programId,
@@ -149,24 +112,83 @@ export class ResearchImportPipeline {
           status: fact.status,
           evidence: [ruleEvidence],
           createdAt: fact.source.checkedAt,
-          reviewedAt: new Date().toISOString().split('T')[0],
+          reviewedAt: fact.source.checkedAt,
           isCurrent: true,
           notes: fact.notes
         };
-
         existingClaims.push(newClaim);
         this.claimsRegistry.set(fact.programId, existingClaims);
         importedClaims.push(newClaim);
-        auditTrail.push(`[CREATED] New claim ${newClaim.id} for ${fact.programId}.${fact.field}`);
+        auditTrail.push(`[CREATED] ${newClaim.id}`);
+        continue;
       }
+
+      if (JSON.stringify(currentClaim.value) === JSON.stringify(fact.value)) {
+        currentClaim.evidence.push(ruleEvidence);
+        currentClaim.reviewedAt = fact.source.checkedAt;
+        auditTrail.push(`[ENRICHED] ${currentClaim.id}`);
+        continue;
+      }
+
+      const incomingRank = evidenceRank(fact.status, ruleEvidence.evidenceStrength);
+      const currentRank = existingRank(currentClaim);
+      const stronger = incomingRank > currentRank;
+      const equalStrength = incomingRank === currentRank;
+
+      const conflict: ImportConflict = {
+        programId: fact.programId,
+        field: fact.field,
+        existingClaim: currentClaim,
+        incomingFact: fact,
+        reason: fact.status === 'UNKNOWN' && currentClaim.status === 'VERIFIED_CURRENT'
+          ? 'STATUS_DOWNGRADE'
+          : 'VALUE_MISMATCH',
+        resolution: stronger && !equalStrength ? 'ACCEPTED_NEW' : 'PENDING_REVIEW'
+      };
+      conflicts.push(conflict);
+
+      if (stronger && !equalStrength) {
+        currentClaim.isCurrent = false;
+        currentClaim.status = 'OUTDATED';
+        const newClaim: KnowledgeClaim = {
+          id: `claim_${fact.programId}_${fact.field}_v${existingClaims.length + 1}`,
+          programId: fact.programId,
+          field: fact.field,
+          value: fact.value,
+          status: fact.status,
+          evidence: [ruleEvidence],
+          createdAt: fact.source.checkedAt,
+          reviewedAt: fact.source.checkedAt,
+          supersedesClaimId: currentClaim.id,
+          isCurrent: true,
+          notes: fact.notes
+        };
+        existingClaims.push(newClaim);
+        importedClaims.push(newClaim);
+        auditTrail.push(`[SUPERSEDED] ${currentClaim.id} -> ${newClaim.id}`);
+      } else {
+        // We retain the conflicting evidence for auditability but it cannot become
+        // current without an explicit review when evidence is equal or weaker.
+        const pendingClaim: KnowledgeClaim = {
+          id: `claim_${fact.programId}_${fact.field}_pending_${existingClaims.length + 1}`,
+          programId: fact.programId,
+          field: fact.field,
+          value: fact.value,
+          status: 'CONFLICTING',
+          evidence: [ruleEvidence],
+          createdAt: fact.source.checkedAt,
+          reviewedAt: fact.source.checkedAt,
+          isCurrent: false,
+          notes: fact.notes
+        };
+        existingClaims.push(pendingClaim);
+        importedClaims.push(pendingClaim);
+        auditTrail.push(`[PENDING_REVIEW] Kept current claim ${currentClaim.id}; incoming evidence retained as ${pendingClaim.id}`);
+      }
+      this.claimsRegistry.set(fact.programId, existingClaims);
     }
 
-    return {
-      success: true,
-      importedClaims,
-      conflicts,
-      auditTrail
-    };
+    return { success: true, importedClaims, conflicts, auditTrail };
   }
 
   public getClaimsForProgram(programId: string): KnowledgeClaim[] {
