@@ -66,7 +66,6 @@ export class KnowledgeRegistry {
 
     const prod = this.productsMap.get(programId);
     if (!prod) return undefined;
-    if (prod.evidenceMap && prod.evidenceMap[field]) return prod.evidenceMap[field];
     const fieldVer = prod.financialTerms.verification.find(v => v.field === field);
     if (fieldVer) return { field, status: fieldVer.status as KnowledgeRuleStatus, evidenceStrength: 'UNVERIFIED', unknownReason: fieldVer.unknownReason, notes: fieldVer.notes };
     const criterion = prod.criteria.find(c => c.field === field);
