@@ -336,9 +336,13 @@ export interface FinancingProgram {
   purposes: FinancingPurpose[];
   
   // Financial boundaries
-  minAmount: number;             // TND
-  maxAmount: number;             // TND
+  minAmount: number;             // TND — financing amount only
+  maxAmount: number;             // TND — financing amount only
   minContributionPercent: number;// Min % apport personnel requis (e.g. 10%, 20%)
+  // Claims-first investment constraints. These are intentionally separate from financing amount.
+  projectCostMin?: number;       // TND — verified project/investment cost floor
+  projectCostMax?: number;       // TND — verified project/investment cost ceiling
+  maxFinancingPercentage?: number; // % of project/investment cost, when explicitly verified
   
   // Terms
   rateType: 'fixed' | 'variable_tmm' | 'subsidized' | 'interest_free' | 'equity' | 'profit_margin' | 'unknown';
