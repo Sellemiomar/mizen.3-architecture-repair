@@ -16,6 +16,7 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
   if (!Number.isFinite(requiredFunding) || requiredFunding < 0) throw new Error('requiredFunding must be a finite non-negative number');
   const seen = new Set<string>();
   const diagnostics: string[] = [];
+  const unresolvedCashSources: string[] = [];
   let cashCovered = 0;
   let supportCoverage = 0;
 
@@ -30,8 +31,12 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
       continue;
     }
     if (CASH_ROLES.has(component.role)) {
-      if (typeof component.cashAmount === 'number' && Number.isFinite(component.cashAmount) && component.cashAmount >= 0) cashCovered += component.cashAmount;
-      else diagnostics.push(`Unresolved cash capacity: ${component.sourceId}`);
+      if (typeof component.cashAmount === 'number' && Number.isFinite(component.cashAmount) && component.cashAmount >= 0) {
+        cashCovered += component.cashAmount;
+      } else {
+        unresolvedCashSources.push(component.sourceId);
+        diagnostics.push(`Unresolved cash capacity: ${component.sourceId}`);
+      }
     }
   }
 
@@ -40,6 +45,7 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
     cashCovered: Math.min(requiredFunding, cashCovered),
     remainingGap: Math.max(0, requiredFunding - cashCovered),
     supportCoverage,
+    unresolvedCashSources,
     diagnostics
   };
 }
@@ -68,8 +74,9 @@ function evaluateCandidate(requiredFunding: number, components: StackComponent[]
   const fundingGap = calculateFundingGap(requiredFunding, components);
   const evidenceStrength = compatibility.length === 0 ? 3 : compatibility.reduce((sum, c) => sum + compatibilityRank(c.status), 0) / compatibility.length;
   const hasPotential = compatibility.some(c => c.status === 'POTENTIALLY_COMPATIBLE');
-  const overallStatus: StackOverallStatus = hasPotential || fundingGap.remainingGap > 0 ? 'CONDITIONAL' : 'VERIFIED';
-  const confidence: StackConfidence = hasPotential ? 'LOW' : fundingGap.remainingGap > 0 ? 'MEDIUM' : 'HIGH';
+  const hasUnresolvedCapacity = fundingGap.unresolvedCashSources.length > 0;
+  const overallStatus: StackOverallStatus = hasPotential || hasUnresolvedCapacity || fundingGap.remainingGap > 0 ? 'CONDITIONAL' : 'VERIFIED';
+  const confidence: StackConfidence = hasPotential || hasUnresolvedCapacity ? 'LOW' : fundingGap.remainingGap > 0 ? 'MEDIUM' : 'HIGH';
 
   return {
     id: components.map(c => c.sourceId).sort().join('__'),
@@ -77,7 +84,9 @@ function evaluateCandidate(requiredFunding: number, components: StackComponent[]
     fundingGap,
     overallStatus,
     confidence,
-    unresolvedAssumptions,
+    unresolvedAssumptions: hasUnresolvedCapacity
+      ? [...unresolvedAssumptions, ...fundingGap.unresolvedCashSources.map(id => `Cash capacity unresolved: ${id}`)]
+      : unresolvedAssumptions,
     compatibility,
     evidenceStrength
   };
