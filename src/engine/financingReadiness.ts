@@ -27,6 +27,7 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
     };
   }
   if (typeof applicant.financingRequested !== 'number') return undefined;
+  if (!result.program.verification.verifiedFields.includes('maxAmount') || result.program.maxAmount <= 0) return undefined;
   return {
     sourceId: result.program.id,
     programId: result.program.id,
