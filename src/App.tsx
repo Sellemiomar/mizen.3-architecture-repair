@@ -11,9 +11,12 @@ import { ExploreProgramsView } from './components/ExploreProgramsView';
 import { Footer } from './components/Footer';
 
 import { ApplicantProfile, FinancingProgram, Language, FinancingPurpose, FinancingJourney, DemoScenario } from './types/financing';
-import { FINANCING_PROGRAMS, PROVIDERS } from './data/financingData';
+import { PROVIDERS } from './data/financingData';
+import { getAuthoritativeFinancingPrograms } from './knowledge/authoritativeProjection';
 import { runMatchingEngine } from './engine/matchingEngine';
 import { cleanProfileForJourney } from './engine/journeyEngine';
+
+const FINANCING_PROGRAMS = getAuthoritativeFinancingPrograms();
 
 const EMPTY_PROFILE: ApplicantProfile = {
   totalProjectCost: undefined,
