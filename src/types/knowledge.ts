@@ -100,6 +100,7 @@ export interface SourceReference {
 export interface FieldEvidence {
   field: string;
   status: EvidenceStatus;
+  unknownReason?: UnknownReason;
   sourceIds: string[];
   verifiedAt?: string;
   notes?: LocalizedText;
@@ -193,7 +194,8 @@ export interface RateStructure {
   type: RateType;
   value?: number; // e.g. 0.05 for 5% or fixed rate
   margin?: number; // e.g. 0.025 for TMM + 2.5%
-  referenceIndex?: string; // e.g. 'TMM' (Taux Moyen du Marché Monétaire)
+  referenceIndex?: string;
+  ruleStatus?: KnowledgeRuleStatus; // e.g. 'TMM' (Taux Moyen du Marché Monétaire)
   min?: number;
   max?: number;
   currency?: 'PERCENT';
@@ -258,6 +260,7 @@ export interface FinancialTerms {
   gracePeriodMonths?: NumericRange;
   paymentStructure?: 'AMORTIZING_MONTHLY' | 'LEASING_RENTAL' | 'DEFERRED_SEASONAL' | 'SINGLE_BULLET' | 'OTHER';
   verification: FieldEvidence[];
+  guaranteeDetails?: { coveragePercentMin?: number; coveragePercentMax?: number; coverageBasis?: string };
 }
 
 export interface SimulatorInput {
@@ -330,6 +333,10 @@ export interface FinancingProduct {
   sources: SourceReference[];
   status: 'ACTIVE' | 'INACTIVE' | 'UNKNOWN';
   lastCheckedAt?: string;
+  lastReviewedAt?: string;
+  ruleStatus?: KnowledgeRuleStatus;
+  operationalStatus?: OperationalStatus;
+  claims?: KnowledgeClaim[];
 }
 
 export interface CatalogueMetadata {
