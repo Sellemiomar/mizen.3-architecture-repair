@@ -1,4 +1,4 @@
-import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProduct, getAuthoritativeClaim } from './authoritativeCatalogueProjection';
+import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProduct, getAuthoritativeCatalogueProviders, getAuthoritativeClaim } from './authoritativeCatalogueProjection';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
 import { FinancingProduct, KnowledgeRuleStatus, OperationalStatus, RuleEvidence, UnknownReason, KnowledgeClaim } from '../types/knowledge';
 
@@ -27,14 +27,11 @@ export class KnowledgeRegistry {
   }
 
   public getCanonicalProviders() {
-    const products = this.getAllCanonicalPrograms();
-    const ids = new Set(products.map(p => p.providerId));
-    return ids;
+    return getAuthoritativeCatalogueProviders();
   }
 
-  public getCanonicalProvider(id: string): undefined {
-    // Provider facts are not reconstructed here; callers should use the provider metadata registry.
-    return undefined;
+  public getCanonicalProvider(id: string) {
+    return getAuthoritativeCatalogueProviders().find(p => p.id === id);
   }
 
   public getProgramOperationalStatus(programId: string): OperationalStatus {
