@@ -14,7 +14,7 @@ import { FinancingProgram } from '../types/financing';
 
 function rank(c: FinancingClaim): number {
   if (c.ruleStatus === 'VERIFIED_HISTORICAL' || c.operationalStatus === 'HISTORICAL_ONLY') return -100;
-  if (c.ruleStatus === 'UNKNOWN' && c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT') return 95;
+  if (c.ruleStatus === 'UNKNOWN' && c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT') return 110;
   if (c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' && c.ruleStatus === 'VERIFIED_CURRENT') return 100;
   if (c.ruleStatus === 'UNKNOWN') return 80;
   if (c.ruleStatus === 'PARTIALLY_VERIFIED') return 60;
