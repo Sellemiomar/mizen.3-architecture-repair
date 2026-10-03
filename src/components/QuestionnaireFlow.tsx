@@ -1033,7 +1033,7 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
             </div>
 
             {/* Income & Employment (for individual / personal journeys or when relevant) */}
-            {(selectedJourney === 'home_purchase' || selectedJourney === 'home_construction' || (selectedJourney === 'car' && profile.vehicleBuyerType !== 'business')) && (
+            {Boolean(selectedJourney) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -1049,6 +1049,36 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
                       <option key={inc.id} value={inc.id}>{inc.label[language]}</option>
                     ))}
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    {language === 'ar' ? 'الدخل الصافي الشهري (اختياري)' : 'Revenu net mensuel (optionnel)'}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="decimal"
+                    value={profile.monthlyNetIncome ?? ''}
+                    onChange={(e) => setProfile(p => ({ ...p, monthlyNetIncome: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) }))}
+                    placeholder={language === 'ar' ? 'مثال: 2500 د' : 'Ex. 2500 DT'}
+                    className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    {language === 'ar' ? 'أقساط القروض الحالية شهرياً (اختياري)' : 'Mensualités de dettes existantes (optionnel)'}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    inputMode="decimal"
+                    value={profile.monthlyDebtPayments ?? ''}
+                    onChange={(e) => setProfile(p => ({ ...p, monthlyDebtPayments: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) }))}
+                    placeholder={language === 'ar' ? 'مثال: 600 د' : 'Ex. 600 DT'}
+                    className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white"
+                  />
                 </div>
 
                 <div>
