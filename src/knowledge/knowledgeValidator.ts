@@ -84,10 +84,8 @@ export function validateKnowledgeCatalogue(
     // 3. VERIFIED_CURRENT with historical-only source
     if (prod.ruleStatus === 'VERIFIED_CURRENT') {
       const hasCurrentSource = prod.sources.some(s => 
-        s.sourceType === 'DIRECT_PRIMARY_CURRENT' || 
         s.sourceType === 'OFFICIAL_PRODUCT_PAGE' || 
         s.sourceType === 'OFFICIAL_SIMULATOR' || 
-        s.evidenceStatus === 'VERIFIED_CURRENT' ||
         s.evidenceStatus === 'VERIFIED'
       );
       if (!hasCurrentSource) {
