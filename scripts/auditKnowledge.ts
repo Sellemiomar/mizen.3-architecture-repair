@@ -17,7 +17,7 @@ const totalPrograms = CANONICAL_PRODUCTS.length;
 console.log(`Programs: ${totalPrograms}`);
 
 // Count by rule status
-const statusCounts: Record<KnowledgeRuleStatus, number> = {
+const statusCounts: Record<string, number> = {
   VERIFIED_CURRENT: 0,
   VERIFIED_HISTORICAL: 0,
   PARTIALLY_VERIFIED: 0,
