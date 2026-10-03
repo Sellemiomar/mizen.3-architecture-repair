@@ -1,6 +1,7 @@
 import { runMatchingEngine } from '../src/engine/matchingEngine';
 import { calculateFinancingCost } from '../src/engine/financialCalculations';
-import { FINANCING_PROGRAMS } from '../src/data/financingData';
+import { getAuthoritativeFinancingPrograms } from '../src/knowledge/authoritativeProjection';
+const FINANCING_PROGRAMS = getAuthoritativeFinancingPrograms();
 import { ApplicantProfile } from '../src/types/financing';
 import { parseTextToProfileFallback } from '../src/utils/intakeParser';
 
