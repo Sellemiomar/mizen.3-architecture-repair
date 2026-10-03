@@ -4,6 +4,7 @@
  */
 
 import { Language } from './financing';
+import type { OperationalStatus } from './claims';
 export * from './claims';
 
 export type FinancingProviderType =
@@ -260,7 +261,7 @@ export interface FinancialTerms {
   gracePeriodMonths?: NumericRange;
   paymentStructure?: 'AMORTIZING_MONTHLY' | 'LEASING_RENTAL' | 'DEFERRED_SEASONAL' | 'SINGLE_BULLET' | 'OTHER';
   verification: FieldEvidence[];
-  guaranteeDetails?: { coveragePercentMin?: number; coveragePercentMax?: number; coverageBasis?: string };
+  guaranteeDetails?: { coveragePercentMin?: number; coveragePercentMax?: number; coverageBasis?: string; governorates?: string[] };
 }
 
 export interface SimulatorInput {
