@@ -25,6 +25,7 @@ export interface StackComponent {
   supportCoverage?: number;
   supportType?: 'GUARANTEE' | 'SUBSIDY' | 'OTHER';
   evidenceStatus: string;
+  unresolvedEligibility?: string[];
   notes?: string[];
 }
 
