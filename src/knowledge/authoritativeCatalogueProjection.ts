@@ -23,7 +23,7 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
 function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
   const updateCriterion = (field: string, operator: string, expectedValue: unknown) => {
     const criterion = product.criteria.find(c => c.field === field && c.operator === operator);
-    if (criterion) criterion.expectedValue = expectedValue as never;
+    if (criterion) criterion.expectedValue = expectedValue;
   };
 
   switch (claim.field) {
