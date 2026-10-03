@@ -1,4 +1,4 @@
-import { CANONICAL_PRODUCTS } from './canonicalCatalogue';
+import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from './canonicalCatalogue';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
 import { FinancingClaim } from '../types/claims';
 import { FinancingProduct } from '../types/knowledge';
@@ -77,6 +77,10 @@ export function getAuthoritativeCatalogueProducts(): FinancingProduct[] {
     }
     return product;
   });
+}
+
+export function getAuthoritativeCatalogueProviders() {
+  return CANONICAL_PROVIDERS;
 }
 
 export function getAuthoritativeCatalogueProduct(id: string): FinancingProduct | undefined {
