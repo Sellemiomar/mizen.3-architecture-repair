@@ -42,7 +42,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-001: 300,000 TND project; 120,000 TND CMLT -> amount conditions pass, operational status ACTIVE_NOT_CONFIRMED
   const resTC001 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 300000,
     financingRequested: 120000,
@@ -56,7 +56,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-002: 1,000,000 TND project; 700,000 TND CMLT (70% > 65% ceiling) -> INCOMPATIBLE
   const resTC002 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 1000000,
     financingRequested: 700000,
@@ -70,7 +70,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-003: 4,000,000 TND project; 2,600,000 TND CMLT (exceeds 2.5m ceiling) -> INCOMPATIBLE
   const resTC003 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 4000000,
     financingRequested: 2600000,
@@ -84,7 +84,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-005: 2,600,000 TND project; 1,050,000 TND CMLT -> passes CMLT 65% (40.38%) and 2.5m ceiling
   const resTC005 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 2600000,
     financingRequested: 1050000,
@@ -98,12 +98,12 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-013: Accommodation hotel -> excluded
   const resTC013 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 3000000,
     financingRequested: 1500000,
     legalStructure: 'sarl',
-    sector: 'hotels_accommodation'
+    sector: 'hotels_accommodation' as any
   }, bfpme, bfpmeProvider);
   assert(
     resTC013.status === 'NOT_MATCHED' && resTC013.ruleEvaluations.some(r => r.ruleId === 'sectorExclusionHotel' && r.status === 'FAIL'),
@@ -112,12 +112,12 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-015: Residential developer -> excluded
   const resTC015 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 5000000,
     financingRequested: 2000000,
     legalStructure: 'sarl',
-    sector: 'real_estate_development'
+    sector: 'real_estate_development' as any
   }, bfpme, bfpmeProvider);
   assert(
     resTC015.status === 'NOT_MATCHED' && resTC015.ruleEvaluations.some(r => r.ruleId === 'sectorExclusionRealEstate' && r.status === 'FAIL'),
@@ -126,7 +126,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-016: 149,999 TND project -> below min project cost 150,000 TND -> FAIL
   const resTC016 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 149999,
     financingRequested: 80000,
@@ -140,7 +140,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-017: 150,000 TND project -> passes threshold boundary
   const resTC017 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 150000,
     financingRequested: 90000,
@@ -154,7 +154,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-018: 15,000,000 TND project -> passes maximum boundary (with 2.5m CMLT)
   const resTC018 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 15000000,
     financingRequested: 2500000,
@@ -168,7 +168,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // TC-019: 15,000,001 TND project -> exceeds maximum project cost
   const resTC019 = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation',
     totalProjectCost: 15000001,
     financingRequested: 2500000,
@@ -203,7 +203,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // Non-negotiable 4: PARTIALLY_VERIFIED must NEVER produce HIGH evidence confidence
   const partVerRes = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation'
   }, bfpme, bfpmeProvider);
   assert(
@@ -217,7 +217,7 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   // Non-negotiable 5: Historical evidence must produce LOW confidence
   const histSotugarRes = evaluateProgramCompatibility({
-    journey: 'business_creation',
+    journey: 'business_creation' as any,
     purpose: 'creation'
   }, FINANCING_PROGRAMS.find(p => p.id === 'sotugar_guarantee')!, PROVIDERS.find(p => p.id === 'sotugar')!);
   assert(
