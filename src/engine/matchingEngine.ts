@@ -12,7 +12,8 @@ import {
   ApplicationReadiness,
   EligibilityOutcome
 } from '../types/financing';
-import { FINANCING_PROGRAMS, PROVIDERS, REGIONAL_DEVELOPMENT_ZONES } from '../data/financingData';
+import { PROVIDERS, REGIONAL_DEVELOPMENT_ZONES } from '../data/financingData';
+import { getAuthoritativeFinancingPrograms } from '../knowledge/authoritativeProjection';
 import { calculateFinancingCost } from './financialCalculations';
 import { formatVerificationNeed, getFieldLabel } from '../utils/verificationLabels';
 import { getOfficialSimulator, generateExclusionReason } from '../knowledge/catalogueAdapter';
@@ -985,7 +986,7 @@ export function getCategoricalRank(result: MatchResult): number {
 export function runMatchingEngine(applicant: ApplicantProfile): MatchResult[] {
   const providerMap = new Map(PROVIDERS.map(p => [p.id, p]));
 
-  const results = FINANCING_PROGRAMS.map(program => {
+  const results = getAuthoritativeFinancingPrograms().map(program => {
     const provider = providerMap.get(program.providerId) || PROVIDERS[0];
     return evaluateProgramCompatibility(applicant, program, provider);
   });
