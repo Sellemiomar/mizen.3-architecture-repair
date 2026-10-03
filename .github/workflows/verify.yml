@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm install
       - run: npx tsx scripts/auditArchitecture.ts
       - run: npm run lint
       - run: npm test
