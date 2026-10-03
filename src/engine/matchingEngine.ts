@@ -205,6 +205,20 @@ export function evaluateApplicationReadiness(
       value: applicant.sector
     });
   }
+  if (applicant.monthlyNetIncome !== undefined) {
+    knownFields.push({
+      key: 'monthlyNetIncome',
+      label: { fr: 'Revenu net mensuel', ar: 'الدخل الصافي الشهري' },
+      value: String(applicant.monthlyNetIncome.toLocaleString('fr-TN')) + ' TND'
+    });
+  }
+  if (applicant.monthlyDebtPayments !== undefined) {
+    knownFields.push({
+      key: 'monthlyDebtPayments',
+      label: { fr: 'Mensualités de dettes existantes', ar: 'الأقساط الشهرية للديون الحالية' },
+      value: String(applicant.monthlyDebtPayments.toLocaleString('fr-TN')) + ' TND'
+    });
+  }
 
   // Missing fields from rules evaluated to UNKNOWN
   for (const rule of ruleEvaluations) {
