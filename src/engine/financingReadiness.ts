@@ -2,7 +2,6 @@ import { ApplicantProfile, MatchResult } from '../types/financing';
 import { runMatchingEngine } from './matchingEngine';
 import { generateFinancingStacks } from './financingStackEngine';
 import { FinancingStackResult, StackComponent } from '../types/financingStack';
-import { getStackCompatibility } from '../knowledge/stackCompatibility';
 
 export interface FinancingReadinessResult {
   matches: MatchResult[];
@@ -10,16 +9,16 @@ export interface FinancingReadinessResult {
 }
 
 function requiredFundingFor(applicant: ApplicantProfile): number | undefined {
-  if (typeof applicant.financingRequested === 'number') return applicant.financingRequested;
-  if (typeof applicant.totalProjectCost === 'number' && typeof applicant.userContribution === 'number') {
-    return Math.max(0, applicant.totalProjectCost - applicant.userContribution);
+  if (typeof applicant.totalProjectCost === 'number') return applicant.totalProjectCost;
+  if (typeof applicant.financingRequested === 'number') {
+    return applicant.financingRequested + (applicant.userContribution ?? 0);
   }
   return undefined;
 }
 
 function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): StackComponent | undefined {
   if (result.status !== 'STRONG_ALIGNMENT' && result.status !== 'POTENTIAL_ALIGNMENT') return undefined;
-  const isGuarantee = result.program.category === 'guarantee' || result.program.rateType === 'unknown' && result.program.id.includes('sotugar');
+  const isGuarantee = result.program.category === 'guarantee';
   if (isGuarantee) {
     const sotugarCoverage = result.program.id === 'sotugar_guarantee' ? 75 : undefined;
     return {
@@ -32,12 +31,11 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
     };
   }
   if (typeof applicant.financingRequested !== 'number') return undefined;
-  const amount = Math.min(applicant.financingRequested, result.program.maxAmount);
   return {
     sourceId: result.program.id,
     programId: result.program.id,
     role: result.program.category === 'equity_quasi_equity' ? 'EQUITY' : result.program.category === 'grant_subsidy' ? 'GRANT' : 'DEBT',
-    cashAmount: amount,
+    cashAmount: Math.min(applicant.financingRequested, result.program.maxAmount),
     verifiedCapacity: result.program.maxAmount,
     evidenceStatus: result.program.verification.status
   };
@@ -61,17 +59,13 @@ export function runFinancingReadiness(applicant: ApplicantProfile): FinancingRea
     if (component) components.push(component);
   }
 
-  const requiredFunding = requiredFundingFor(applicant) ?? 0;
-  const programComponents = components.filter(c => c.programId);
-  const compatibilityPairs: Array<[string, string]> = [];
-  for (let i = 0; i < programComponents.length; i += 1) {
-    for (let j = i + 1; j < programComponents.length; j += 1) {
-      compatibilityPairs.push([programComponents[i].programId!, programComponents[j].programId!]);
-    }
+  const requiredFunding = requiredFundingFor(applicant);
+  if (requiredFunding === undefined) {
+    return {
+      matches,
+      stack: { requiredFunding: 0, candidates: [], diagnostics: ['Project cost or financing need is not specified; no funding stack is inferred.'] }
+    };
   }
-
-  // Preserve explicit UNKNOWN compatibility as a blocker rather than manufacturing a stack.
-  for (const [a, b] of compatibilityPairs) getStackCompatibility(a, b);
 
   return {
     matches,
