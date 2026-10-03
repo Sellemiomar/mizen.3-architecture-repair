@@ -159,6 +159,8 @@ export interface ApplicantProfile {
 
   // Key qualifying traits
   monthlyIncomeRange?: MonthlyIncomeRange;
+  monthlyNetIncome?: number;       // Net monthly personal/household income when relevant (TND)
+  monthlyDebtPayments?: number;    // Existing monthly debt/loan payments when disclosed (TND)
   employmentStatus?: EmploymentStatus;
   propertyType?: PropertyType;
   isFirstPropertyPurchase?: boolean;
