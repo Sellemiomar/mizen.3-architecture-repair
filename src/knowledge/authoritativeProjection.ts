@@ -61,7 +61,7 @@ function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
         program.rateType = 'unknown';
         program.estimatedRateAnnual = undefined;
         const existing = program.rateDescription.fr || '';
-        const range = existing.match(/\\d+(?:[.,]\\d+)? à \\d+(?:[.,]\\d+)?/i)?.[0];
+        const range = existing.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
         program.rateDescription = {
           fr: range
             ? `Marge publiée : ${range} points. Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.`
