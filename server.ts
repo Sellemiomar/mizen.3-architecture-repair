@@ -3,7 +3,11 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
-import { CANONICAL_PROVIDERS, CANONICAL_PRODUCTS, CANONICAL_METADATA } from './src/knowledge/canonicalCatalogue';
+import {
+  getAuthoritativeCatalogueProviders,
+  getAuthoritativeCatalogueProducts,
+  getAuthoritativeCatalogueMetadata,
+} from './src/knowledge/authoritativeCatalogueProjection';
 import { DISCOVERY_QUERIES } from './src/knowledge/searchRegistry';
 import { extractFinancingFactsDeterministically, searchFinancingCatalogue } from './src/knowledge/discoveryEngine';
 import { getCatalogueHealthSummary } from './src/knowledge/catalogueAdapter';
@@ -48,7 +52,7 @@ app.get('/api/health', (req, res) => {
 app.get('/api/knowledge/metadata', (req, res) => {
   res.json({
     success: true,
-    metadata: CANONICAL_METADATA,
+    metadata: getAuthoritativeCatalogueMetadata(),
     summary: getCatalogueHealthSummary()
   });
 });
@@ -57,15 +61,15 @@ app.get('/api/knowledge/metadata', (req, res) => {
 app.get('/api/knowledge/providers', (req, res) => {
   res.json({
     success: true,
-    count: CANONICAL_PROVIDERS.length,
-    providers: CANONICAL_PROVIDERS
+    count: getAuthoritativeCatalogueProviders().length,
+    providers: getAuthoritativeCatalogueProviders()
   });
 });
 
 // 3. Products Catalogue
 app.get('/api/knowledge/products', (req, res) => {
   const { category, providerId } = req.query;
-  let products = CANONICAL_PRODUCTS;
+  let products = getAuthoritativeCatalogueProducts();
 
   if (category) {
     products = products.filter(p => p.category === category || p.financingDomains.includes(category as any));
