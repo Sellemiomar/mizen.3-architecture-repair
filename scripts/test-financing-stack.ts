@@ -61,6 +61,17 @@ assert(conditional?.fundingGap.cashCovered === 650000, 'Stack cash coverage rema
 assert(conditional?.fundingGap.remainingGap === 350000, 'SOTUGAR guarantee does not erase the 350k funding gap');
 assert(conditional?.confidence === 'LOW', 'Potential compatibility prevents HIGH confidence');
 
+const verifiedStack = generateFinancingStacks({
+  requiredFunding: 1000000,
+  components: [
+    components[0],
+    { sourceId: 'commercial-bank', programId: 'bh_bank_loan', role: 'DEBT', cashAmount: 350000, verifiedCapacity: 350000, evidenceStatus: 'VERIFIED_CURRENT' }
+  ],
+  maxComponentsPerStack: 2
+});
+assert(verifiedStack.candidates[0]?.overallStatus === 'VERIFIED', 'Verified-compatible stack ranks as VERIFIED');
+assert(verifiedStack.candidates[0]?.fundingGap.remainingGap === 0, 'Verified-compatible stack can fully cover the funding need');
+
 const unknownStack = generateFinancingStacks({
   requiredFunding: 1000000,
   components: [
