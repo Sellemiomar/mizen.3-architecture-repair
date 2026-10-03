@@ -45,6 +45,44 @@ export type EvidenceStatus =
   | 'OUTDATED'
   | 'SOURCE_UNAVAILABLE';
 
+export type KnowledgeRuleStatus =
+  | 'VERIFIED_CURRENT'
+  | 'VERIFIED_HISTORICAL'
+  | 'PARTIALLY_VERIFIED'
+  | 'UNKNOWN'
+  | 'CONFLICTING'
+  | 'OUTDATED';
+
+export type UnknownReason = string;
+
+export interface RuleEvidence {
+  field: string;
+  status: KnowledgeRuleStatus;
+  value?: unknown;
+  sourceUrl?: string;
+  sourceTitle?: string;
+  sourceType?: string;
+  evidenceStrength?: string;
+  checkedAt?: string;
+  effectiveFrom?: string;
+  unknownReason?: UnknownReason;
+  notes?: LocalizedText;
+}
+
+export interface KnowledgeClaim {
+  id: string;
+  programId: string;
+  field: string;
+  value: unknown;
+  status: KnowledgeRuleStatus;
+  evidence: RuleEvidence[];
+  createdAt: string;
+  reviewedAt?: string;
+  supersedesClaimId?: string;
+  isCurrent: boolean;
+  notes?: LocalizedText;
+}
+
 export interface SourceReference {
   id: string;
   url: string;
