@@ -14,8 +14,17 @@ function requiredFundingFor(applicant: ApplicantProfile): number | undefined {
   return undefined;
 }
 
+function unresolvedCriticalRules(result: MatchResult): string[] {
+  return result.ruleEvaluations
+    .filter(rule => rule.criticality === 'CRITICAL' && rule.status === 'UNKNOWN')
+    .map(rule => rule.label.fr);
+}
+
 function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): StackComponent | undefined {
   if (result.status !== 'STRONG_ALIGNMENT' && result.status !== 'POTENTIAL_ALIGNMENT') return undefined;
+  if (result.ruleEvaluations.some(rule => rule.criticality === 'CRITICAL' && rule.status === 'FAIL')) return undefined;
+  const unresolvedEligibility = unresolvedCriticalRules(result);
+
   if (result.program.category === 'guarantee') {
     return {
       sourceId: result.program.id,
@@ -23,6 +32,7 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
       role: 'GUARANTEE',
       supportType: 'GUARANTEE',
       evidenceStatus: result.program.verification.status,
+      unresolvedEligibility,
       notes: ['Guarantee support is not counted as cash financing; coverage remains unresolved unless current evidence explicitly verifies it.']
     };
   }
@@ -34,7 +44,8 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
     role: result.program.category === 'equity_quasi_equity' ? 'EQUITY' : result.program.category === 'grant_subsidy' ? 'GRANT' : 'DEBT',
     cashAmount: Math.min(applicant.financingRequested, result.program.maxAmount),
     verifiedCapacity: result.program.maxAmount,
-    evidenceStatus: result.program.verification.status
+    evidenceStatus: result.program.verification.status,
+    unresolvedEligibility
   };
 }
 
