@@ -12,13 +12,13 @@ import {
   LocalizedText,
   SimulatorReference
 } from '../types/knowledge';
-import { CANONICAL_PROVIDERS, CANONICAL_PRODUCTS, CANONICAL_METADATA } from './canonicalCatalogue';
+import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProduct, getAuthoritativeCatalogueProviders } from './authoritativeCatalogueProjection';
 
 /**
  * Finds the official simulator reference for a program/product if one exists.
  */
 export function getOfficialSimulator(productId: string): SimulatorReference | undefined {
-  const product = CANONICAL_PRODUCTS.find(p => p.id === productId);
+  const product = getAuthoritativeCatalogueProduct(productId);
   return product?.simulator;
 }
 
@@ -100,8 +100,7 @@ export function generateExclusionReason(
  */
 export function getCatalogueHealthSummary() {
   return {
-    metadata: CANONICAL_METADATA,
-    providers: CANONICAL_PROVIDERS.map(p => ({
+    providers: getAuthoritativeCatalogueProviders().map(p => ({
       id: p.id,
       name: p.name,
       acronym: p.acronym,
@@ -109,7 +108,7 @@ export function getCatalogueHealthSummary() {
       sourcesCount: p.sources.length,
       status: p.status
     })),
-    products: CANONICAL_PRODUCTS.map(pr => ({
+    products: getAuthoritativeCatalogueProducts().map(pr => ({
       id: pr.id,
       nameFr: pr.name.fr,
       category: pr.category,
