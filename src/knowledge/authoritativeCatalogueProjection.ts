@@ -79,6 +79,16 @@ export function getAuthoritativeCatalogueProducts(): FinancingProduct[] {
   });
 }
 
+export function getAuthoritativeCatalogueMetadata() {
+  const products = getAuthoritativeCatalogueProducts();
+  const providers = getAuthoritativeCatalogueProviders();
+  return {
+    productCount: products.length,
+    providerCount: providers.length,
+    sourceCount: providers.reduce((n,p) => n + p.sources.length, 0) + products.reduce((n,p) => n + p.sources.length, 0)
+  };
+}
+
 export function getAuthoritativeCatalogueProviders() {
   return CANONICAL_PROVIDERS;
 }
