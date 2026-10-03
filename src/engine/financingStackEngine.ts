@@ -5,7 +5,8 @@ import {
   StackComponent,
   StackCompatibilityStatus,
   StackOverallStatus,
-  StackConfidence
+  StackConfidence,
+  StackCompatibilityEvaluation
 } from '../types/financingStack';
 import { getStackCompatibility } from '../knowledge/stackCompatibility';
 
@@ -55,7 +56,7 @@ function compatibilityRank(status: StackCompatibilityStatus): number {
 
 function evaluateCandidate(requiredFunding: number, components: StackComponent[]): FinancingStackCandidate | null {
   const programIds = components.map(c => c.programId).filter((id): id is string => Boolean(id));
-  const compatibility = [];
+  const compatibility: StackCompatibilityEvaluation[] = [];
   for (let i = 0; i < programIds.length; i += 1) {
     for (let j = i + 1; j < programIds.length; j += 1) compatibility.push(getStackCompatibility(programIds[i], programIds[j]));
   }
@@ -105,10 +106,16 @@ export function generateFinancingStacks(input: FinancingStackInput): FinancingSt
     .filter((candidate): candidate is FinancingStackCandidate => candidate !== null)
     .filter(candidate => candidate.components.some(c => c.role !== 'GUARANTEE'))
     .sort((a, b) => {
-      if (a.overallStatus !== b.overallStatus) return a.overallStatus === 'VERIFIED' ? -1 : 1;
-      if (a.fundingGap.remainingGap !== b.fundingGap.remainingGap) return a.fundingGap.remainingGap - b.fundingGap.remainingGap;
-      if (a.components.length !== b.components.length) return a.components.length - b.components.length;
-      return b.evidenceStrength - a.evidenceStrength;
+      const statusRank = (status: StackOverallStatus) => status === 'VERIFIED' ? 2 : status === 'CONDITIONAL' ? 1 : 0;
+      const statusDiff = statusRank(b.overallStatus) - statusRank(a.overallStatus);
+      if (statusDiff !== 0) return statusDiff;
+      const assumptionDiff = a.unresolvedAssumptions.length - b.unresolvedAssumptions.length;
+      if (assumptionDiff !== 0) return assumptionDiff;
+      const componentDiff = a.components.length - b.components.length;
+      if (componentDiff !== 0) return componentDiff;
+      const evidenceDiff = b.evidenceStrength - a.evidenceStrength;
+      if (evidenceDiff !== 0) return evidenceDiff;
+      return a.fundingGap.remainingGap - b.fundingGap.remainingGap;
     });
 
   return {
