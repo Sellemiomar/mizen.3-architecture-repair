@@ -18,7 +18,6 @@
  */
 
 import { FinancingProduct, FinancingProvider, KnowledgeRuleStatus, RuleEvidence, KnowledgeClaim } from '../types/knowledge';
-import { CLAIMS_REPOSITORY } from './claimsRepository';
 import { getAuthoritativeClaim } from './authoritativeProjection';
 
 export interface ValidationError {
