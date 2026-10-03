@@ -598,6 +598,8 @@ The applicant declared:
 - Project Cost: ${applicantProfile?.totalProjectCost ?? 'Non spécifié'} DT
 - Financing Requested: ${applicantProfile?.financingRequested ?? 'Non spécifié'} DT
 - User Contribution: ${applicantProfile?.userContribution ?? 'Non spécifié'} DT
+- Net Monthly Income: ${applicantProfile?.monthlyNetIncome ?? 'Non spécifié'} DT
+- Existing Monthly Debt Payments: ${applicantProfile?.monthlyDebtPayments ?? 'Non spécifié'} DT
 - Purpose: ${applicantProfile?.purpose ?? 'Non spécifié'}
 - Sector: ${applicantProfile?.sector ?? 'Non spécifié'}
 - Business Stage: ${applicantProfile?.businessStage ?? 'Non spécifié'}
