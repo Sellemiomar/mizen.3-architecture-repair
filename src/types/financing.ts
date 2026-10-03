@@ -74,7 +74,8 @@ export type FinancingJourney =
   | 'business_expansion'
   | 'equipment'
   | 'agriculture'
-  | 'other_professional';
+  | 'other_professional'
+  | 'business_creation';
 
 export type BusinessStage = 
   | 'idea_project'
@@ -91,7 +92,9 @@ export type BusinessSector =
   | 'commerce'
   | 'renewable_energy'
   | 'tourism'
+  | 'hotels_accommodation'
   | 'real_estate'
+  | 'real_estate_development'
   | 'residential_real_estate_promotion'
   | 'other';
 
