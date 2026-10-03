@@ -72,11 +72,11 @@ console.log('');
 // Programs with unresolved financial rules
 console.log('Programs with unresolved financial rules:');
 const unresolvedRules = CANONICAL_PRODUCTS.filter(p => 
-  p.financialTerms.verification.some(v => v.status === 'PARTIALLY_VERIFIED' || v.status === 'UNKNOWN')
+  p.financialTerms.verification.some(v => v.status === 'PARTIALLY_VERIFIED' || (v.status as string) === 'UNKNOWN')
 );
 for (const p of unresolvedRules) {
   const fields = p.financialTerms.verification
-    .filter(v => v.status === 'PARTIALLY_VERIFIED' || v.status === 'UNKNOWN')
+    .filter(v => v.status === 'PARTIALLY_VERIFIED' || (v.status as string) === 'UNKNOWN')
     .map(v => `${v.field} (${v.unknownReason || 'UNRESOLVED'})`);
   console.log(`  - ${p.id}: ${fields.join(', ')}`);
 }
