@@ -462,6 +462,8 @@ Strict extraction discipline:
 - financingRequested: numerical amount in Tunisian Dinars (TND / DT) if stated, or null if not stated.
 - totalProjectCost: numerical amount in TND if explicitly stated, or null if not stated.
 - userContribution: numerical amount in TND if explicitly stated, or null if not stated.
+- monthlyNetIncome: net monthly personal/household income in TND if explicitly stated, or null if not stated.
+- monthlyDebtPayments: existing monthly loan/debt payments in TND if explicitly stated, or null if not stated.
 - purpose: one of ['creation', 'equipment', 'working_capital', 'expansion', 'agriculture', 'innovation_rd', 'export'] ONLY IF explicitly indicated. If not indicated, return null and add "objet_financement" to missingCriticalFields.
 - sector: one of ['industry', 'services', 'agriculture_agribusiness', 'ict_tech', 'crafts_trades', 'commerce', 'renewable_energy', 'tourism', 'other'] ONLY IF indicated. If not indicated, return null and add "secteur_activite" to missingCriticalFields.
 - location: exact Tunisian governorate if identifiable (e.g. Sousse, Tunis, Sfax, Kasserine, etc.), or null if not mentioned. Do NOT assume Tunis by default. If unmentioned, return null and add "gouvernorat" to missingCriticalFields.
@@ -477,6 +479,8 @@ Strict extraction discipline:
             financingRequested: { type: Type.NUMBER, nullable: true },
             totalProjectCost: { type: Type.NUMBER, nullable: true },
             userContribution: { type: Type.NUMBER, nullable: true },
+            monthlyNetIncome: { type: Type.NUMBER, nullable: true },
+            monthlyDebtPayments: { type: Type.NUMBER, nullable: true },
             purpose: { type: Type.STRING, nullable: true },
             sector: { type: Type.STRING, nullable: true },
             location: { type: Type.STRING, nullable: true },
