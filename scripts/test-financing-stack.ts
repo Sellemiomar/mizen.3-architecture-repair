@@ -41,6 +41,11 @@ const duplicateGap = calculateFundingGap(1000000, [...components, { ...component
 assert(duplicateGap.cashCovered === 650000, 'Duplicate source is never double-counted');
 assert(duplicateGap.diagnostics.some(d => d.includes('Duplicate funding source')), 'Duplicate source produces an explicit diagnostic');
 
+const unknownCapacity = calculateFundingGap(500000, [{ sourceId: 'unverified-debt', role: 'DEBT', evidenceStatus: 'UNKNOWN' }]);
+assert(unknownCapacity.cashCovered === 0, 'Unknown capacity contributes zero verified cash coverage');
+assert(unknownCapacity.remainingGap === 500000, 'Unknown capacity does not fill a numeric funding gap');
+assert(unknownCapacity.diagnostics.some(d => d.includes('Unresolved cash capacity')), 'Unknown capacity produces an explicit diagnostic');
+
 const verified = getStackCompatibility('bfpme_creation', 'bh_bank_loan');
 assert(verified.status === 'VERIFIED_COMPATIBLE', 'BFPME + commercial bank is explicitly verified compatible');
 
