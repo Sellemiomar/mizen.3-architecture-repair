@@ -10,7 +10,8 @@ import {
   SourceReference,
   FinancingDomain 
 } from '../types/knowledge';
-import { CANONICAL_PROVIDERS, CANONICAL_PRODUCTS } from './canonicalCatalogue';
+import { getAuthoritativeCatalogueProviders, getAuthoritativeCatalogueProducts } from './authoritativeCatalogueProjection';
+import { FinancingProduct, FinancingProvider } from '../types/knowledge';
 
 /**
  * Deterministic heuristic fact extractor for offline/local extraction.
@@ -106,11 +107,11 @@ export function extractFinancingFactsDeterministically(
   }
 
   // Match provider and product candidates
-  const providerCandidates = CANONICAL_PROVIDERS
+  const providerCandidates = getAuthoritativeCatalogueProviders()
     .filter(p => lower.includes(p.name.toLowerCase()) || (p.acronym && lower.includes(p.acronym.toLowerCase())))
     .map(p => p.id);
 
-  const productCandidates = CANONICAL_PRODUCTS
+  const productCandidates = getAuthoritativeCatalogueProducts()
     .filter(pr => lower.includes(pr.name.fr?.toLowerCase() || '') || (pr.id && lower.includes(pr.id.toLowerCase())))
     .map(pr => pr.id);
 
@@ -134,13 +135,13 @@ export function searchFinancingCatalogue(options: {
   applicantType?: string;
   language?: 'fr' | 'ar';
 }): {
-  products: typeof CANONICAL_PRODUCTS;
-  providers: typeof CANONICAL_PROVIDERS;
+  products: FinancingProduct[];
+  providers: FinancingProvider[];
   matchCount: number;
 } {
   const { domain, keyword, providerId, applicantType, language = 'fr' } = options;
 
-  let filteredProducts = CANONICAL_PRODUCTS.filter(p => p.status === 'ACTIVE');
+  let filteredProducts = getAuthoritativeCatalogueProducts().filter(p => p.status === 'ACTIVE');
 
   if (domain) {
     filteredProducts = filteredProducts.filter(p => 
@@ -171,7 +172,7 @@ export function searchFinancingCatalogue(options: {
   }
 
   const matchingProviderIds = new Set(filteredProducts.map(p => p.providerId));
-  const filteredProviders = CANONICAL_PROVIDERS.filter(pr => matchingProviderIds.has(pr.id));
+  const filteredProviders = getAuthoritativeCatalogueProviders().filter(pr => matchingProviderIds.has(pr.id));
 
   return {
     products: filteredProducts,
