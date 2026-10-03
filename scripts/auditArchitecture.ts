@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(process.cwd(), 'src');
-const forbiddenDirectImport = /(?:from\s+['"]\.\/canonicalCatalogue['"]|from\s+['"][^'"]*\/canonicalCatalogue['"]|from\s+['"][^'"]*\/data\/financingData['"])/;
+const forbiddenDirectImport = /(?:from\s+['"]\.\/canonicalCatalogue['"]|from\s+['"][^'"]*\/canonicalCatalogue['"])/;
+const forbiddenLegacyProgramImport = /import\s*\{[^}]*\bFINANCING_PROGRAMS\b[^}]*\}\s*from\s*['"][^'"]*\/data\/financingData['"]/s;
 
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
@@ -13,7 +14,10 @@ function walk(dir: string): string[] {
 
 const violations = walk(root)
   .filter(file => !file.endsWith('authoritativeCatalogueProjection.ts') && !file.endsWith('authoritativeProjection.ts'))
-  .filter(file => forbiddenDirectImport.test(fs.readFileSync(file, 'utf8')))
+   .filter(file => {
+    const content = fs.readFileSync(file, 'utf8');
+    return forbiddenDirectImport.test(content) || forbiddenLegacyProgramImport.test(content);
+  })
   .map(file => path.relative(process.cwd(), file));
 
 if (violations.length) {
