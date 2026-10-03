@@ -14,7 +14,10 @@ import {
 import { FinancingProgram, Provider, Language } from '../types/financing';
 import { TRANSLATIONS } from '../i18n/translations';
 import { VerificationBadge } from './VerificationBadge';
-import { CANONICAL_PROVIDERS, CANONICAL_PRODUCTS, CANONICAL_METADATA } from '../knowledge/canonicalCatalogue';
+import { getAuthoritativeCatalogueProviders, getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueMetadata } from '../knowledge/authoritativeCatalogueProjection';
+const CANONICAL_PROVIDERS = getAuthoritativeCatalogueProviders();
+const CANONICAL_PRODUCTS = getAuthoritativeCatalogueProducts();
+const CANONICAL_METADATA = getAuthoritativeCatalogueMetadata();
 import { getOfficialSimulator } from '../knowledge/catalogueAdapter';
 
 interface ExploreProgramsViewProps {
