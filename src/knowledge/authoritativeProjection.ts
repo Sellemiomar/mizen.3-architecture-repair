@@ -5,11 +5,16 @@ import { FinancingProgram } from '../types/financing';
 
 /**
  * Claims-first runtime projection.
- * FINANCING_PROGRAMS supplies legacy structural metadata only. Any field with a
- * non-historical claim is resolved from CLAIMS_REPOSITORY before runtime use.
+ *
+ * FINANCING_PROGRAMS is a structural compatibility layer only. Whenever a
+ * researched field exists in CLAIMS_REPOSITORY, the legacy value is shadowed
+ * and cannot leak into runtime. In particular, project-cost limits are never
+ * mapped onto financing-amount limits.
  */
+
 function rank(c: FinancingClaim): number {
   if (c.ruleStatus === 'VERIFIED_HISTORICAL' || c.operationalStatus === 'HISTORICAL_ONLY') return -100;
+  if (c.ruleStatus === 'UNKNOWN' && c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT') return 95;
   if (c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' && c.ruleStatus === 'VERIFIED_CURRENT') return 100;
   if (c.ruleStatus === 'UNKNOWN') return 80;
   if (c.ruleStatus === 'PARTIALLY_VERIFIED') return 60;
@@ -26,52 +31,83 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
 }
 
 function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
-  if (claim.field === 'minProjectCost' && typeof claim.value === 'number') program.minAmount = claim.value;
-  if (claim.field === 'maxProjectCost' && typeof claim.value === 'number') program.maxAmount = claim.value;
-  if (claim.field === 'maxFinancingAmount' && typeof claim.value === 'number') program.maxAmount = claim.value;
-
-  if (claim.field === 'publishedMarginRange' && claim.value && typeof claim.value === 'object') {
-    const v = claim.value as { min?: number; max?: number };
-    if (typeof v.min === 'number' && typeof v.max === 'number') {
-      program.rateType = 'unknown';
-      program.estimatedRateAnnual = undefined;
-      program.rateDescription = {
-        fr: `Marge publiée : ${v.min} à ${v.max} points. Relation avec le TMM non établie.`,
-        ar: `الهامش المنشور: من ${v.min} إلى ${v.max} نقطة. العلاقة مع TMM غير مثبتة.`
-      };
+  switch (claim.field) {
+    case 'minProjectCost':
+      if (typeof claim.value === 'number') program.projectCostMin = claim.value;
+      break;
+    case 'maxProjectCost':
+      if (typeof claim.value === 'number') program.projectCostMax = claim.value;
+      break;
+    case 'maxFinancingPercentage':
+      if (typeof claim.value === 'number') program.maxFinancingPercentage = claim.value;
+      break;
+    case 'maxFinancingAmount':
+      if (typeof claim.value === 'number') program.maxAmount = claim.value;
+      break;
+    case 'publishedMarginRange': {
+      const v = claim.value as { min?: number; max?: number };
+      if (typeof v?.min === 'number' && typeof v?.max === 'number') {
+        program.rateType = 'unknown';
+        program.estimatedRateAnnual = undefined;
+        program.rateDescription = {
+          fr: `Marge publiée : ${v.min} à ${v.max} points. Relation avec le TMM non établie.`,
+          ar: `الهامش المنشور: من ${v.min} إلى ${v.max} نقطة. العلاقة مع TMM غير مثبتة.`
+        };
+      }
+      break;
     }
-  }
-
-  if (claim.field === 'pricingRelationship' && claim.value === 'UNKNOWN') {
-    program.rateType = 'unknown';
-    program.estimatedRateAnnual = undefined;
-    const current = program.rateDescription.fr || '';
-    const range = current.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
-    program.rateDescription = {
-      fr: range ? `Marge publiée : ${range} points. Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.` : 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
-      ar: 'العلاقة السعرية مع TMM غير معلومة. لا توجد محاكاة آلية للنسبة.'
-    };
-  }
-
-  if ((claim.field === 'repaymentDuration' || claim.field === 'repaymentDurationMonths') && claim.value === 'UNKNOWN') {
-    program.durationMonthsMin = 0;
-    program.durationMonthsMax = 0;
-  }
-
-  if ((claim.field === 'gracePeriod' || claim.field === 'gracePeriodMonths') && claim.value === 'UNKNOWN') {
-    program.gracePeriodMonthsMin = 0;
-    program.gracePeriodMonthsMax = 0;
+    case 'pricingRelationship':
+      if (claim.value === 'UNKNOWN') {
+        program.rateType = 'unknown';
+        program.estimatedRateAnnual = undefined;
+        program.rateDescription = {
+          fr: 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
+          ar: 'العلاقة السعرية مع TMM غير معلومة. لا توجد محاكاة آلية للنسبة.'
+        };
+      }
+      break;
+    case 'repaymentDuration':
+    case 'repaymentDurationMonths':
+      if (claim.value === 'UNKNOWN') {
+        program.importantCaveats = [
+          ...program.importantCaveats,
+          { fr: 'Durée de remboursement non établie par une revendication actuelle.', ar: 'مدة السداد غير مثبتة بمعلومة حالية.' }
+        ];
+      }
+      break;
+    case 'gracePeriod':
+    case 'gracePeriodMonths':
+      if (claim.value === 'UNKNOWN') {
+        program.importantCaveats = [
+          ...program.importantCaveats,
+          { fr: 'Période de grâce non établie par une revendication actuelle.', ar: 'فترة الإمهال غير مثبتة بمعلومة حالية.' }
+        ];
+      }
+      break;
   }
 }
 
 function project(base: FinancingProgram): FinancingProgram {
-  const program = structuredClone(base) as FinancingProgram;
-  const fields = new Set(CLAIMS_REPOSITORY.getAllClaims(base.id).map(c => c.field));
-  for (const field of fields) {
+  const product = structuredClone(base) as FinancingProgram;
+  const claims = CLAIMS_REPOSITORY.getAllClaims(base.id);
+  const claimedFields = new Set(claims.map(c => c.field));
+
+  if (claimedFields.has('minProjectCost')) product.projectCostMin = undefined;
+  if (claimedFields.has('maxProjectCost')) product.projectCostMax = undefined;
+  if (claimedFields.has('maxFinancingPercentage')) product.maxFinancingPercentage = undefined;
+
+  for (const field of claimedFields) {
     const claim = getAuthoritativeClaim(base.id, field);
-    if (claim) applyClaim(program, claim);
+    if (claim) applyClaim(product, claim);
   }
-  return program;
+
+  const pricingClaim = getAuthoritativeClaim(base.id, 'pricingRelationship');
+  if (pricingClaim?.value === 'UNKNOWN') {
+    product.rateType = 'unknown';
+    product.estimatedRateAnnual = undefined;
+  }
+
+  return product;
 }
 
 export function getAuthoritativeFinancingPrograms(): FinancingProgram[] {
