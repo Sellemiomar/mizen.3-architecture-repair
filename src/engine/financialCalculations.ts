@@ -13,16 +13,6 @@ import { isFieldVerifiedCurrent, getRuleEvidence } from '../knowledge/knowledgeR
  * - Clearly documents assumptions and evidence provenance.
  */
 
-export const TUNISIAN_TMM_BENCHMARK = {
-  rate: 7.99,
-  name: 'Taux Moyen Mensuel du Marché Monétaire (TMM)',
-  institution: 'Banque Centrale de Tunisie (BCT)',
-  referencePeriod: '2024-2026 (Référence active BCT)',
-  sourceUrl: 'https://www.bct.gov.tn'
-};
-
-export const CURRENT_TUNISIAN_TMM_PERCENT = TUNISIAN_TMM_BENCHMARK.rate;
-
 export function getFinancingStructure(program: FinancingProgram): FinancingStructure {
   if (program.id === 'leasing_vehicule_pro') return 'LEASING';
   if (program.category === 'islamic_finance' || program.rateType === 'profit_margin') return 'MOURABAHA';
