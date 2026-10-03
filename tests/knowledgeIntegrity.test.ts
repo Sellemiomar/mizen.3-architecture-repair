@@ -6,7 +6,9 @@
 
 import { evaluateProgramCompatibility, runMatchingEngine } from '../src/engine/matchingEngine';
 import { calculateFinancingCost } from '../src/engine/financialCalculations';
-import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from '../src/knowledge/canonicalCatalogue';
+import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProviders } from '../src/knowledge/authoritativeCatalogueProjection';
+const CANONICAL_PRODUCTS = getAuthoritativeCatalogueProducts();
+const CANONICAL_PROVIDERS = getAuthoritativeCatalogueProviders();
 import { 
   getCanonicalProgram, 
   isFieldVerifiedCurrent, 
