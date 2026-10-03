@@ -3,7 +3,9 @@
  * Audits canonical financing catalogue against evidence rules, provenance standards, and validity criteria.
  */
 
-import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from '../src/knowledge/canonicalCatalogue';
+import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProviders } from '../src/knowledge/authoritativeCatalogueProjection';
+const CANONICAL_PRODUCTS = getAuthoritativeCatalogueProducts();
+const CANONICAL_PROVIDERS = getAuthoritativeCatalogueProviders();
 import { validateKnowledgeCatalogue } from '../src/knowledge/knowledgeValidator';
 import { KnowledgeRuleStatus } from '../src/types/knowledge';
 
