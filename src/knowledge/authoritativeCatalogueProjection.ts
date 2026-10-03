@@ -57,13 +57,17 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
     }
     case 'pricingRelationship':
       if (claim.value === 'UNKNOWN') {
+        const existing = product.financialTerms.rate?.explanation?.fr || '';
+        const range = existing.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
         product.financialTerms.rate = {
           ...product.financialTerms.rate,
           type: 'UNKNOWN',
           margin: undefined,
           referenceIndex: undefined,
           explanation: {
-            fr: 'Relation exacte avec le TMM : inconnue. Aucun calcul TMM + marge ne peut être effectué.',
+            fr: range
+              ? `Marge publiée : ${range} points. Relation avec le TMM inconnue. Aucun calcul TMM + marge ne peut être effectué.`
+              : 'Relation exacte avec le TMM : inconnue. Aucun calcul TMM + marge ne peut être effectué.',
             ar: 'العلاقة الدقيقة مع TMM غير معلومة. لا يمكن احتساب TMM + هامش.'
           }
         };
