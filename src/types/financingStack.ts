@@ -33,6 +33,7 @@ export interface FundingGapResult {
   cashCovered: number;
   remainingGap: number;
   supportCoverage: number;
+  unresolvedCashSources: string[];
   diagnostics: string[];
 }
 
