@@ -1056,7 +1056,7 @@ const weakerImport = importPipeline.processResearchBatch([{
   source: { url: 'https://example.invalid/historical', title: 'Historical source', publisher: 'Historical', sourceType: 'OFFICIAL_PDF', checkedAt: '2026-10-02' }
 }]);
 const retained = importPipeline.getClaimsForProgram('bfpme_creation').find(c => c.isCurrent && c.field === 'publishedMarginRange');
-assert(Boolean(retained?.value) && JSON.stringify(retained.value) === JSON.stringify({ min: 2, max: 4.5 }), '34. Historical weaker claim cannot supersede current primary claim');
+assert(Boolean(retained?.value) && JSON.stringify(retained?.value) === JSON.stringify({ min: 2, max: 4.5 }), '34. Historical weaker claim cannot supersede current primary claim');
 assert(weakerImport.conflicts.some(c => c.resolution === 'PENDING_REVIEW'), '35. Weaker conflicting research is retained as pending review');
 
 console.log('\n================================================================');
