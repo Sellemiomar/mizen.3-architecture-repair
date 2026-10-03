@@ -341,7 +341,7 @@ export interface FinancingProgram {
   minContributionPercent: number;// Min % apport personnel requis (e.g. 10%, 20%)
   
   // Terms
-  rateType: 'fixed' | 'variable_tmm' | 'subsidized' | 'interest_free' | 'equity' | 'profit_margin';
+  rateType: 'fixed' | 'variable_tmm' | 'subsidized' | 'interest_free' | 'equity' | 'profit_margin' | 'unknown';
   rateDescription: {
     fr: string;
     ar: string;
