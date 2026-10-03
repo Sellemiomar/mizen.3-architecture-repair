@@ -1,0 +1,6 @@
+{
+  "name": "Mizen - Financing Intelligence for Tunisia",
+  "description": "Plateforme d'intelligence et de matching de financement pour les projets et entreprises en Tunisie.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
