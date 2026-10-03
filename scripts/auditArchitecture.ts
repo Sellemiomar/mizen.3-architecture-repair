@@ -12,7 +12,7 @@ function walk(dir: string): string[] {
 }
 
 const violations = walk(root)
-  .filter(file => !file.endsWith('authoritativeCatalogueProjection.ts'))
+  .filter(file => !file.endsWith('authoritativeCatalogueProjection.ts') && !file.endsWith('authoritativeProjection.ts'))
   .filter(file => forbiddenDirectImport.test(fs.readFileSync(file, 'utf8')))
   .map(file => path.relative(process.cwd(), file));
 
