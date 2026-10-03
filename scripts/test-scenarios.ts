@@ -4,6 +4,7 @@ import { getAuthoritativeFinancingPrograms } from '../src/knowledge/authoritativ
 const FINANCING_PROGRAMS = getAuthoritativeFinancingPrograms();
 import { ApplicantProfile } from '../src/types/financing';
 import { parseTextToProfileFallback } from '../src/utils/intakeParser';
+import { ResearchImportPipeline } from '../src/knowledge/researchImport';
 
 console.log('================================================================');
 console.log('       MIZEN PRODUCTION INTEGRITY AUDIT SUITE (SCENARIOS A-J)    ');
