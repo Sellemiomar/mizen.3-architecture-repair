@@ -10,24 +10,20 @@ export interface FinancingReadinessResult {
 
 function requiredFundingFor(applicant: ApplicantProfile): number | undefined {
   if (typeof applicant.totalProjectCost === 'number') return applicant.totalProjectCost;
-  if (typeof applicant.financingRequested === 'number') {
-    return applicant.financingRequested + (applicant.userContribution ?? 0);
-  }
+  if (typeof applicant.financingRequested === 'number') return applicant.financingRequested + (applicant.userContribution ?? 0);
   return undefined;
 }
 
 function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): StackComponent | undefined {
   if (result.status !== 'STRONG_ALIGNMENT' && result.status !== 'POTENTIAL_ALIGNMENT') return undefined;
-  const isGuarantee = result.program.category === 'guarantee';
-  if (isGuarantee) {
-    const sotugarCoverage = result.program.id === 'sotugar_guarantee' ? 75 : undefined;
+  if (result.program.category === 'guarantee') {
     return {
       sourceId: result.program.id,
       programId: result.program.id,
       role: 'GUARANTEE',
-      supportCoverage: sotugarCoverage,
       supportType: 'GUARANTEE',
-      evidenceStatus: result.program.verification.status
+      evidenceStatus: result.program.verification.status,
+      notes: ['Guarantee support is not counted as cash financing; coverage remains unresolved unless current evidence explicitly verifies it.']
     };
   }
   if (typeof applicant.financingRequested !== 'number') return undefined;
