@@ -652,11 +652,11 @@ export function evaluateProgramCompatibility(
   if (program.id === 'bfpme_creation') {
     // 1. Min project cost boundary check: 150,000 TND
     if (applicant.totalProjectCost !== undefined) {
-      if (applicant.totalProjectCost < 150000) {
+      if (program.projectCostMin !== undefined && applicant.totalProjectCost < program.projectCostMin) {
         amountStatus = 'FAIL';
         const detail = {
-          fr: `Coût total du projet (${applicant.totalProjectCost.toLocaleString('fr-TN')} TND) inférieur au seuil minimum d'investissement BFPME de 150 000 TND.`,
-          ar: `كلفة المشروع الجملية (${applicant.totalProjectCost.toLocaleString('fr-TN')} د) أقل من الحد الأدنى للاستثمار BFPME (150 ألف دينار).`
+          fr: `Coût total du projet (${applicant.totalProjectCost.toLocaleString('fr-TN')} TND) inférieur au seuil minimum d'investissement de ${program.projectCostMin?.toLocaleString('fr-TN')} TND.`,
+          ar: `كلفة المشروع الجملية (${applicant.totalProjectCost.toLocaleString('fr-TN')} د) أقل من الحد الأدنى للاستثمار المنشور (${program.projectCostMin?.toLocaleString('fr-TN')} د).`
         };
         ruleEvaluations.push({
           ruleId: 'bfpmeMinProjectCost',
@@ -667,12 +667,12 @@ export function evaluateProgramCompatibility(
         });
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else if (applicant.totalProjectCost > 15000000) {
+      } else if (program.projectCostMax !== undefined && applicant.totalProjectCost > program.projectCostMax) {
         // 2. Max project cost boundary check: 15,000,000 TND
         amountStatus = 'FAIL';
         const detail = {
-          fr: `Coût total du projet (${applicant.totalProjectCost.toLocaleString('fr-TN')} TND) dépasse le plafond d'investissement BFPME de 15 000 000 TND.`,
-          ar: `كلفة المشروع الجملية (${applicant.totalProjectCost.toLocaleString('fr-TN')} د) تتجاوز سقف الاستثمار BFPME (15 مليون دينار).`
+          fr: `Coût total du projet (${applicant.totalProjectCost.toLocaleString('fr-TN')} TND) dépasse le plafond d'investissement publié de ${program.projectCostMax?.toLocaleString('fr-TN')} TND.`,
+          ar: `كلفة المشروع الجملية (${applicant.totalProjectCost.toLocaleString('fr-TN')} د) تتجاوز سقف الاستثمار المنشور (${program.projectCostMax?.toLocaleString('fr-TN')} د).`
         };
         ruleEvaluations.push({
           ruleId: 'bfpmeMaxProjectCost',
@@ -702,11 +702,11 @@ export function evaluateProgramCompatibility(
     }
 
     // 3. Absolute CMLT Ceiling: 2,500,000 TND
-    if (applicant.financingRequested !== undefined && applicant.financingRequested > 2500000) {
+    if (applicant.financingRequested !== undefined && applicant.financingRequested > program.maxAmount) {
       amountStatus = 'FAIL';
       const detail = {
-        fr: `Montant CMLT demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) dépasse le plafond réglementaire BFPME de 2 500 000 TND.`,
-        ar: `مبلغ قرض CMLT المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) يتجاوز السقف القانوني لـ BFPME (2.5 مليون دينار).`
+        fr: `Montant CMLT demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) dépasse le plafond de ${program.maxAmount.toLocaleString('fr-TN')} TND.`,
+        ar: `مبلغ قرض CMLT المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) يتجاوز السقف المنشور (${program.maxAmount.toLocaleString('fr-TN')} د).`
       };
       ruleEvaluations.push({
         ruleId: 'bfpmeMaxCmltCeiling',
@@ -726,6 +726,7 @@ export function evaluateProgramCompatibility(
       applicant.totalProjectCost > 0
     ) {
       const financingRatio = (applicant.financingRequested / applicant.totalProjectCost) * 100;
+      const maxFinancingPercentage = program.maxFinancingPercentage;
       if (isFullFinancingCase) {
         // Full financing is an unresolved term in Mizen: do not evaluate as a simple calculation failure
         ruleEvaluations.push({
@@ -738,11 +739,11 @@ export function evaluateProgramCompatibility(
             ar: "مفهوم 'التمويل الشامل' لا يتوفر على سند رسمي موثق : حالة غير مؤكدة."
           }
         });
-      } else if (financingRatio > 65.01) {
+      } else if (maxFinancingPercentage !== undefined && financingRatio > maxFinancingPercentage + 0.01) {
         amountStatus = 'FAIL';
         const detail = {
-          fr: `Quotité de crédit CMLT demandée (${Math.round(financingRatio)}%) dépasse le plafond légal de 65% du coût d'investissement.`,
-          ar: `نسبة تمويل CMLT المطلوبة (${Math.round(financingRatio)}%) تتجاوز السقف القانوني المحدد بـ 65% من كلفة الاستثمار.`
+          fr: `Quotité de crédit CMLT demandée (${Math.round(financingRatio)}%) dépasse le plafond publié de ${maxFinancingPercentage}%.`,
+          ar: `نسبة تمويل CMLT المطلوبة (${Math.round(financingRatio)}%) تتجاوز السقف المنشور المحدد بـ ${maxFinancingPercentage}%.`
         };
         ruleEvaluations.push({
           ruleId: 'bfpmeCmltRatioCeiling',
@@ -753,7 +754,11 @@ export function evaluateProgramCompatibility(
         });
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else if (applicant.financingRequested <= 2500000 && applicant.totalProjectCost >= 150000 && applicant.totalProjectCost <= 15000000) {
+      } else if (
+        (program.maxAmount === undefined || applicant.financingRequested <= program.maxAmount) &&
+        (program.projectCostMin === undefined || applicant.totalProjectCost >= program.projectCostMin) &&
+        (program.projectCostMax === undefined || applicant.totalProjectCost <= program.projectCostMax)
+      ) {
         ruleEvaluations.push({
           ruleId: 'bfpmeCmltRatioCeiling',
           label: { fr: "Plafond CMLT 65% de l'investissement", ar: "سقف التمويل 65% من كلفة الاستثمار" },
