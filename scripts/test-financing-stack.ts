@@ -1,4 +1,5 @@
 import { calculateFundingGap, generateFinancingStacks } from '../src/engine/financingStackEngine';
+import { runFinancingReadiness } from '../src/engine/financingReadiness';
 import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 import { StackComponent } from '../src/types/financingStack';
 
@@ -69,5 +70,19 @@ const unknownStack = generateFinancingStacks({
   maxComponentsPerStack: 2
 });
 assert(unknownStack.candidates.every(c => c.components.length !== 2), 'UNKNOWN compatibility cannot generate a stack candidate');
+
+const readiness = runFinancingReadiness({
+  totalProjectCost: 1000000,
+  userContribution: 350000,
+  financingRequested: 650000,
+  purpose: 'creation',
+  sector: 'industry',
+  businessStage: 'established_over_2y',
+  legalStructure: 'sarl',
+  location: 'Sfax'
+});
+assert(readiness.matches.length > 0, 'Readiness integration preserves the existing single-product matcher');
+assert(readiness.stack.requiredFunding === 1000000, 'Stack readiness uses project cost as total funding requirement');
+assert(readiness.stack.candidates.every(c => c.fundingGap.cashCovered <= 1000000), 'Stack integration never reports cash coverage above project requirement');
 
 if (!passed) process.exit(1);
