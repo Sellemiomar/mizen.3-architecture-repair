@@ -18,6 +18,8 @@
  */
 
 import { FinancingProduct, FinancingProvider, KnowledgeRuleStatus, RuleEvidence, KnowledgeClaim } from '../types/knowledge';
+import { CLAIMS_REPOSITORY } from './claimsRepository';
+import { getAuthoritativeClaim } from './authoritativeProjection';
 
 export interface ValidationError {
   severity: 'ERROR' | 'WARNING';
@@ -174,6 +176,56 @@ export function validateKnowledgeCatalogue(
             code: 'OUTDATED_CLAIM_MARKED_CURRENT'
           });
         }
+      }
+    }
+
+    // Claims-first shadowing invariants: a current researched field must be
+    // represented by the runtime projection, never left to a stale legacy value.
+    const currentMinCost = getAuthoritativeClaim(prod.id, 'minProjectCost');
+    const currentMaxCost = getAuthoritativeClaim(prod.id, 'maxProjectCost');
+    const currentMaxAmount = getAuthoritativeClaim(prod.id, 'maxFinancingAmount');
+    const currentPricing = getAuthoritativeClaim(prod.id, 'pricingRelationship');
+
+    if (currentMinCost?.ruleStatus === 'VERIFIED_CURRENT' && typeof currentMinCost.value === 'number' &&
+        prod.financialTerms.projectCost?.min !== currentMinCost.value) {
+      errors.push({
+        severity: 'ERROR',
+        programId: prod.id,
+        field: 'financialTerms.projectCost.min',
+        message: 'Authoritative minProjectCost claim is not reflected in the runtime projection',
+        code: 'CLAIM_PROJECTION_DRIFT'
+      });
+    }
+    if (currentMaxCost?.ruleStatus === 'VERIFIED_CURRENT' && typeof currentMaxCost.value === 'number' &&
+        prod.financialTerms.projectCost?.max !== currentMaxCost.value) {
+      errors.push({
+        severity: 'ERROR',
+        programId: prod.id,
+        field: 'financialTerms.projectCost.max',
+        message: 'Authoritative maxProjectCost claim is not reflected in the runtime projection',
+        code: 'CLAIM_PROJECTION_DRIFT'
+      });
+    }
+    if (currentMaxAmount?.ruleStatus === 'VERIFIED_CURRENT' && typeof currentMaxAmount.value === 'number' &&
+        prod.financialTerms.amount?.max !== currentMaxAmount.value) {
+      errors.push({
+        severity: 'ERROR',
+        programId: prod.id,
+        field: 'financialTerms.amount.max',
+        message: 'Authoritative maxFinancingAmount claim is not reflected in the runtime projection',
+        code: 'CLAIM_PROJECTION_DRIFT'
+      });
+    }
+    if (currentPricing?.value === 'UNKNOWN') {
+      const projectedRate = prod.financialTerms.rate;
+      if (projectedRate?.type !== 'UNKNOWN' || projectedRate.margin !== undefined || projectedRate.referenceIndex !== undefined) {
+        errors.push({
+          severity: 'ERROR',
+          programId: prod.id,
+          field: 'financialTerms.rate',
+          message: 'Explicit UNKNOWN pricing relationship is leaking through as a calculable rate',
+          code: 'UNKNOWN_PRICING_LEAK'
+        });
       }
     }
 
