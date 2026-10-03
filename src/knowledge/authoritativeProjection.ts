@@ -46,7 +46,7 @@ function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
     program.rateType = 'unknown';
     program.estimatedRateAnnual = undefined;
     const current = program.rateDescription.fr || '';
-    const range = current.match(/\\d+(?:[.,]\\d+)? à \\d+(?:[.,]\\d+)?/i)?.[0];
+    const range = current.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
     program.rateDescription = {
       fr: range ? `Marge publiée : ${range} points. Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.` : 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
       ar: 'العلاقة السعرية مع TMM غير معلومة. لا توجد محاكاة آلية للنسبة.'
