@@ -1030,6 +1030,34 @@ assert(startupBankCompat.compatibilityStatus === 'UNKNOWN', '29. Startup Guarant
 const bfpmeSotugarCompat = repo.getCompatibility('bfpme_creation', 'sotugar_guarantee');
 assert(bfpmeSotugarCompat.compatibilityStatus === 'POTENTIALLY_COMPATIBLE' && bfpmeSotugarCompat.confidence === 'LOW', '30. BFPME + SOTUGAR remains POTENTIALLY_COMPATIBLE with LOW confidence');
 
+// Architecture regression: legacy BFPME TMM + 3% must not survive the claims-first projection.
+const authoritativeBfpme = getAuthoritativeFinancingPrograms().find(p => p.id === 'bfpme_creation')!;
+assert(authoritativeBfpme.rateType === 'unknown', '31. BFPME pricing relationship resolves to UNKNOWN');
+assert(authoritativeBfpme.rateDescription.fr.includes('2 à 4.5') && !authoritativeBfpme.rateDescription.fr.includes('TMM +'), '32. BFPME published margin range survives without inventing a TMM relationship');
+assert(authoritativeBfpme.estimatedRateAnnual === undefined, '33. BFPME has no fabricated annual rate');
+
+// Import regression: weaker/historical evidence cannot silently supersede a stronger current claim.
+const importPipeline = new ResearchImportPipeline([{
+  id: 'claim_test_bfpme_margin_current',
+  programId: 'bfpme_creation',
+  field: 'publishedMarginRange',
+  value: { min: 2, max: 4.5 },
+  status: 'VERIFIED_CURRENT',
+  evidence: [{ field: 'publishedMarginRange', status: 'VERIFIED_CURRENT', evidenceStrength: 'DIRECT_PRIMARY_CURRENT' }],
+  createdAt: '2026-09-20',
+  isCurrent: true
+}]);
+const weakerImport = importPipeline.processResearchBatch([{
+  programId: 'bfpme_creation',
+  field: 'publishedMarginRange',
+  value: { min: 3, max: 3 },
+  status: 'VERIFIED_HISTORICAL',
+  source: { url: 'https://example.invalid/historical', title: 'Historical source', publisher: 'Historical', sourceType: 'OFFICIAL_PDF', checkedAt: '2026-10-02' }
+}]);
+const retained = importPipeline.getClaimsForProgram('bfpme_creation').find(c => c.isCurrent && c.field === 'publishedMarginRange');
+assert(retained?.value && JSON.stringify(retained.value) === JSON.stringify({ min: 2, max: 4.5 }), '34. Historical weaker claim cannot supersede current primary claim');
+assert(weakerImport.conflicts.some(c => c.resolution === 'PENDING_REVIEW'), '35. Weaker conflicting research is retained as pending review');
+
 console.log('\n================================================================');
 if (allPassed) {
   console.log('🎉 ALL 55 AUDIT SCENARIOS (A-Z) & 30 KNOWLEDGE ARCHITECTURE INVARIANTS PASSED SUCCESSFULLY!');
