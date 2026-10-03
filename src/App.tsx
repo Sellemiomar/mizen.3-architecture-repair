@@ -137,7 +137,7 @@ export default function App() {
     .filter((p): p is FinancingProgram => Boolean(p));
 
   return (
-    <div className={`min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans ${
+    <div className={`min-h-screen overflow-x-hidden bg-slate-50 text-slate-900 flex flex-col font-sans ${
       language === 'ar' ? "font-['Cairo']" : "font-['Plus_Jakarta_Sans']"
     }`}>
       {/* Sticky Header Navigation */}
