@@ -1058,6 +1058,19 @@ const weakerImport = importPipeline.processResearchBatch([{
 const retained = importPipeline.getClaimsForProgram('bfpme_creation').find(c => c.isCurrent && c.field === 'publishedMarginRange');
 assert(Boolean(retained?.value) && JSON.stringify(retained?.value) === JSON.stringify({ min: 2, max: 4.5 }), '34. Historical weaker claim cannot supersede current primary claim');
 assert(weakerImport.conflicts.some(c => c.resolution === 'PENDING_REVIEW'), '35. Weaker conflicting research is retained as pending review');
+assert(authoritativeBfpme.projectCostMin === 150000, '36. BFPME project-cost minimum is projected into the dedicated project-cost field');
+assert(authoritativeBfpme.projectCostMax === 15000000, '37. BFPME project-cost maximum is projected into the dedicated project-cost field');
+assert(authoritativeBfpme.maxFinancingPercentage === 65, '38. BFPME 65% financing ceiling is projected separately from financing amount');
+assert(authoritativeBfpme.maxAmount === 2500000, '39. BFPME 2.5M ceiling remains the financing amount ceiling');
+assert(authoritativeBfpme.minAmount !== 150000, '40. Project-cost minimum never leaks into financing minimum amount');
+assert(authoritativeBfpme.rateType === 'unknown' && authoritativeBfpme.estimatedRateAnnual === undefined, '41. Unresolved BFPME pricing cannot expose a calculable annual rate');
+
+const bfpmeProjectedCriteria = getAuthoritativeCatalogueProducts().find(p => p.id === 'bfpme_creation')!;
+const projectMinCriterion = bfpmeProjectedCriteria.criteria.find(c => c.field === 'totalProjectCost' && c.operator === 'GTE');
+const financingMaxCriterion = bfpmeProjectedCriteria.criteria.find(c => c.field === 'financingRequested' && c.operator === 'LTE');
+assert(projectMinCriterion?.expectedValue === 150000, '42. Catalogue projection updates project-cost criterion from authoritative claim');
+assert(financingMaxCriterion?.expectedValue === 2500000, '43. Catalogue projection updates financing ceiling criterion from authoritative claim');
+
 
 console.log('\n================================================================');
 if (allPassed) {
