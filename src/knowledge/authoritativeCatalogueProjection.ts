@@ -21,15 +21,20 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
 }
 
 function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
+  const updateCriterion = (field: string, operator: string, expectedValue: unknown) => {
+    const criterion = product.criteria.find(c => c.field === field && c.operator === operator);
+    if (criterion) criterion.expectedValue = expectedValue as never;
+  };
+
   switch (claim.field) {
     case 'minProjectCost':
-      if (typeof claim.value === 'number') product.financialTerms.projectCost = { ...product.financialTerms.projectCost, min: claim.value, currency: 'TND' };
+      if (typeof claim.value === 'number') { product.financialTerms.projectCost = { ...product.financialTerms.projectCost, min: claim.value, currency: 'TND' }; updateCriterion('totalProjectCost', 'GTE', claim.value); }
       break;
     case 'maxProjectCost':
-      if (typeof claim.value === 'number') product.financialTerms.projectCost = { ...product.financialTerms.projectCost, max: claim.value, currency: 'TND' };
+      if (typeof claim.value === 'number') { product.financialTerms.projectCost = { ...product.financialTerms.projectCost, max: claim.value, currency: 'TND' }; updateCriterion('totalProjectCost', 'LTE', claim.value); }
       break;
     case 'maxFinancingAmount':
-      if (typeof claim.value === 'number') product.financialTerms.amount = { ...product.financialTerms.amount, max: claim.value, currency: 'TND' };
+      if (typeof claim.value === 'number') { product.financialTerms.amount = { ...product.financialTerms.amount, max: claim.value, currency: 'TND' }; updateCriterion('financingRequested', 'LTE', claim.value); }
       break;
     case 'publishedMarginRange': {
       const v = claim.value as { min?: number; max?: number };
