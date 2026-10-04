@@ -18,7 +18,7 @@ export function getStackCompatibility(programAId: string, programBId: string): S
     programBId,
     status,
     evidenceStatus: claim.ruleStatus,
-    rationale: claim.notes.fr,
+    rationale: claim.notes?.fr ?? 'Compatibility evidence is recorded without a detailed rationale.',
     source: claim.evidence[0]?.url
   };
 }
