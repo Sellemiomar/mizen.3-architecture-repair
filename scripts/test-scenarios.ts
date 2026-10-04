@@ -1073,6 +1073,7 @@ assert(projectMinCriterion?.expectedValue === 150000, '42. Catalogue projection 
 assert(financingMaxCriterion?.expectedValue === 2500000, '43. Catalogue projection updates financing ceiling criterion from authoritative claim');
 assert(bfpmeProjectedCriteria.financialTerms.rate?.type === 'UNKNOWN' && bfpmeProjectedCriteria.financialTerms.rate?.margin === undefined && bfpmeProjectedCriteria.financialTerms.rate?.referenceIndex === undefined, '44. Catalogue projection blocks TMM + margin calculation');
 const projectedRateDescription = bfpmeProjectedCriteria.financialTerms.rate?.explanation?.fr || '';
+console.log('DEBUG_CATALOGUE_RATE', JSON.stringify({ rate: bfpmeProjectedCriteria.financialTerms.rate, retainedMargin: retained?.value }));
 assert(projectedRateDescription.includes(String((retained?.value as { min: number; max: number }).min)) && projectedRateDescription.includes(String((retained?.value as { min: number; max: number }).max)) && !projectedRateDescription.includes('TMM +'), '45. Catalogue projection preserves the authoritative published margin range without inventing TMM linkage');
 
 
