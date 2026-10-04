@@ -73,6 +73,19 @@ const verifiedStack = generateFinancingStacks({
 });
 assert(verifiedStack.candidates[0]?.overallStatus === 'VERIFIED', 'Verified-compatible stack ranks as VERIFIED');
 assert(verifiedStack.candidates[0]?.fundingGap.remainingGap === 0, 'Verified-compatible stack can fully cover the funding need');
+assert(verifiedStack.candidates[0]?.components[0]?.cashAmount !== undefined && verifiedStack.candidates[0]?.components[1]?.cashAmount !== undefined, 'Verified stack exposes allocated cash amounts');
+
+const capacityAllocation = generateFinancingStacks({
+  requiredFunding: 1000000,
+  components: [
+    { sourceId: 'bank-a', programId: 'bh_bank_loan', role: 'DEBT', verifiedCapacity: 650000, evidenceStatus: 'VERIFIED_CURRENT' },
+    { sourceId: 'bank-b', programId: 'bh_bank_loan_2', role: 'DEBT', verifiedCapacity: 650000, evidenceStatus: 'VERIFIED_CURRENT' }
+  ],
+  maxComponentsPerStack: 2
+});
+const allocated = capacityAllocation.candidates.find(c => c.components.length === 2);
+assert(allocated?.fundingGap.cashCovered === 1000000, 'Stack allocation caps combined source capacity at the actual funding requirement');
+assert(allocated?.components[0]?.cashAmount === 650000 && allocated?.components[1]?.cashAmount === 350000, 'Stack allocation assigns only the remaining funding need to the second source');
 
 const unresolvedEligibilityStack = generateFinancingStacks({
   requiredFunding: 1000000,
