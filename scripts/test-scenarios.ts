@@ -1072,7 +1072,7 @@ const financingMaxCriterion = bfpmeProjectedCriteria.criteria.find(c => c.field 
 assert(projectMinCriterion?.expectedValue === 150000, '42. Catalogue projection updates project-cost criterion from authoritative claim');
 assert(financingMaxCriterion?.expectedValue === 2500000, '43. Catalogue projection updates financing ceiling criterion from authoritative claim');
 assert(bfpmeProjectedCriteria.financialTerms.rate?.type === 'UNKNOWN' && bfpmeProjectedCriteria.financialTerms.rate?.margin === undefined && bfpmeProjectedCriteria.financialTerms.rate?.referenceIndex === undefined, '44. Catalogue projection blocks TMM + margin calculation');
-assert(Boolean(bfpmeProjectedCriteria.financialTerms.rate?.explanation?.fr?.includes('2 à 4.5')) && !Boolean(bfpmeProjectedCriteria.financialTerms.rate?.explanation?.fr?.includes('TMM +')), '45. Catalogue projection preserves the published margin range without inventing TMM linkage');
+assert(bfpmeProjectedCriteria.financialTerms.rate?.min === 0.02 && bfpmeProjectedCriteria.financialTerms.rate?.max === 0.045 && !Boolean(bfpmeProjectedCriteria.financialTerms.rate?.explanation?.fr?.includes('TMM +')), '45. Catalogue projection preserves the published margin range without inventing TMM linkage');
 
 
 console.log('\n================================================================');
