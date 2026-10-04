@@ -33,6 +33,7 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
     return {
       sourceId: result.program.id,
       programId: result.program.id,
+      label: { fr: result.program.name.fr, ar: result.program.name.ar },
       role: 'GUARANTEE',
       supportType: 'GUARANTEE',
       evidenceStatus: result.program.verification.status,
@@ -43,10 +44,17 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
   if (typeof applicant.financingRequested !== 'number') return undefined;
   if (!result.program.verification.verifiedFields.includes('maxAmount') || result.program.maxAmount <= 0) return undefined;
 
+  const role = result.program.category === 'equity_quasi_equity'
+    ? 'EQUITY'
+    : result.program.category === 'grant_subsidy'
+      ? 'GRANT'
+      : 'DEBT';
+
   return {
     sourceId: result.program.id,
     programId: result.program.id,
-    role: result.program.category === 'equity_quasi_equity' ? 'EQUITY' : result.program.category === 'grant_subsidy' ? 'GRANT' : 'DEBT',
+    label: { fr: result.program.name.fr, ar: result.program.name.ar },
+    role,
     cashAmount: Math.min(applicant.financingRequested, result.program.maxAmount),
     verifiedCapacity: result.program.maxAmount,
     evidenceStatus: result.program.verification.status,
@@ -62,6 +70,7 @@ export function runFinancingReadiness(applicant: ApplicantProfile): FinancingRea
     components.push({
       sourceId: 'applicant_contribution',
       role: 'PROMOTER_CONTRIBUTION',
+      label: { fr: 'Apport du promoteur', ar: 'مساهمة صاحب المشروع' },
       cashAmount: applicant.userContribution,
       verifiedCapacity: applicant.userContribution,
       evidenceStatus: 'USER_PROVIDED'
