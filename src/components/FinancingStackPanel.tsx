@@ -1,11 +1,24 @@
 import React from 'react';
 import { ShieldCheck, AlertTriangle, WalletCards } from 'lucide-react';
-import { FinancingStackResult } from '../types/financingStack';
+import { FinancingStackResult, StackFundingRole } from '../types/financingStack';
 import { Language } from '../types/financing';
 
 interface FinancingStackPanelProps {
   result: FinancingStackResult;
   language: Language;
+}
+
+function roleLabel(role: StackFundingRole, isArabic: boolean): string {
+  const labels: Record<StackFundingRole, { fr: string; ar: string }> = {
+    DEBT: { fr: 'Dette / crédit', ar: 'دين / قرض' },
+    EQUITY: { fr: 'Fonds propres', ar: 'رأس مال' },
+    QUASI_EQUITY: { fr: 'Quasi-fonds propres', ar: 'شبه رأس مال' },
+    GRANT: { fr: 'Subvention / prime', ar: 'منحة / دعم' },
+    GUARANTEE: { fr: 'Garantie', ar: 'ضمان' },
+    PROMOTER_CONTRIBUTION: { fr: 'Apport du promoteur', ar: 'مساهمة صاحب المشروع' },
+    SUBSIDY: { fr: 'Subvention', ar: 'دعم' }
+  };
+  return isArabic ? labels[role].ar : labels[role].fr;
 }
 
 export const FinancingStackPanel: React.FC<FinancingStackPanelProps> = ({ result, language }) => {
@@ -50,8 +63,8 @@ export const FinancingStackPanel: React.FC<FinancingStackPanelProps> = ({ result
           {candidate.components.map(component => (
             <div key={component.sourceId} className="flex items-center justify-between gap-3 p-3.5 rounded-2xl border border-slate-200">
               <div className="min-w-0">
-                <strong className="text-xs sm:text-sm text-slate-900 block truncate">{component.programId || component.sourceId}</strong>
-                <span className="text-[11px] text-slate-500">{component.role === 'GUARANTEE' ? (isArabic ? 'ضمان — دعم للمخاطر، وليس تمويلاً نقدياً' : 'Garantie — soutien au risque, pas du cash') : component.role}</span>
+                <strong className="text-xs sm:text-sm text-slate-900 block truncate">{component.label ? (isArabic ? component.label.ar : component.label.fr) : roleLabel(component.role, isArabic)}</strong>
+                <span className="text-[11px] text-slate-500">{roleLabel(component.role, isArabic)}{component.role === 'GUARANTEE' ? (isArabic ? ' — دعم للمخاطر، وليس تمويلاً نقدياً' : ' — soutien au risque, pas du cash') : ''}</span>
               </div>
               {component.role === 'GUARANTEE' ? (
                 <span className="shrink-0 text-xs font-bold text-slate-600">{component.supportCoverage !== undefined ? `${component.supportCoverage}%` : '—'}</span>
