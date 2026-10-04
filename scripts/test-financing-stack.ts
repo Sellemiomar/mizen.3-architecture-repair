@@ -78,8 +78,8 @@ assert(verifiedStack.candidates[0]?.components[0]?.cashAmount !== undefined && v
 const capacityAllocation = generateFinancingStacks({
   requiredFunding: 1000000,
   components: [
-    { sourceId: 'bank-a', programId: 'bh_bank_loan', role: 'DEBT', verifiedCapacity: 650000, evidenceStatus: 'VERIFIED_CURRENT' },
-    { sourceId: 'bank-b', programId: 'bh_bank_loan_2', role: 'DEBT', verifiedCapacity: 650000, evidenceStatus: 'VERIFIED_CURRENT' }
+    { sourceId: 'bfpme-capacity', programId: 'bfpme_creation', role: 'DEBT', verifiedCapacity: 650000, evidenceStatus: 'VERIFIED_CURRENT' },
+    { sourceId: 'bank-capacity', programId: 'bh_bank_loan', role: 'DEBT', verifiedCapacity: 650000, evidenceStatus: 'VERIFIED_CURRENT' }
   ],
   maxComponentsPerStack: 2
 });
