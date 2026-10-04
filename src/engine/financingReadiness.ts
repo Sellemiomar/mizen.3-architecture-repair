@@ -23,7 +23,11 @@ function unresolvedCriticalRules(result: MatchResult): string[] {
 function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): StackComponent | undefined {
   if (result.status !== 'STRONG_ALIGNMENT' && result.status !== 'POTENTIAL_ALIGNMENT') return undefined;
   if (result.ruleEvaluations.some(rule => rule.criticality === 'CRITICAL' && rule.status === 'FAIL')) return undefined;
+
   const unresolvedEligibility = unresolvedCriticalRules(result);
+  if (result.program.verification.status !== 'VERIFIED') {
+    unresolvedEligibility.push(`Programme verification status is ${result.program.verification.status}; current operational confirmation is still required.`);
+  }
 
   if (result.program.category === 'guarantee') {
     return {
@@ -38,6 +42,7 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
   }
   if (typeof applicant.financingRequested !== 'number') return undefined;
   if (!result.program.verification.verifiedFields.includes('maxAmount') || result.program.maxAmount <= 0) return undefined;
+
   return {
     sourceId: result.program.id,
     programId: result.program.id,
@@ -52,6 +57,7 @@ function componentFromMatch(result: MatchResult, applicant: ApplicantProfile): S
 export function runFinancingReadiness(applicant: ApplicantProfile): FinancingReadinessResult {
   const matches = runMatchingEngine(applicant);
   const components: StackComponent[] = [];
+
   if (typeof applicant.userContribution === 'number' && applicant.userContribution > 0) {
     components.push({
       sourceId: 'applicant_contribution',
