@@ -58,7 +58,8 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
     case 'pricingRelationship':
       if (claim.value === 'UNKNOWN') {
         const existing = product.financialTerms.rate?.explanation?.fr || '';
-        const range = existing.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
+        const match = existing.match(/(\d+(?:[.,]\d+)?) à (\d+(?:[.,]\d+)?)/i);
+        const range = match ? `${Number(match[1].replace(',', '.'))} à ${Number(match[2].replace(',', '.'))}` : undefined;
         product.financialTerms.rate = {
           ...product.financialTerms.rate,
           type: 'UNKNOWN',
