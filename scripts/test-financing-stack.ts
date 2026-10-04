@@ -53,6 +53,9 @@ assert(verified.status === 'VERIFIED_COMPATIBLE', 'BFPME + commercial bank is ex
 const potential = getStackCompatibility('bfpme_creation', 'sotugar_guarantee');
 assert(potential.status === 'POTENTIALLY_COMPATIBLE', 'BFPME + SOTUGAR remains conditional/potential');
 
+const historical = getStackCompatibility('startup_guarantee_fund', 'venture_capital_fund');
+assert(historical.status === 'UNKNOWN', 'Historical compatibility cannot be promoted into current stack eligibility');
+
 const unknown = getStackCompatibility('startup_grant_air', 'bh_bank_loan');
 assert(unknown.status === 'UNKNOWN', 'Undocumented grant + debt compatibility remains UNKNOWN');
 
