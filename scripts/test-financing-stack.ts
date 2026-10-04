@@ -98,8 +98,9 @@ const unresolvedEligibilityStack = generateFinancingStacks({
   ],
   maxComponentsPerStack: 2
 });
-assert(unresolvedEligibilityStack.candidates[0]?.overallStatus === 'CONDITIONAL', 'Critical eligibility uncertainty prevents a VERIFIED stack');
-assert(unresolvedEligibilityStack.candidates[0]?.confidence === 'LOW', 'Critical eligibility uncertainty lowers stack confidence');
+const unresolvedEligibilityCandidate = unresolvedEligibilityStack.candidates.find(c => c.components.length === 2);
+assert(unresolvedEligibilityCandidate?.overallStatus === 'CONDITIONAL', 'Critical eligibility uncertainty prevents a VERIFIED stack');
+assert(unresolvedEligibilityCandidate?.confidence === 'LOW', 'Critical eligibility uncertainty lowers stack confidence');
 
 const unknownStack = generateFinancingStacks({
   requiredFunding: 1000000,
