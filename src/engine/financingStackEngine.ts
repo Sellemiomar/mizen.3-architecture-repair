@@ -59,7 +59,20 @@ function compatibilityRank(status: StackCompatibilityStatus): number {
   return status === 'VERIFIED_COMPATIBLE' ? 3 : status === 'POTENTIALLY_COMPATIBLE' ? 2 : status === 'UNKNOWN' ? 1 : 0;
 }
 
-function evaluateCandidate(requiredFunding: number, components: StackComponent[]): FinancingStackCandidate | null {
+function allocateCandidateCapacity(requiredFunding: number, components: StackComponent[]): StackComponent[] {
+  let remaining = requiredFunding;
+  return components.map(component => {
+    if (component.role === 'GUARANTEE') return component;
+    const available = component.cashAmount ?? component.verifiedCapacity;
+    if (typeof available !== 'number' || !Number.isFinite(available) || available < 0) return { ...component, cashAmount: undefined };
+    const allocated = Math.min(available, Math.max(0, remaining));
+    remaining = Math.max(0, remaining - allocated);
+    return { ...component, cashAmount: allocated };
+  });
+}
+
+function evaluateCandidate(requiredFunding: number, rawComponents: StackComponent[]): FinancingStackCandidate | null {
+  const components = allocateCandidateCapacity(requiredFunding, rawComponents);
   const programIds = components.map(c => c.programId).filter((id): id is string => Boolean(id));
   const compatibility: StackCompatibilityEvaluation[] = [];
   for (let i = 0; i < programIds.length; i += 1) {
