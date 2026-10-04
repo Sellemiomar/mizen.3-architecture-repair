@@ -19,6 +19,7 @@ export type StackConfidence = 'HIGH' | 'MEDIUM' | 'LOW';
 export interface StackComponent {
   sourceId: string;
   programId?: string;
+  label?: { fr: string; ar: string };
   role: StackFundingRole;
   cashAmount?: number;
   verifiedCapacity?: number;
