@@ -57,16 +57,20 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
     }
     case 'pricingRelationship':
       if (claim.value === 'UNKNOWN') {
-        const existing = product.financialTerms.rate?.explanation?.fr || '';
-        const range = existing.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
+        const marginClaim = getAuthoritativeClaim(product.id, 'publishedMarginRange');
+        const v = marginClaim?.value as { min?: number; max?: number } | undefined;
+        const hasRange = typeof v?.min === 'number' && typeof v?.max === 'number';
         product.financialTerms.rate = {
           ...product.financialTerms.rate,
           type: 'UNKNOWN',
           margin: undefined,
           referenceIndex: undefined,
+          min: hasRange ? v!.min! / 100 : product.financialTerms.rate?.min,
+          max: hasRange ? v!.max! / 100 : product.financialTerms.rate?.max,
+          currency: 'PERCENT',
           explanation: {
-            fr: range
-              ? `Marge publiée : ${range} points. Relation avec le TMM inconnue. Aucun calcul TMM + marge ne peut être effectué.`
+            fr: hasRange
+              ? `Marge publiée : ${v!.min} à ${v!.max} points. Relation avec le TMM inconnue. Aucun calcul TMM + marge ne peut être effectué.`
               : 'Relation exacte avec le TMM : inconnue. Aucun calcul TMM + marge ne peut être effectué.',
             ar: 'العلاقة الدقيقة مع TMM غير معلومة. لا يمكن احتساب TMM + هامش.'
           }

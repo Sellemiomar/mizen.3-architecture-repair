@@ -1,0 +1,21 @@
+name: Mizen Verification
+
+on:
+  pull_request:
+  push:
+    branches: [main, 'feature/**']
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --legacy-peer-deps
+      - run: npx tsx scripts/auditArchitecture.ts
+      - run: npm test
+      - run: npm run lint
+      - run: npm run knowledge:audit
+      - run: npm run build

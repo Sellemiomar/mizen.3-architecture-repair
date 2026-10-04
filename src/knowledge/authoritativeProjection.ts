@@ -60,14 +60,6 @@ function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
       if (claim.value === 'UNKNOWN') {
         program.rateType = 'unknown';
         program.estimatedRateAnnual = undefined;
-        const existing = program.rateDescription.fr || '';
-        const range = existing.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
-        program.rateDescription = {
-          fr: range
-            ? `Marge publiée : ${range} points. Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.`
-            : 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
-          ar: 'العلاقة السعرية مع TMM غير معلومة. لا توجد محاكاة آلية للنسبة.'
-        };
       }
       break;
     case 'repaymentDuration':
@@ -99,6 +91,10 @@ function project(base: FinancingProgram): FinancingProgram {
   if (claimedFields.has('minProjectCost')) product.projectCostMin = undefined;
   if (claimedFields.has('maxProjectCost')) product.projectCostMax = undefined;
   if (claimedFields.has('maxFinancingPercentage')) product.maxFinancingPercentage = undefined;
+  if (claimedFields.has('publishedMarginRange')) {
+    product.rateType = 'unknown';
+    product.estimatedRateAnnual = undefined;
+  }
 
   for (const field of claimedFields) {
     const claim = getAuthoritativeClaim(base.id, field);
@@ -106,9 +102,17 @@ function project(base: FinancingProgram): FinancingProgram {
   }
 
   const pricingClaim = getAuthoritativeClaim(base.id, 'pricingRelationship');
+  const marginClaim = getAuthoritativeClaim(base.id, 'publishedMarginRange');
   if (pricingClaim?.value === 'UNKNOWN') {
     product.rateType = 'unknown';
     product.estimatedRateAnnual = undefined;
+    const v = marginClaim?.value as { min?: number; max?: number } | undefined;
+    if (typeof v?.min === 'number' && typeof v?.max === 'number') {
+      product.rateDescription = {
+        fr: `Marge publiée : ${v.min} à ${v.max} points. Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.`,
+        ar: `الهامش المنشور: من ${v.min} إلى ${v.max} نقطة. العلاقة السعرية مع TMM غير معلومة. لا توجد محاكاة آلية للنسبة.`
+      };
+    }
   }
 
   return product;
