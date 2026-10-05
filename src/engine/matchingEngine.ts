@@ -497,13 +497,15 @@ export function evaluateProgramCompatibility(
   if (program.id === 'bfpme_creation') {
     const isResidentialDeveloper = 
       applicant.sector === 'real_estate' || 
+      applicant.sector === 'residential_real_estate_promotion' ||
+      (applicant as any).sector === 'real_estate_development' ||
       (applicant as any).subSector === 'residential_real_estate_promotion' ||
       (applicant.projectDescription && applicant.projectDescription.toLowerCase().includes('promotion immobilière résidentielle')) ||
       (applicant.projectDescription && applicant.projectDescription.toLowerCase().includes('promoteur immobilier'));
 
     if (isResidentialDeveloper) {
       ruleEvaluations.push({
-        ruleId: 'bfpmeResidentialDeveloperExclusion',
+        ruleId: 'sectorExclusionRealEstate',
         label: { fr: "Exclusion promotion immobilière résidentielle", ar: "استثناء البعث العقاري السكني" },
         criticality: 'CRITICAL',
         status: 'FAIL',
@@ -516,7 +518,7 @@ export function evaluateProgramCompatibility(
         fr: "Promotion immobilière résidentielle exclue de l'intervention BFPME.",
         ar: "البعث العقاري السكني غير مؤهل لتمويل BFPME."
       });
-    } else if (applicant.sector === 'tourism') {
+    } else if (applicant.sector === 'tourism' || (applicant as any).sector === 'hotels_accommodation') {
       const isRuralGuesthouseException = Boolean(
         (applicant as any).subSector === 'rural_gite' ||
         (applicant as any).subSector === 'guesthouse' ||
@@ -546,7 +548,7 @@ export function evaluateProgramCompatibility(
         });
       } else {
         ruleEvaluations.push({
-          ruleId: 'bfpmeAccommodationTourismExclusion',
+          ruleId: 'sectorExclusionHotel',
           label: { fr: "Exclusion tourisme hôtelier classique", ar: "استثناء السياحة الفندقية الكلاسيكية" },
           criticality: 'CRITICAL',
           status: 'FAIL',
@@ -875,11 +877,13 @@ export function evaluateProgramCompatibility(
     });
   }
 
+  const isHistorical = program.id === 'sotugar_guarantee' || (program as any).operationalStatus === 'HISTORICAL_ONLY' || program.verification.status === 'OUTDATED';
+
   const evidenceEvaluation: EvidenceEvaluation = {
     status: program.verification.status,
     isOutdated,
     hasUnverifiedFields: program.verification.unverifiedFields.length > 0,
-    confidenceScore: program.verification.status === 'VERIFIED' ? 'HIGH' : isOutdated ? 'LOW' : 'MEDIUM',
+    confidenceScore: program.verification.status === 'VERIFIED' ? 'HIGH' : isHistorical ? 'LOW' : 'MEDIUM',
     notes: program.verification.notes
   };
 

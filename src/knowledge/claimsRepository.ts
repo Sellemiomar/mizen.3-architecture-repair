@@ -628,13 +628,13 @@ export const INITIAL_COMPATIBILITY_CLAIMS: CompatibilityClaim[] = [
     id: 'compat_bfpme_leasing',
     sourceEntityId: 'bfpme_creation',
     targetEntityId: 'leasing_vehicule_pro',
-    compatibilityStatus: 'POTENTIALLY_COMPATIBLE',
+    compatibilityStatus: 'UNKNOWN',
     confidence: 'LOW',
     evidence: [CANONICAL_SOURCES.bfpme_guide_current],
-    ruleStatus: 'PARTIALLY_VERIFIED',
+    ruleStatus: 'UNKNOWN',
     notes: {
-      fr: "Co-existence possible pour des tranches de matériel spécifiques dans le plan de financement global.",
-      ar: "إمكانية التعايش لتمويل حصص محددة من المعدات ضمن المخطط التمويلي الشامل."
+      fr: "La compatibilité formelle et le partage d'assiette d'investissement entre crédit BFPME et leasing ne font pas l'objet d'une convention universelle automatique.",
+      ar: "التوافق الرسمي وتقاسم وعاء الاستثمار بين قرض BFPME وعقد الإيجار المالي غير مثبت باتفاقية شاملة آلية."
     }
   },
   {

@@ -66,12 +66,24 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
           referenceIndex: undefined,
           explanation: {
             fr: range
-              ? `Marge publiée : ${range} points. Relation avec le TMM inconnue. Aucun calcul TMM + marge ne peut être effectué.`
-              : 'Relation exacte avec le TMM : inconnue. Aucun calcul TMM + marge ne peut être effectué.',
-            ar: 'العلاقة الدقيقة مع TMM غير معلومة. لا يمكن احتساب TMM + هامش.'
+              ? `Marge publiée : ${range} points. Relation de tarification avec l'indice TMM non confirmée. Aucune simulation automatique de taux ne peut être effectuée.`
+              : 'Relation de tarification avec l\'indice TMM non confirmée. Aucune simulation automatique de taux ne peut être effectuée.',
+            ar: 'العلاقة الدقيقة مع TMM غير معلومة. لا يمكن احتساب نسبة فائدة آلية.'
           }
         };
       }
+      break;
+    case 'coverageBasis':
+      product.financialTerms.guaranteeDetails = {
+        ...product.financialTerms.guaranteeDetails,
+        coverageBasis: claim.value as any
+      };
+      break;
+    case 'governorates':
+      product.financialTerms.guaranteeDetails = {
+        ...product.financialTerms.guaranteeDetails,
+        governorates: claim.value as any
+      };
       break;
   }
 }

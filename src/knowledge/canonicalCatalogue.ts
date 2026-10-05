@@ -845,6 +845,13 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     ],
     financialTerms: {
       amount: { min: 10000, max: 10000000, currency: 'TND' }, // Maximum guaranteeable volume
+      guaranteeDetails: {
+        coverageBasis: 'UNRECOVERABLE_AMOUNT',
+        governorates: [
+          'Kasserine', 'Sidi Bouzid', 'Gafsa', 'Kébili', 'Tataouine', 'Tozeur',
+          'Siliana', 'Le Kef', 'Jendouba', 'Béja', 'Kairouan', 'Médenine', 'Gabès', 'Zaghouan'
+        ]
+      },
       rate: {
         type: 'NOT_APPLICABLE',
         explanation: {

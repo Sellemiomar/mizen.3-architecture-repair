@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   CheckCircle2, 
   AlertTriangle, 
@@ -16,6 +16,7 @@ import {
   Shield,
   Layers,
   XCircle,
+  Link as LinkIcon,
   HelpCircle as QuestionIcon
 } from 'lucide-react';
 import { MatchResult, Language, ApplicantProfile, AlignmentLevel, FinancingProgram, Provider } from '../types/financing';
@@ -25,6 +26,7 @@ import { TrustBadge } from './TrustBadge';
 import { getFieldLabel } from '../utils/verificationLabels';
 import { LenderHandoffModal } from './LenderHandoffModal';
 import { getJourneyResultHeader } from '../engine/journeyEngine';
+import { generateFinancingStacks } from '../engine/financingStackEngine';
 
 interface ResultsViewProps {
   results: MatchResult[];
@@ -66,6 +68,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     !applicantProfile.sector && 
     !applicantProfile.location && 
     !applicantProfile.businessStage;
+
+  const stackResult = useMemo(() => {
+    return generateFinancingStacks({
+      applicantProfile,
+      matchResults: results
+    });
+  }, [applicantProfile, results]);
 
   if (isProfileEmpty) {
     return (
@@ -183,6 +192,149 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* POTENTIAL FINANCING STRUCTURES (STACK ENGINE) */}
+      {stackResult.stacks.length > 0 && (
+        <div className="p-6 sm:p-7 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-bold uppercase tracking-wider">
+                  {language === 'ar' ? 'هندسة التمويل المركب' : 'Ingénierie de co-financement'}
+                </span>
+                <span className="text-xs text-slate-500">
+                  {stackResult.stacks.length} {language === 'ar' ? 'هياكل تمويل محتملة' : 'combinaisons analysées'}
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-display">
+                {language === 'ar' ? 'الهياكل التمويلية المتوافقة مع مشروعكم' : 'Structures de financement combinées potentielles'}
+              </h2>
+              <p className="text-xs text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                {language === 'ar'
+                  ? 'يقوم ميزان بتحليل التوافق القانوني والاتفاقيات المشتركة بين البنوك وصناديق الضمان لتركيب خطة تمويل واقعية بدون افتراض موافقات مسبقة.'
+                  : 'Mizen évalue la compatibilité réglementaire et les conventions conjointes entre banques, bailleurs et fonds de garantie pour structurer votre besoin de financement.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {stackResult.stacks.map((stack) => (
+              <div
+                key={stack.id}
+                className={`p-5 rounded-2xl border transition-all ${
+                  stack.overallStatus === 'SUPPORTED'
+                    ? 'border-emerald-200 bg-emerald-50/20'
+                    : stack.overallStatus === 'POTENTIALLY_COMPATIBLE'
+                    ? 'border-amber-200 bg-amber-50/20'
+                    : 'border-slate-200 bg-slate-50/50'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                        stack.overallStatus === 'SUPPORTED'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : stack.overallStatus === 'POTENTIALLY_COMPATIBLE'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}>
+                        {stack.overallStatus === 'SUPPORTED'
+                          ? (language === 'ar' ? 'توافق موثق' : 'Compatibilité confirmée')
+                          : stack.overallStatus === 'POTENTIALLY_COMPATIBLE'
+                          ? (language === 'ar' ? 'توافق مشروط بالتأكيد' : 'Compatibilité potentielle / conditionnelle')
+                          : (language === 'ar' ? 'توافق غير موثق' : 'Compatibilité non documentée')}
+                      </span>
+                      <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium">
+                        {language === 'ar' ? `مستوى الثقة في الأدلة: ${stack.confidence}` : `Confiance des preuves : ${stack.confidence}`}
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 font-display">
+                      {stack.title[language]}
+                    </h3>
+                  </div>
+
+                  <div className="text-left sm:text-right shrink-0">
+                    <span className="text-[11px] text-slate-500 block font-medium">
+                      {language === 'ar' ? 'تغطية التمويل النقدي' : 'Couverture en cash'}
+                    </span>
+                    <strong className="text-base font-bold text-slate-900">
+                      {stack.verifiedCashFunding.toLocaleString('fr-FR')} DT
+                      <span className="text-xs text-slate-500 font-normal"> / {stack.requiredFunding.toLocaleString('fr-FR')} DT</span>
+                    </strong>
+                    {stack.remainingFundingGap > 0 && (
+                      <span className="text-[11px] text-amber-700 block font-semibold mt-0.5">
+                        {language === 'ar' ? `فارق متبقي: ${stack.remainingFundingGap.toLocaleString('fr-FR')} DT` : `Écart restant : ${stack.remainingFundingGap.toLocaleString('fr-FR')} DT`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Components Breakdown */}
+                <div className="space-y-2 pt-3 border-t border-slate-200/80 text-xs">
+                  <span className="font-bold text-slate-700 block">
+                    {language === 'ar' ? 'مكونات الهيكل التمويلي :' : 'Composition de la structure :'}
+                  </span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {stack.components.map((comp) => (
+                      <div key={comp.programId} className="p-3 rounded-xl bg-white border border-slate-200 flex items-start justify-between gap-2 shadow-2xs">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-bold">
+                              {language === 'ar' ? 'تمويل نقدي' : 'FINANCEMENT DIRECT'}
+                            </span>
+                            <strong className="text-slate-900 text-xs">{comp.programName[language]}</strong>
+                          </div>
+                          <span className="text-slate-500 text-[11px] block mt-0.5">
+                            {language === 'ar' ? `الدور : ${comp.role}` : `Rôle : ${comp.role}`}
+                          </span>
+                        </div>
+                        {comp.allocatedAmount !== undefined && (
+                          <strong className="text-blue-700 font-bold text-xs shrink-0">
+                            {comp.allocatedAmount.toLocaleString('fr-FR')} DT
+                          </strong>
+                        )}
+                      </div>
+                    ))}
+
+                    {stack.supportComponents.map((comp) => (
+                      <div key={comp.programId} className="p-3 rounded-xl bg-amber-50/50 border border-amber-200 flex items-start justify-between gap-2 shadow-2xs">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-1.5 py-0.5 rounded bg-amber-200/80 text-amber-900 text-[10px] font-bold">
+                              {language === 'ar' ? 'ضمان مخاطر (ليس تمويلاً نقدياً)' : 'GARANTIE (PAS DE CASH)'}
+                            </span>
+                            <strong className="text-slate-900 text-xs">{comp.programName[language]}</strong>
+                          </div>
+                          <span className="text-amber-800 text-[11px] block mt-0.5">
+                            {language === 'ar' ? 'تغطية مخاطر القروض البنكية' : 'Partage et couverture du risque bancaire'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-bold text-amber-800 shrink-0">
+                          {language === 'ar' ? 'دعم ضمان' : 'Support'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Explanations & Assumptions */}
+                {stack.unresolvedAssumptions.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-200/60 text-[11px] text-slate-600 space-y-1">
+                    {stack.unresolvedAssumptions.map((assump, idx) => (
+                      <div key={idx} className="flex items-start gap-1.5">
+                        <Info className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                        <span>{assump[language]}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none touch-pan-x">

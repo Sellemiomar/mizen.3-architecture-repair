@@ -1074,10 +1074,78 @@ assert(financingMaxCriterion?.expectedValue === 2500000, '43. Catalogue projecti
 assert(bfpmeProjectedCriteria.financialTerms.rate?.type === 'UNKNOWN' && bfpmeProjectedCriteria.financialTerms.rate?.margin === undefined && bfpmeProjectedCriteria.financialTerms.rate?.referenceIndex === undefined, '44. Catalogue projection blocks TMM + margin calculation');
 assert(Boolean(bfpmeProjectedCriteria.financialTerms.rate?.explanation?.fr?.includes('2 à 4.5')) && !Boolean(bfpmeProjectedCriteria.financialTerms.rate?.explanation?.fr?.includes('TMM +')), '45. Catalogue projection preserves the published margin range without inventing TMM linkage');
 
+// =========================================================================
+// SCENARIO AA: Moteur de Financement Combiné (Financing Stack Engine) & Invariants
+// =========================================================================
+console.log('\n--- SCENARIO AA: Moteur de Financement Combiné (Financing Stack Engine) ---');
+import { 
+  calculateFundingGap, 
+  evaluateStackCandidate, 
+  generateFinancingStacks, 
+  mapProgramToStackComponent 
+} from '../src/engine/financingStackEngine';
+import { getStackCompatibility, getAllCompatibilityRules } from '../src/knowledge/stackCompatibility';
+
+// 1. Compatibility Rule Invariants
+const compatBfpmeBank = getStackCompatibility('bfpme_creation', 'bh_bank_loan');
+assert(compatBfpmeBank.compatibilityStatus === 'VERIFIED_COMPATIBLE', 'AA.1. BFPME + Commercial Bank is VERIFIED_COMPATIBLE');
+
+const compatBfpmeSotugar = getStackCompatibility('bfpme_creation', 'sotugar_guarantee');
+assert(compatBfpmeSotugar.compatibilityStatus === 'POTENTIALLY_COMPATIBLE' && compatBfpmeSotugar.confidence === 'LOW', 'AA.2. BFPME + SOTUGAR is POTENTIALLY_COMPATIBLE with LOW confidence');
+
+const compatBfpmeLeasing = getStackCompatibility('bfpme_creation', 'leasing_vehicule_pro');
+assert(compatBfpmeLeasing.compatibilityStatus === 'UNKNOWN', 'AA.3. BFPME + Leasing is UNKNOWN');
+
+const compatStartupBank = getStackCompatibility('startup_guarantee_fund', 'bh_bank_loan');
+assert(compatStartupBank.compatibilityStatus === 'UNKNOWN', 'AA.4. Startup Guarantee + Bank is UNKNOWN');
+
+// 2. Guarantee Cash Gap Invariant (Guarantee is NOT cash)
+const compBfpmeDebt = mapProgramToStackComponent(authoritativeBfpme, { financingRequested: 650000, totalProjectCost: 1000000 });
+const sotugarProgramObj = FINANCING_PROGRAMS.find(p => p.id === 'sotugar_guarantee')!;
+const compSotugar = mapProgramToStackComponent(sotugarProgramObj, { financingRequested: 650000, totalProjectCost: 1000000 });
+
+assert(compBfpmeDebt.isCashFunding === true, 'AA.5a. BFPME component is flagged as cash funding');
+assert(compSotugar.isCashFunding === false, 'AA.5b. SOTUGAR guarantee component is flagged as NOT cash funding');
+assert(compSotugar.role === 'GUARANTEE', 'AA.5c. SOTUGAR role is GUARANTEE');
+
+const gapWithGuarantee = calculateFundingGap(1000000, [compBfpmeDebt, compSotugar]);
+assert(gapWithGuarantee.verifiedCashFunding === 650000, 'AA.5d. Guarantee does not increase cash funding coverage');
+assert(gapWithGuarantee.remainingFundingGap === 350000, 'AA.5e. Remaining funding gap is exactly 350k TND (guarantee is NOT 350k cash)');
+
+// 3. Duplicate prevention (Double counting defense)
+const gapWithDup = calculateFundingGap(1000000, [compBfpmeDebt, compBfpmeDebt]);
+assert(gapWithDup.verifiedCashFunding === 650000, 'AA.6. Duplicate component ID does not double count cash coverage');
+
+// 4. Unknown compatibility does not produce a confirmed stack
+const testApplicant: ApplicantProfile = {
+  journey: 'startup',
+  purpose: 'creation',
+  totalProjectCost: 1000000,
+  userContribution: 200000,
+  financingRequested: 800000,
+  sector: 'industry',
+  location: 'Sfax',
+  businessStage: 'creation_underway',
+  legalStructure: 'sarl'
+};
+
+const matchResultsForStack = runMatchingEngine(testApplicant);
+const stacksResult = generateFinancingStacks({
+  applicantProfile: testApplicant,
+  matchResults: matchResultsForStack
+});
+
+assert(stacksResult.stacks.length > 0, 'AA.7. Generates candidate financing stacks');
+const bfpmeSotugarStack = stacksResult.stacks.find(s => s.components.some(c => c.programId === 'bfpme_creation') && s.supportComponents.some(c => c.programId === 'sotugar_guarantee'));
+if (bfpmeSotugarStack) {
+  assert(bfpmeSotugarStack.overallStatus === 'POTENTIALLY_COMPATIBLE', 'AA.8. BFPME + SOTUGAR stack is POTENTIALLY_COMPATIBLE (not unconditionally confirmed)');
+  assert(bfpmeSotugarStack.confidence === 'LOW', 'AA.9. BFPME + SOTUGAR stack propagates LOW confidence');
+  assert(!bfpmeSotugarStack.isReliablyCalculable, 'AA.10. Unknown BFPME rate prevents payment/amortization calculation in stack');
+}
 
 console.log('\n================================================================');
 if (allPassed) {
-  console.log('🎉 ALL 55 AUDIT SCENARIOS (A-Z) & 30 KNOWLEDGE ARCHITECTURE INVARIANTS PASSED SUCCESSFULLY!');
+  console.log('🎉 ALL 56 AUDIT SCENARIOS (A-AA) & FINANCING STACK ARCHITECTURE INVARIANTS PASSED SUCCESSFULLY!');
 } else {
   console.error('❌ SOME CHECKS FAILED');
   process.exit(1);
