@@ -2,9 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(process.cwd(), 'src');
+
+// Regex patterns to detect forbidden direct imports of unprojected legacy financing catalogues
 const forbiddenDirectCanonicalImport = /(?:from\s+['"]\.\/canonicalCatalogue['"]|from\s+['"][^'"]*\/canonicalCatalogue['"])/;
 const forbiddenLegacyProgramImport = /import\s*\{[^}]*\bFINANCING_PROGRAMS\b[^}]*\}\s*from\s*['"][^'"]*\/data\/financingData['"]/s;
 const forbiddenLegacyCanonicalProductsImport = /import\s*\{[^}]*\bCANONICAL_PRODUCTS\b[^}]*\}\s*from\s*['"][^'"]*\/canonicalCatalogue['"]/s;
+const forbiddenDirectFinancingDataInEngine = /from\s*['"][^'"]*\/data\/financingData['"]/;
 
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
@@ -13,7 +16,8 @@ function walk(dir: string): string[] {
   });
 }
 
-const violations = walk(root)
+// 1. Check all production source files (excluding only the two sanctioned bridge modules)
+const productionViolations = walk(root)
   .filter(file => !file.endsWith('authoritativeCatalogueProjection.ts') && !file.endsWith('authoritativeProjection.ts'))
   .filter(file => {
     const content = fs.readFileSync(file, 'utf8');
@@ -23,20 +27,33 @@ const violations = walk(root)
   })
   .map(file => path.relative(process.cwd(), file));
 
-if (violations.length) {
-  console.error('❌ Architectural Violation: Legacy data or unprojected catalogue imported directly by runtime code:', violations);
+if (productionViolations.length > 0) {
+  console.error('❌ Architectural Violation: Legacy data or unprojected catalogue imported directly by production code:', productionViolations);
   process.exit(1);
 }
 
-// Ensure financingStackEngine only consumes authoritative knowledge
-const stackEngineFile = path.join(root, 'engine', 'financingStackEngine.ts');
-if (fs.existsSync(stackEngineFile)) {
-  const stackContent = fs.readFileSync(stackEngineFile, 'utf8');
-  if (stackContent.includes('/data/financingData') || stackContent.includes('/canonicalCatalogue')) {
-    console.error('❌ Architectural Violation: financingStackEngine directly imports legacy data instead of authoritative projection');
+// 2. Strict check: engine modules (matching, calculations, stack, journey) must NEVER import financingData.ts
+const engineDir = path.join(root, 'engine');
+if (fs.existsSync(engineDir)) {
+  const engineViolations = walk(engineDir).filter(file => {
+    const content = fs.readFileSync(file, 'utf8');
+    return forbiddenDirectFinancingDataInEngine.test(content) || forbiddenDirectCanonicalImport.test(content);
+  }).map(file => path.relative(process.cwd(), file));
+
+  if (engineViolations.length > 0) {
+    console.error('❌ Architectural Violation: Engine modules directly import legacy financingData or canonicalCatalogue:', engineViolations);
+    process.exit(1);
+  }
+}
+
+// 3. Strict check: Knowledge registry & validator must consume authoritative projections
+const registryFile = path.join(root, 'knowledge', 'knowledgeRegistry.ts');
+if (fs.existsSync(registryFile)) {
+  const regContent = fs.readFileSync(registryFile, 'utf8');
+  if (forbiddenLegacyProgramImport.test(regContent) || forbiddenLegacyCanonicalProductsImport.test(regContent)) {
+    console.error('❌ Architectural Violation: knowledgeRegistry.ts imports unprojected legacy data');
     process.exit(1);
   }
 }
 
 console.log('✅ Architecture Invariant Verified: Zero direct runtime imports of legacy financing data outside sanctioned projection layers.');
-

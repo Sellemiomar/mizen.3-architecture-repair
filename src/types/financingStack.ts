@@ -30,6 +30,7 @@ export interface StackComponent {
   allocatedAmount?: number;
   maxPotentialAmount?: number;
   coveragePercentage?: number;
+  rateType?: string;
   evidenceStatus: KnowledgeRuleStatus | RuleStatus;
   evidenceConfidence: 'HIGH' | 'MEDIUM' | 'LOW';
   operationalStatus: OperationalStatus;
@@ -91,6 +92,7 @@ export interface FinancingStackResult {
   totalProjectCost?: number;
   userContribution?: number;
   stacks: FinancingStackCandidate[];
+  unverifiedCombinations?: FinancingStackCandidate[];
   evaluatedPairCount: number;
   evidenceSummary: {
     verifiedPairs: number;

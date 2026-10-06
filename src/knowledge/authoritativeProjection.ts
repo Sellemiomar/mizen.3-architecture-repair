@@ -1,4 +1,4 @@
-import { FINANCING_PROGRAMS } from '../data/financingData';
+import { FINANCING_PROGRAMS, PROVIDERS, REGIONAL_DEVELOPMENT_ZONES } from '../data/financingData';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
 import { FinancingClaim } from '../types/claims';
 import { FinancingProgram } from '../types/financing';
@@ -121,4 +121,12 @@ export function getAuthoritativeFinancingPrograms(): FinancingProgram[] {
 export function getAuthoritativeFinancingProgram(id: string): FinancingProgram | undefined {
   const base = FINANCING_PROGRAMS.find(p => p.id === id);
   return base ? project(base) : undefined;
+}
+
+export function getAuthoritativeProviders() {
+  return PROVIDERS;
+}
+
+export function getAuthoritativeRegionalDevelopmentZones() {
+  return REGIONAL_DEVELOPMENT_ZONES;
 }

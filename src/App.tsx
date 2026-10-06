@@ -11,8 +11,7 @@ import { ExploreProgramsView } from './components/ExploreProgramsView';
 import { Footer } from './components/Footer';
 
 import { ApplicantProfile, FinancingProgram, Language, FinancingPurpose, FinancingJourney, DemoScenario } from './types/financing';
-import { PROVIDERS } from './data/financingData';
-import { getAuthoritativeFinancingPrograms } from './knowledge/authoritativeProjection';
+import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from './knowledge/authoritativeProjection';
 import { runMatchingEngine } from './engine/matchingEngine';
 import { cleanProfileForJourney } from './engine/journeyEngine';
 
@@ -67,7 +66,8 @@ export default function App() {
   }, [matchResults]);
 
   const providersMap = useMemo(() => {
-    return new Map(PROVIDERS.map(p => [p.id, p]));
+    const providers = getAuthoritativeProviders();
+    return new Map(providers.map(p => [p.id, p]));
   }, []);
 
   const programsMap = useMemo(() => {

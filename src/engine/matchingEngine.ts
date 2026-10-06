@@ -12,8 +12,11 @@ import {
   ApplicationReadiness,
   EligibilityOutcome
 } from '../types/financing';
-import { PROVIDERS, REGIONAL_DEVELOPMENT_ZONES } from '../data/financingData';
-import { getAuthoritativeFinancingPrograms } from '../knowledge/authoritativeProjection';
+import { 
+  getAuthoritativeFinancingPrograms, 
+  getAuthoritativeProviders, 
+  getAuthoritativeRegionalDevelopmentZones 
+} from '../knowledge/authoritativeProjection';
 import { calculateFinancingCost } from './financialCalculations';
 import { formatVerificationNeed, getFieldLabel } from '../utils/verificationLabels';
 import { getOfficialSimulator, generateExclusionReason } from '../knowledge/catalogueAdapter';
@@ -648,7 +651,8 @@ export function evaluateProgramCompatibility(
   }
 
   // Rule: Regional Development Zone (ZDR) bonus
-  if (applicant.location && REGIONAL_DEVELOPMENT_ZONES.includes(applicant.location)) {
+  const zdrZones = getAuthoritativeRegionalDevelopmentZones();
+  if (applicant.location && zdrZones.includes(applicant.location)) {
     if (program.hasRegionalDevelopmentBonus) {
       matchedBecause.push({
         fr: `Implantation à ${applicant.location} en Zone de Développement Régional (ZDR) : prime et bonification applicables.`,
@@ -1007,10 +1011,11 @@ export function getCategoricalRank(result: MatchResult): number {
 }
 
 export function runMatchingEngine(applicant: ApplicantProfile): MatchResult[] {
-  const providerMap = new Map(PROVIDERS.map(p => [p.id, p]));
+  const providers = getAuthoritativeProviders();
+  const providerMap = new Map(providers.map(p => [p.id, p]));
 
   const results = getAuthoritativeFinancingPrograms().map(program => {
-    const provider = providerMap.get(program.providerId) || PROVIDERS[0];
+    const provider = providerMap.get(program.providerId) || providers[0];
     return evaluateProgramCompatibility(applicant, program, provider);
   });
 

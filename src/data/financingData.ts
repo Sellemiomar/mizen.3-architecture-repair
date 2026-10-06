@@ -1,3 +1,17 @@
+/**
+ * ARCHITECTURE NOTICE:
+ * This file contains base structural schema definitions and geographic metadata.
+ * It is NOT authoritative for financing rates, eligibility, ceilings, or pricing logic.
+ *
+ * All production code MUST consume financing programs and products through:
+ * - `getAuthoritativeFinancingPrograms()` from `src/knowledge/authoritativeProjection.ts`
+ * - `getAuthoritativeCatalogueProducts()` from `src/knowledge/authoritativeCatalogueProjection.ts`
+ * - `KnowledgeRegistry` from `src/knowledge/knowledgeRegistry.ts`
+ *
+ * Direct import of `FINANCING_PROGRAMS` in production code is strictly forbidden and
+ * enforced by `scripts/auditArchitecture.ts`.
+ */
+
 import { Provider, FinancingProgram, DemoScenario } from '../types/financing';
 
 export const TUNISIAN_GOVERNORATES = [

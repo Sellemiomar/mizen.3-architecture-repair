@@ -256,15 +256,15 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
                   <div className="text-left sm:text-right shrink-0">
                     <span className="text-[11px] text-slate-500 block font-medium">
-                      {language === 'ar' ? 'تغطية التمويل النقدي' : 'Couverture en cash'}
+                      {language === 'ar' ? 'تغطية التمويل النقدي (دون احتساب الضمان)' : 'Couverture en cash (hors garantie)'}
                     </span>
                     <strong className="text-base font-bold text-slate-900">
-                      {stack.verifiedCashFunding.toLocaleString('fr-FR')} DT
+                      {stack.verifiedCashFunding > 0 ? stack.verifiedCashFunding.toLocaleString('fr-FR') : (language === 'ar' ? 'حسب دراسة الملف' : 'À instruire')} DT
                       <span className="text-xs text-slate-500 font-normal"> / {stack.requiredFunding.toLocaleString('fr-FR')} DT</span>
                     </strong>
                     {stack.remainingFundingGap > 0 && (
                       <span className="text-[11px] text-amber-700 block font-semibold mt-0.5">
-                        {language === 'ar' ? `فارق متبقي: ${stack.remainingFundingGap.toLocaleString('fr-FR')} DT` : `Écart restant : ${stack.remainingFundingGap.toLocaleString('fr-FR')} DT`}
+                        {language === 'ar' ? `فارق نقدي متبقي: ${stack.remainingFundingGap.toLocaleString('fr-FR')} DT` : `Écart cash restant : ${stack.remainingFundingGap.toLocaleString('fr-FR')} DT`}
                       </span>
                     )}
                   </div>
@@ -290,10 +290,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                             {language === 'ar' ? `الدور : ${comp.role}` : `Rôle : ${comp.role}`}
                           </span>
                         </div>
-                        {comp.allocatedAmount !== undefined && (
+                        {comp.allocatedAmount !== undefined ? (
                           <strong className="text-blue-700 font-bold text-xs shrink-0">
                             {comp.allocatedAmount.toLocaleString('fr-FR')} DT
                           </strong>
+                        ) : (
+                          <span className="text-slate-500 text-xs italic shrink-0">
+                            {language === 'ar' ? 'حسب السقف' : 'Selon plafond'}
+                          </span>
                         )}
                       </div>
                     ))}
@@ -303,16 +307,18 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="px-1.5 py-0.5 rounded bg-amber-200/80 text-amber-900 text-[10px] font-bold">
-                              {language === 'ar' ? 'ضمان مخاطر (ليس تمويلاً نقدياً)' : 'GARANTIE (PAS DE CASH)'}
+                              {language === 'ar' ? 'ضمان مخاطر (ليس كاش)' : 'GARANTIE (RISQUE SEUL)'}
                             </span>
                             <strong className="text-slate-900 text-xs">{comp.programName[language]}</strong>
                           </div>
                           <span className="text-amber-800 text-[11px] block mt-0.5">
-                            {language === 'ar' ? 'تغطية مخاطر القروض البنكية' : 'Partage et couverture du risque bancaire'}
+                            {comp.coveragePercentage 
+                              ? (language === 'ar' ? `تغطية تصل إلى ${Math.round(comp.coveragePercentage * 100)}% من القرض` : `Couverture jusqu'à ${Math.round(comp.coveragePercentage * 100)}% de la créance`)
+                              : (language === 'ar' ? 'تغطية مخاطر القروض البنكية' : 'Partage et couverture du risque bancaire')}
                           </span>
                         </div>
                         <span className="text-[11px] font-bold text-amber-800 shrink-0">
-                          {language === 'ar' ? 'دعم ضمان' : 'Support'}
+                          {language === 'ar' ? 'دعم ضمان' : 'Garantie'}
                         </span>
                       </div>
                     ))}

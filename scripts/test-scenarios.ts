@@ -1121,8 +1121,8 @@ const testApplicant: ApplicantProfile = {
   journey: 'startup',
   purpose: 'creation',
   totalProjectCost: 1000000,
-  userContribution: 200000,
-  financingRequested: 800000,
+  userContribution: 350000,
+  financingRequested: 650000,
   sector: 'industry',
   location: 'Sfax',
   businessStage: 'creation_underway',
@@ -1136,11 +1136,31 @@ const stacksResult = generateFinancingStacks({
 });
 
 assert(stacksResult.stacks.length > 0, 'AA.7. Generates candidate financing stacks');
+
+// AA.8: UNKNOWN compatibility is excluded from viable stacks
+const unknownFoprodiMourabaha = stacksResult.stacks.find(s => 
+  s.components.some(c => c.programId.includes('foprodi')) && 
+  s.components.some(c => c.programId.includes('mourabaha'))
+);
+assert(!unknownFoprodiMourabaha, 'AA.8a. UNKNOWN compatibility (FOPRODI + Mourabaha) is strictly excluded from viable stacks');
+
+const unknownFoprodiSotugar = stacksResult.stacks.find(s => 
+  s.components.some(c => c.programId.includes('foprodi')) && 
+  s.supportComponents.some(c => c.programId === 'sotugar_guarantee')
+);
+assert(!unknownFoprodiSotugar, 'AA.8b. UNKNOWN compatibility (FOPRODI + SOTUGAR) is strictly excluded from viable stacks');
+
+// AA.8c: Zero-value component invariant
+const hasZeroDTComponent = stacksResult.stacks.some(s => 
+  s.components.some(c => c.allocatedAmount !== undefined && c.allocatedAmount <= 0)
+);
+assert(!hasZeroDTComponent, 'AA.8c. Zero-value (0 DT) components are strictly forbidden in candidate stacks');
+
 const bfpmeSotugarStack = stacksResult.stacks.find(s => s.components.some(c => c.programId === 'bfpme_creation') && s.supportComponents.some(c => c.programId === 'sotugar_guarantee'));
 if (bfpmeSotugarStack) {
-  assert(bfpmeSotugarStack.overallStatus === 'POTENTIALLY_COMPATIBLE', 'AA.8. BFPME + SOTUGAR stack is POTENTIALLY_COMPATIBLE (not unconditionally confirmed)');
-  assert(bfpmeSotugarStack.confidence === 'LOW', 'AA.9. BFPME + SOTUGAR stack propagates LOW confidence');
-  assert(!bfpmeSotugarStack.isReliablyCalculable, 'AA.10. Unknown BFPME rate prevents payment/amortization calculation in stack');
+  assert(bfpmeSotugarStack.overallStatus === 'POTENTIALLY_COMPATIBLE', 'AA.9. BFPME + SOTUGAR stack is POTENTIALLY_COMPATIBLE (not unconditionally confirmed)');
+  assert(bfpmeSotugarStack.confidence === 'LOW', 'AA.10. BFPME + SOTUGAR stack propagates LOW confidence');
+  assert(!bfpmeSotugarStack.isReliablyCalculable, 'AA.11. Unknown BFPME rate prevents payment/amortization calculation in stack');
 }
 
 console.log('\n================================================================');

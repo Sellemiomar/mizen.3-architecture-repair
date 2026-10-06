@@ -36,7 +36,7 @@ export function determineStackFundingRole(program: FinancingProgram): StackFundi
   if (category === 'guarantee' || type === 'guarantee' || id.includes('sotugar') || id.includes('guarantee')) {
     return 'GUARANTEE';
   }
-  if (category === 'grant_subsidy' || category === 'grant' || category === 'subsidy' || type === 'grant' || type === 'subsidy' || id.includes('prime') || id.includes('subvention') || id.includes('grant') || id.includes('cheque')) {
+  if (category === 'grant_subsidy' || category === 'grant' || category === 'subsidy' || type === 'grant' || type === 'subsidy' || id.includes('prime') || id.includes('subvention') || id.includes('grant') || id.includes('cheque') || id.includes('foprodi')) {
     return 'GRANT';
   }
   if (category === 'equity_quasi_equity' || category === 'equity' || type === 'equity' || id.includes('capital') || id.includes('fond') || id.includes('equity') || id.includes('venture')) {
@@ -45,7 +45,7 @@ export function determineStackFundingRole(program: FinancingProgram): StackFundi
   if (category === 'leasing' || type === 'leasing' || id.includes('leasing') || id.includes('ijara')) {
     return 'LEASING';
   }
-  if (category === 'bank_loan' || category === 'subsidized_loan' || category === 'credit' || category === 'debt' || type === 'debt' || id.includes('cmlt') || id.includes('bank') || id.includes('credit')) {
+  if (category === 'bank_loan' || category === 'subsidized_loan' || category === 'credit' || category === 'debt' || type === 'debt' || id.includes('cmlt') || id.includes('bank') || id.includes('credit') || id.includes('mourabaha')) {
     return 'DEBT';
   }
   return 'CASH_FINANCING';
@@ -61,9 +61,13 @@ export function mapProgramToStackComponent(
   const role = determineStackFundingRole(program);
   const isCash = isCashRole(role);
   const requested = options?.financingRequested;
-  const allocatedAmount = isCash
-    ? Math.min(program.maxAmount || requested || 0, requested || program.maxAmount || 0)
-    : undefined;
+  
+  // A cash component gets an allocated amount only if strictly positive
+  let allocatedAmount: number | undefined = undefined;
+  if (isCash && requested && requested > 0) {
+    allocatedAmount = Math.min(program.maxAmount || requested, requested);
+    if (allocatedAmount <= 0) allocatedAmount = undefined;
+  }
 
   const ruleStat = (program as any).ruleStatus || program.verification?.status || 'VERIFIED';
   const confidence = ruleStat === 'VERIFIED_HISTORICAL' ? 'LOW' : (ruleStat === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'HIGH');
@@ -75,9 +79,10 @@ export function mapProgramToStackComponent(
     providerName: { fr: program.providerId.toUpperCase(), ar: program.providerId.toUpperCase() },
     role,
     isCashFunding: isCash,
-    allocatedAmount: isCash ? allocatedAmount : undefined,
+    allocatedAmount,
     maxPotentialAmount: program.maxAmount,
     coveragePercentage: program.maxFinancingPercentage ? program.maxFinancingPercentage / 100 : undefined,
+    rateType: program.rateType,
     evidenceStatus: ruleStat,
     evidenceConfidence: confidence,
     operationalStatus: (program.id === 'bfpme_creation' || program.id === 'sotugar_guarantee') ? 'ACTIVE_NOT_CONFIRMED' : 'ACTIVE_CONFIRMED',
@@ -87,7 +92,10 @@ export function mapProgramToStackComponent(
 
 /**
  * Calculates funding gap and separates cash funding from guarantee coverage.
- * Detects duplicate program usage (double-counting).
+ * STRICT INVARIANTS:
+ * - Guarantees NEVER increase cash coverage or reduce the cash funding gap.
+ * - Double counting of identical program IDs is prevented.
+ * - Only verified cash components contribute to verifiedCashFunding.
  */
 export function calculateFundingGap(
   requiredFunding: number,
@@ -107,9 +115,11 @@ export function calculateFundingGap(
     }
     seenIds.add(comp.programId);
 
-    if (comp.isCashFunding) {
+    if (comp.isCashFunding && comp.role !== 'GUARANTEE') {
       const amount = comp.allocatedAmount ?? comp.maxPotentialAmount ?? 0;
-      verifiedCashFunding += amount;
+      if (amount > 0) {
+        verifiedCashFunding += amount;
+      }
     } else if (comp.role === 'GUARANTEE') {
       const coverage = comp.coveragePercentage ?? 0.70;
       const maxCover = comp.maxPotentialAmount ?? (requiredFunding * coverage);
@@ -117,6 +127,8 @@ export function calculateFundingGap(
     }
   }
 
+  // Cash coverage cannot exceed the required funding amount
+  verifiedCashFunding = Math.min(requiredFunding, verifiedCashFunding);
   const remainingFundingGap = Math.max(0, requiredFunding - verifiedCashFunding);
   const cashCoverageRatio = requiredFunding > 0 ? Math.min(1, verifiedCashFunding / requiredFunding) : 1;
 
@@ -143,6 +155,11 @@ export function createStackComponent(
   const isCash = isCashRole(role);
   const ruleStat = (prog as any).ruleStatus || prog.verification?.status || 'VERIFIED';
 
+  // Never assign 0 as an allocated amount
+  const validAllocatedAmount = (isCash && typeof allocatedAmount === 'number' && allocatedAmount > 0) 
+    ? allocatedAmount 
+    : undefined;
+
   return {
     programId: prog.id,
     programName: prog.name,
@@ -150,9 +167,10 @@ export function createStackComponent(
     providerName: { fr: prog.providerId.toUpperCase(), ar: prog.providerId.toUpperCase() },
     role,
     isCashFunding: isCash,
-    allocatedAmount,
+    allocatedAmount: validAllocatedAmount,
     maxPotentialAmount: prog.maxAmount,
     coveragePercentage: prog.maxFinancingPercentage ? prog.maxFinancingPercentage / 100 : undefined,
+    rateType: prog.rateType,
     evidenceStatus: ruleStat,
     evidenceConfidence: match.evidenceEvaluation?.confidenceScore || 'MEDIUM',
     operationalStatus: (match.evidenceEvaluation as any)?.operationalStatus || ((prog.id === 'bfpme_creation' || prog.id === 'sotugar_guarantee') ? 'ACTIVE_NOT_CONFIRMED' : 'ACTIVE_CONFIRMED'),
@@ -176,6 +194,14 @@ export function evaluateStackCandidate(
   const ids = allComponents.map(c => c.programId);
   if (new Set(ids).size !== ids.length) {
     return null;
+  }
+
+  // Ensure cash components have meaningful non-zero allocated amounts if multiple cash sources exist
+  if (cashComponents.length > 1) {
+    const hasZeroOrMissingCash = cashComponents.some(c => !c.allocatedAmount || c.allocatedAmount <= 0);
+    if (hasZeroOrMissingCash) {
+      return null;
+    }
   }
 
   // Evaluate pairwise compatibilities
@@ -236,7 +262,7 @@ export function evaluateStackCandidate(
     }
   }
 
-  // If incompatible, discard from candidate stacks
+  // If incompatible, discard completely
   if (overallStatus === 'INCOMPATIBLE') {
     return null;
   }
@@ -246,7 +272,7 @@ export function evaluateStackCandidate(
 
   // Rate & calculation safety
   for (const comp of cashComponents) {
-    if (comp.role === 'DEBT' && comp.evidenceStatus === 'UNKNOWN') {
+    if (comp.role === 'DEBT' && (comp.evidenceStatus === 'UNKNOWN' || comp.rateType === 'unknown' || comp.programId === 'bfpme_creation')) {
       isReliablyCalculable = false;
       calculationLimitations.push({
         fr: `Taux ou marge non confirmés pour ${comp.programName.fr} : simulation de mensualité désactivée.`,
@@ -260,7 +286,7 @@ export function evaluateStackCandidate(
     ar: `هيكل تمويلي : ${allComponents.map(c => c.programName.ar).join(' + ')}`
   };
   const description = {
-    fr: `Combinaison de ${cashComponents.length} source(s) de financement et ${supportComponents.length} mécanisme(s) de garantie/support.`,
+    fr: `Combinaison de ${cashComponents.length} source(s) de financement direct et ${supportComponents.length} mécanisme(s) de garantie/support.`,
     ar: `مزيج من ${cashComponents.length} مصدر تمويل مباشر و ${supportComponents.length} آلية ضمان أو دعم.`
   };
 
@@ -287,6 +313,10 @@ export function evaluateStackCandidate(
 
 /**
  * Generates and ranks defensible financing stacks from matched programs.
+ * STRICT FILTERING RULE:
+ * - An UNKNOWN compatibility relationship must NOT be presented as a viable/recommended financing stack.
+ * - Stacks with overallStatus 'SUPPORTED', 'POTENTIALLY_COMPATIBLE', or 'CONDITIONAL' are returned in `stacks`.
+ * - Combinations with UNKNOWN compatibility are quarantined under `unverifiedCombinations`.
  */
 export function generateFinancingStacks(
   input: FinancingStackInput | { applicantProfile?: ApplicantProfile; matchResults?: MatchResult[]; profile?: ApplicantProfile; matchedPrograms?: MatchResult[]; requiredFunding?: number } | MatchResult[],
@@ -313,7 +343,8 @@ export function generateFinancingStacks(
   const cashMatches = eligibleMatches.filter(m => isCashRole(determineStackFundingRole(m.program)));
   const supportMatches = eligibleMatches.filter(m => !isCashRole(determineStackFundingRole(m.program)));
 
-  const candidateStacks: FinancingStackCandidate[] = [];
+  const viableStacks: FinancingStackCandidate[] = [];
+  const unverifiedStacks: FinancingStackCandidate[] = [];
   const processedSignatures = new Set<string>();
   let evaluatedPairCount = 0;
   let verifiedPairs = 0;
@@ -334,16 +365,24 @@ export function generateFinancingStacks(
 
   // 1. Single cash program + Guarantee support (e.g. BFPME or Bank Loan + SOTUGAR)
   for (const cash of cashMatches) {
-    const cashComp = createStackComponent(cash, Math.min(cash.program.maxAmount || requiredFunding, requiredFunding));
+    const cashAmount = Math.min(cash.program.maxAmount || requiredFunding, requiredFunding);
+    if (cashAmount <= 0) continue;
+
+    const cashComp = createStackComponent(cash, cashAmount);
     
     for (const sup of supportMatches) {
-      const supComp = createStackComponent(sup);
+      const supComp = createStackComponent(sup); // Guarantee gets undefined cash allocation
       const stack = evaluateStackCandidate([cashComp], [supComp], requiredFunding, profile.userContribution);
+      
       if (stack && stack.overallStatus !== 'INCOMPATIBLE') {
         const sig = stack.id;
         if (!processedSignatures.has(sig)) {
           processedSignatures.add(sig);
-          candidateStacks.push(stack);
+          if (stack.overallStatus === 'SUPPORTED' || stack.overallStatus === 'POTENTIALLY_COMPATIBLE' || stack.overallStatus === 'CONDITIONAL') {
+            viableStacks.push(stack);
+          } else if (stack.overallStatus === 'UNKNOWN') {
+            unverifiedStacks.push(stack);
+          }
         }
       }
     }
@@ -355,9 +394,37 @@ export function generateFinancingStacks(
       const cashA = cashMatches[i];
       const cashB = cashMatches[j];
 
-      const amountA = Math.min(cashA.program.maxAmount || requiredFunding, requiredFunding);
+      // Check pairwise compatibility FIRST: if UNKNOWN or INCOMPATIBLE, do not create co-financing amounts
+      const pairCompat = getStackCompatibility(cashA.program.id, cashB.program.id);
+      if (pairCompat.compatibilityStatus === 'INCOMPATIBLE') {
+        continue;
+      }
+
+      // Compute allocation respecting documented caps
+      let capA = cashA.program.maxAmount || requiredFunding;
+      if (cashA.program.maxFinancingPercentage && profile.totalProjectCost) {
+        const percentageCap = profile.totalProjectCost * (cashA.program.maxFinancingPercentage / 100);
+        capA = Math.min(capA, percentageCap);
+      }
+      const amountA = Math.min(capA, requiredFunding);
       const remainingNeed = Math.max(0, requiredFunding - amountA);
-      const amountB = Math.min(cashB.program.maxAmount || remainingNeed, remainingNeed);
+
+      // If program A alone covers 100% of funding need, no 2-cash stack is needed unless explicitly capped
+      if (remainingNeed <= 0) {
+        continue;
+      }
+
+      let capB = cashB.program.maxAmount || remainingNeed;
+      if (cashB.program.maxFinancingPercentage && profile.totalProjectCost) {
+        const percentageCap = profile.totalProjectCost * (cashB.program.maxFinancingPercentage / 100);
+        capB = Math.min(capB, percentageCap);
+      }
+      const amountB = Math.min(capB, remainingNeed);
+
+      // Both components MUST have strictly positive allocated amounts
+      if (amountA <= 0 || amountB <= 0) {
+        continue;
+      }
 
       const compA = createStackComponent(cashA, amountA);
       const compB = createStackComponent(cashB, amountB);
@@ -368,7 +435,11 @@ export function generateFinancingStacks(
         const sig = stack2.id;
         if (!processedSignatures.has(sig)) {
           processedSignatures.add(sig);
-          candidateStacks.push(stack2);
+          if (stack2.overallStatus === 'SUPPORTED' || stack2.overallStatus === 'POTENTIALLY_COMPATIBLE' || stack2.overallStatus === 'CONDITIONAL') {
+            viableStacks.push(stack2);
+          } else if (stack2.overallStatus === 'UNKNOWN') {
+            unverifiedStacks.push(stack2);
+          }
         }
       }
 
@@ -380,7 +451,11 @@ export function generateFinancingStacks(
           const sig = stack3.id;
           if (!processedSignatures.has(sig)) {
             processedSignatures.add(sig);
-            candidateStacks.push(stack3);
+            if (stack3.overallStatus === 'SUPPORTED' || stack3.overallStatus === 'POTENTIALLY_COMPATIBLE' || stack3.overallStatus === 'CONDITIONAL') {
+              viableStacks.push(stack3);
+            } else if (stack3.overallStatus === 'UNKNOWN') {
+              unverifiedStacks.push(stack3);
+            }
           }
         }
       }
@@ -407,7 +482,7 @@ export function generateFinancingStacks(
     LOW: 1,
   };
 
-  const rankedStacks = candidateStacks.sort((a, b) => {
+  const rankedViableStacks = viableStacks.sort((a, b) => {
     const diffStatus = (statusWeight[a.overallStatus] || 0) - (statusWeight[b.overallStatus] || 0);
     if (diffStatus !== 0) return -diffStatus;
 
@@ -430,7 +505,8 @@ export function generateFinancingStacks(
     requiredFunding,
     totalProjectCost: profile.totalProjectCost,
     userContribution: profile.userContribution,
-    stacks: rankedStacks,
+    stacks: rankedViableStacks,
+    unverifiedCombinations: unverifiedStacks,
     evaluatedPairCount,
     evidenceSummary: {
       verifiedPairs,

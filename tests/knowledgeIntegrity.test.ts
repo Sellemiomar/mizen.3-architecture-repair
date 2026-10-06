@@ -18,8 +18,8 @@ import {
 import { validateKnowledgeCatalogue } from '../src/knowledge/knowledgeValidator';
 import { ResearchImportPipeline } from '../src/knowledge/researchImport';
 import { ApplicantProfile, FinancingProgram, Provider } from '../src/types/financing';
-import { getAuthoritativeFinancingPrograms } from '../src/knowledge/authoritativeProjection';
-import { PROVIDERS } from '../src/data/financingData';
+import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
+const PROVIDERS = getAuthoritativeProviders();
 const FINANCING_PROGRAMS = getAuthoritativeFinancingPrograms();
 
 export function runKnowledgeIntegrityTests(): { passed: number; failed: number; total: number } {
@@ -263,6 +263,46 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
   ]);
   assert(importResult.success, 'Research import pipeline processes structured batch');
   assert(importResult.importedClaims.length === 1, 'Research import creates verified canonical claim');
+
+  console.log('\n--- SECTION 6: End-to-End Runtime Pipeline & Stale Data Immunity ---');
+
+  // E2E Test: Full matching flow through Authoritative Projection -> Matcher -> Calculations -> Stacks
+  const fullFlowProfile: ApplicantProfile = {
+    journey: 'startup',
+    purpose: 'creation',
+    totalProjectCost: 1000000,
+    userContribution: 200000,
+    financingRequested: 800000,
+    sector: 'industry',
+    location: 'Sfax',
+    businessStage: 'creation_underway',
+    legalStructure: 'sarl'
+  };
+
+  const productionMatches = runMatchingEngine(fullFlowProfile);
+  const bfpmeMatch = productionMatches.find(m => m.program.id === 'bfpme_creation');
+
+  assert(bfpmeMatch !== undefined, 'E2E-1: BFPME is evaluated in production matching engine');
+  assert(bfpmeMatch?.program.rateType === 'unknown', 'E2E-2: BFPME rateType is strictly unknown in production matching result');
+  assert(bfpmeMatch?.program.estimatedRateAnnual === undefined, 'E2E-3: BFPME estimatedRateAnnual is undefined (no fabricated rate)');
+  assert(
+    Boolean(bfpmeMatch?.program.rateDescription.fr.includes('2 à 4')) && !Boolean(bfpmeMatch?.program.rateDescription.fr.includes('TMM +')),
+    'E2E-4: BFPME rate description preserves 2-4.5 margin range without inventing TMM+ formula'
+  );
+
+  const bfpmeEndCost = calculateFinancingCost(bfpmeMatch?.program.maxAmount || 500000, bfpmeMatch!.program);
+  assert(!bfpmeEndCost.canCalculateReliably, 'E2E-5: BFPME cost calculation canCalculateReliably is strictly false');
+  assert(bfpmeEndCost.monthlyPayment === undefined, 'E2E-6: BFPME monthly payment installment is undefined');
+
+  // Stale Data Non-Survival Test:
+  // "Can a stale financing fact now survive underneath a newer authoritative claim and still reach the production matching engine?"
+  const staleDataSurvives = (
+    bfpmeMatch?.program.estimatedRateAnnual !== undefined ||
+    bfpmeMatch?.program.rateType === 'variable_tmm' ||
+    Boolean(bfpmeMatch?.program.rateDescription.fr.includes('TMM + 3')) ||
+    Boolean(bfpmeMatch?.program.rateDescription.fr.includes('TMM +'))
+  );
+  assert(!staleDataSurvives, 'E2E-7: STALE DATA NON-SURVIVAL: Stale BFPME 3% margin & TMM relationship cannot survive to production matching');
 
   return {
     passed,
