@@ -42,8 +42,11 @@ export class KnowledgeRegistry {
     if (pending) return 'ACTIVE_NOT_CONFIRMED';
     const historical = claims.find(c => c.operationalStatus === 'HISTORICAL_ONLY');
     if (historical) return 'HISTORICAL_ONLY';
-    const product = this.productsMap.get(programId);
-    return product?.status === 'INACTIVE' ? 'INACTIVE_CONFIRMED' : 'UNKNOWN';
+    const inactive = claims.find(c => c.operationalStatus === 'INACTIVE_CONFIRMED');
+    if (inactive) return 'INACTIVE_CONFIRMED';
+    // A missing operational claim is UNKNOWN. Do not fall back to a legacy
+    // product.active/status flag because that flag is not authoritative.
+    return 'UNKNOWN';
   }
 
   public getProgramKnowledgeVersion(programId: string): string {
@@ -52,25 +55,19 @@ export class KnowledgeRegistry {
   }
 
   public getRuleEvidence(programId: string, field: string): RuleEvidence | undefined {
+    // Financing facts are claims-only. Never infer a current rule from a
+    // legacy criterion when the authoritative claim repository has no claim.
     const claim = getAuthoritativeClaim(programId, field);
-    if (claim) {
-      return {
-        field,
-        status: claim.ruleStatus as KnowledgeRuleStatus,
-        value: claim.value,
-        evidenceStrength: claim.evidenceStrength,
-        unknownReason: undefined,
-        notes: claim.notes
-      };
-    }
+    if (!claim) return undefined;
 
-    const prod = this.productsMap.get(programId);
-    if (!prod) return undefined;
-    const fieldVer = prod.financialTerms.verification.find(v => v.field === field);
-    if (fieldVer) return { field, status: fieldVer.status as KnowledgeRuleStatus, evidenceStrength: 'UNVERIFIED', unknownReason: fieldVer.unknownReason, notes: fieldVer.notes };
-    const criterion = prod.criteria.find(c => c.field === field);
-    if (criterion) return { field, status: 'VERIFIED_CURRENT', value: criterion.expectedValue, evidenceStrength: 'DIRECT_PRIMARY_CURRENT' };
-    return undefined;
+    return {
+      field,
+      status: claim.ruleStatus as KnowledgeRuleStatus,
+      value: claim.value,
+      evidenceStrength: claim.evidenceStrength,
+      unknownReason: undefined,
+      notes: claim.notes
+    };
   }
 
   public isFieldVerifiedCurrent(programId: string, field: string): boolean {
