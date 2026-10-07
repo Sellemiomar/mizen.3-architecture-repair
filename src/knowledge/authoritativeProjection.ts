@@ -28,14 +28,14 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
 }
 
 function mapCategory(product: FinancingProduct): FinancingCategory {
-  const category = product.category;
-  if (category === 'PUBLIC_FUNDING' || product.financingDomains.includes('PUBLIC_FUNDING')) return 'grant_subsidy';
+  const category = product.category as string;
+  if (category === 'PUBLIC_FUNDING' || product.financingDomains.includes('PUBLIC_FUNDING' as any)) return 'grant_subsidy';
   if (category === 'MICROFINANCE') return 'microcredit';
   if (category === 'GUARANTEE') return 'guarantee';
   if (category === 'GRANT') return 'grant_subsidy';
   if (category === 'EQUITY') return 'equity_quasi_equity';
   if (category === 'ISLAMIC_FINANCE') return 'islamic_finance';
-  if (category === 'SUBSIDIZED_LOAN' || product.financialTerms.rate?.type === 'INTEREST_FREE_SUBSIDIZED') return 'subsidized_loan';
+  if (category === 'SUBSIDIZED_LOAN' || (product.financialTerms.rate?.type as string) === 'INTEREST_FREE_SUBSIDIZED') return 'subsidized_loan';
   if (category === 'BANK_LOAN' || category === 'LEASING') return 'bank_loan';
   // Canonical STARTUP is a domain label, not a funding role. Keep debt-like
   // products as loans and reserve equity/quasi-equity for explicit equity data.
@@ -55,6 +55,7 @@ function mapPurpose(purpose: string): FinancingPurpose | undefined {
     VEHICLE_PERSONAL: 'vehicle',
     VEHICLE_PRO: 'vehicle',
     HOME_PURCHASE: 'first_home',
+    FIRST_HOME: 'first_home',
     HOME_CONSTRUCTION: 'home_construction'
   };
   return map[purpose];
@@ -62,7 +63,7 @@ function mapPurpose(purpose: string): FinancingPurpose | undefined {
 
 function mapRateType(rate: FinancingProduct['financialTerms']['rate']): FinancingProgram['rateType'] {
   if (!rate) return 'unknown';
-  switch (rate.type) {
+  switch (rate.type as string) {
     case 'FIXED':
       return rate.margin !== undefined ? 'fixed' : 'unknown';
     case 'TMM_PLUS_MARGIN':
@@ -101,7 +102,10 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     projectCostMax: product.financialTerms.projectCost?.max,
     maxFinancingPercentage: undefined,
     rateType: mapRateType(rate),
-    rateDescription: rate?.explanation || { fr: 'Taux non établi.', ar: 'نسبة التمويل غير مثبتة.' },
+    rateDescription: {
+      fr: rate?.explanation?.fr || 'Taux non établi.',
+      ar: rate?.explanation?.ar || 'نسبة التمويل غير مثبتة.'
+    },
     estimatedRateAnnual: rate?.value,
     durationMonthsMin: duration?.min ?? 0,
     durationMonthsMax: duration?.max ?? 0,
@@ -121,7 +125,10 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       requiresDegree: product.applicability.requiresHigherEducationDegree,
       requiresStartupLabel: product.applicability.requiresStartupActLabel,
       regionalPriorityZonesOnly: false,
-      otherRules: product.criteria.map(c => c.description)
+      otherRules: product.criteria.map(c => ({
+        fr: c.description?.fr || '',
+        ar: c.description?.ar || ''
+      }))
     },
     requiredDocuments: (product.requiredDocuments || []).map(d => ({
       id: d.id,
@@ -140,18 +147,18 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       unverifiedApplicability: product.verification.status === 'UNVERIFIED'
     },
     verification: {
-      status: product.verification.status === 'VERIFIED' ? 'VERIFIED' : 'PARTIALLY_VERIFIED',
+      status: (product.verification.status === 'VERIFIED' && !product.verification.fields.some(f => f.status !== 'VERIFIED')) ? 'VERIFIED' : 'PARTIALLY_VERIFIED',
       sourceUrl: product.sources[0]?.url || '',
       sourceTitle: product.sources[0]?.title || '',
       sourceType: 'official_portal',
-      dateChecked: product.lastVerifiedAt || product.sources[0]?.retrievedAt || '',
+      dateChecked: (product as any).lastVerifiedAt || product.sources[0]?.retrievedAt || '',
       verifiedFields: product.verification.fields.filter(f => f.status === 'VERIFIED').map(f => f.field),
       unverifiedFields: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.field),
       notes: {
         fr: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.fr).filter(Boolean).join(' ') || '',
         ar: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.ar).filter(Boolean).join(' ') || ''
       },
-      lastUpdateYear: Number((product.lastVerifiedAt || '').slice(0, 4)) || new Date().getFullYear()
+      lastUpdateYear: Number(((product as any).lastVerifiedAt || product.sources[0]?.retrievedAt || '').slice(0, 4)) || new Date().getFullYear()
     }
   };
 
@@ -197,10 +204,14 @@ function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
     }
     case 'pricingRelationship':
       if (claim.value === 'UNKNOWN') {
+        const existing = program.rateDescription?.fr || '';
+        const range = existing.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
         program.rateType = 'unknown';
         program.estimatedRateAnnual = undefined;
         program.rateDescription = {
-          fr: 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
+          fr: range
+            ? `Marge publiée : ${range} points. Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.`
+            : 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
           ar: 'العلاقة السعرية مع TMM غير معلومة. لا توجد محاكاة آلية للنسبة.'
         };
       }
@@ -285,10 +296,10 @@ export function getAuthoritativeProviders(): Provider[] {
   return CANONICAL_PROVIDERS.map(p => ({
     id: p.id,
     name: p.name,
-    acronym: p.acronym,
+    acronym: p.acronym || p.name,
     type: mapProviderType(p.type),
     description: p.description as { fr: string; ar: string },
-    website: p.website,
+    website: p.website || '',
     headquarters: '',
     networkCoverage: { fr: 'Tunisie', ar: 'تونس' },
     officialBadgeText: {

@@ -179,10 +179,10 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
       if (evalPair.compatibilityStatus === 'INCOMPATIBLE') overallStatus = 'INCOMPATIBLE';
       else if (evalPair.compatibilityStatus === 'UNKNOWN') {
         overallStatus = 'UNKNOWN';
-        unresolvedAssumptions.push(evalPair.rationale);
+        unresolvedAssumptions.push({ fr: evalPair.rationale.fr || '', ar: evalPair.rationale.ar || '' });
       } else if (evalPair.compatibilityStatus === 'POTENTIALLY_COMPATIBLE' && overallStatus === 'SUPPORTED') {
         overallStatus = evalPair.isHistoricalOnly ? 'CONDITIONAL' : 'POTENTIALLY_COMPATIBLE';
-        unresolvedAssumptions.push(evalPair.rationale);
+        unresolvedAssumptions.push({ fr: evalPair.rationale.fr || '', ar: evalPair.rationale.ar || '' });
       }
       if (evalPair.confidence === 'LOW') overallConfidence = 'LOW';
       else if (evalPair.confidence === 'MEDIUM' && overallConfidence !== 'LOW') overallConfidence = 'MEDIUM';
@@ -242,7 +242,7 @@ export function generateFinancingStacks(
     requiredFunding = requestedFundingArg ?? profile.financingRequested ?? (profile.totalProjectCost ? profile.totalProjectCost - (profile.userContribution || 0) : 80000);
   } else {
     const raw = input as any;
-    matches = raw.matchResults || raw.matchedPrograms || [];
+    matches = raw.eligibleMatches || raw.matchResults || raw.matchedPrograms || [];
     profile = raw.applicantProfile || raw.profile || ({ totalProjectCost: 100000, financingRequested: 80000, purpose: 'creation' } as ApplicantProfile);
     requiredFunding = raw.requiredFunding ?? profile.financingRequested ?? (profile.totalProjectCost ? profile.totalProjectCost - (profile.userContribution || 0) : 80000);
   }

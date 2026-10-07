@@ -19,6 +19,8 @@ import { validateKnowledgeCatalogue } from '../src/knowledge/knowledgeValidator'
 import { ResearchImportPipeline } from '../src/knowledge/researchImport';
 import { ApplicantProfile, FinancingProgram, Provider } from '../src/types/financing';
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
+import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
+import { generateFinancingStacks } from '../src/engine/financingStackEngine';
 const PROVIDERS = getAuthoritativeProviders();
 const FINANCING_PROGRAMS = getAuthoritativeFinancingPrograms();
 
@@ -266,13 +268,33 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   console.log('\n--- SECTION 6: End-to-End Runtime Pipeline & Stale Data Immunity ---');
 
-  // E2E Test: Full matching flow through Authoritative Projection -> Matcher -> Calculations -> Stacks
+  // Pipeline Stage 1: CLAIMS REPOSITORY
+  const bfpmeClaims = CLAIMS_REPOSITORY.getAllClaims('bfpme_creation');
+  const marginClaim = bfpmeClaims.find(c => c.field === 'publishedMarginRange');
+  const pricingRelClaim = bfpmeClaims.find(c => c.field === 'pricingRelationship');
+  assert(marginClaim !== undefined && (marginClaim.value as any).min === 2 && (marginClaim.value as any).max === 4.5, 'E2E-Stage1.1: Claims repository establishes 2-4.5% published margin');
+  assert(pricingRelClaim !== undefined && pricingRelClaim.value === 'UNKNOWN', 'E2E-Stage1.2: Claims repository establishes pricingRelationship as UNKNOWN');
+  assert(!bfpmeClaims.some(c => c.field === 'publishedMarginRange' && c.value === 3), 'E2E-Stage1.3: Legacy 3% margin does not exist in active claims');
+
+  // Pipeline Stage 2: AUTHORITATIVE PROJECTION
+  const projBfpme = FINANCING_PROGRAMS.find(p => p.id === 'bfpme_creation')!;
+  assert(projBfpme.rateType === 'unknown', 'E2E-Stage2.1: Authoritative projection sets rateType to unknown');
+  assert(projBfpme.estimatedRateAnnual === undefined, 'E2E-Stage2.2: Authoritative projection sets estimatedRateAnnual to undefined');
+  assert(projBfpme.maxAmount === 2500000, 'E2E-Stage2.3: Authoritative projection applies 2,500,000 DT ceiling');
+  assert(projBfpme.projectCostMin === 150000 && projBfpme.projectCostMax === 15000000, 'E2E-Stage2.4: Authoritative projection applies 150k - 15M DT project cost limits');
+
+  // Pipeline Stage 3: KNOWLEDGE REGISTRY
+  const regBfpme = getCanonicalProgram('bfpme_creation')!;
+  assert(regBfpme.financialTerms.rate?.type === 'UNKNOWN', 'E2E-Stage3.1: Knowledge registry product rate type is UNKNOWN');
+  assert(regBfpme.financialTerms.rate?.referenceIndex === undefined, 'E2E-Stage3.2: Knowledge registry referenceIndex is undefined (no TMM index hardcoded)');
+
+  // Pipeline Stage 4: MATCHING ENGINE
   const fullFlowProfile: ApplicantProfile = {
     journey: 'startup',
     purpose: 'creation',
     totalProjectCost: 1000000,
-    userContribution: 200000,
-    financingRequested: 800000,
+    userContribution: 350000,
+    financingRequested: 650000,
     sector: 'industry',
     location: 'Sfax',
     businessStage: 'creation_underway',
@@ -282,27 +304,41 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
   const productionMatches = runMatchingEngine(fullFlowProfile);
   const bfpmeMatch = productionMatches.find(m => m.program.id === 'bfpme_creation');
 
-  assert(bfpmeMatch !== undefined, 'E2E-1: BFPME is evaluated in production matching engine');
-  assert(bfpmeMatch?.program.rateType === 'unknown', 'E2E-2: BFPME rateType is strictly unknown in production matching result');
-  assert(bfpmeMatch?.program.estimatedRateAnnual === undefined, 'E2E-3: BFPME estimatedRateAnnual is undefined (no fabricated rate)');
+  assert(bfpmeMatch !== undefined, 'E2E-Stage4.1: BFPME is evaluated in production matching engine');
+  assert(bfpmeMatch?.program.rateType === 'unknown', 'E2E-Stage4.2: BFPME rateType is strictly unknown in production matching result');
+  assert(bfpmeMatch?.program.estimatedRateAnnual === undefined, 'E2E-Stage4.3: BFPME estimatedRateAnnual is undefined (no fabricated rate)');
   assert(
     Boolean(bfpmeMatch?.program.rateDescription.fr.includes('2 à 4')) && !Boolean(bfpmeMatch?.program.rateDescription.fr.includes('TMM +')),
-    'E2E-4: BFPME rate description preserves 2-4.5 margin range without inventing TMM+ formula'
+    'E2E-Stage4.4: BFPME rate description preserves 2-4.5 margin range without inventing TMM+ formula'
   );
 
+  // Pipeline Stage 5: FINANCING STACK & CALCULATION BOUNDS
   const bfpmeEndCost = calculateFinancingCost(bfpmeMatch?.program.maxAmount || 500000, bfpmeMatch!.program);
-  assert(!bfpmeEndCost.canCalculateReliably, 'E2E-5: BFPME cost calculation canCalculateReliably is strictly false');
-  assert(bfpmeEndCost.monthlyPayment === undefined, 'E2E-6: BFPME monthly payment installment is undefined');
+  assert(!bfpmeEndCost.canCalculateReliably, 'E2E-Stage5.1: BFPME cost calculation canCalculateReliably is strictly false');
+  assert(bfpmeEndCost.monthlyPayment === undefined, 'E2E-Stage5.2: BFPME monthly payment installment is undefined');
+  assert(bfpmeEndCost.rateOrigin === 'unavailable', 'E2E-Stage5.3: BFPME rateOrigin is unavailable');
 
-  // Stale Data Non-Survival Test:
-  // "Can a stale financing fact now survive underneath a newer authoritative claim and still reach the production matching engine?"
+  const stackResult = generateFinancingStacks({
+    profile: fullFlowProfile,
+    matchResults: productionMatches.filter(m => m.status === 'STRONG_ALIGNMENT' || m.status === 'POTENTIAL_ALIGNMENT' || m.status === 'REQUIRES_CONFIRMATION')
+  });
+  const bfpmeStacks = stackResult.stacks.filter(s => s.components.some(c => c.programId === 'bfpme_creation'));
+  assert(bfpmeStacks.length > 0, 'E2E-Stage5.4: Financing stack engine produces candidate structures with BFPME');
+  for (const s of bfpmeStacks) {
+    const comp = s.components.find(c => c.programId === 'bfpme_creation')!;
+    assert(comp.isCashFunding && (comp.role as string === 'DEBT' || comp.role as string === 'CASH_FINANCING_LOAN'), 'E2E-Stage5.5: BFPME stack component classified strictly as cash debt financing');
+    assert((s as any).estimatedMonthlyPayment === undefined && !s.isReliablyCalculable, 'E2E-Stage5.6: Financing stack with BFPME does not fabricate monthly payment amortization');
+  }
+
+  // Pipeline Stage 6: STALE DATA NON-SURVIVAL GUARANTEE
+  // "Can a stale financing fact now survive underneath a newer authoritative claim and still reach the production matching engine or stack?"
   const staleDataSurvives = (
     bfpmeMatch?.program.estimatedRateAnnual !== undefined ||
     bfpmeMatch?.program.rateType === 'variable_tmm' ||
     Boolean(bfpmeMatch?.program.rateDescription.fr.includes('TMM + 3')) ||
     Boolean(bfpmeMatch?.program.rateDescription.fr.includes('TMM +'))
   );
-  assert(!staleDataSurvives, 'E2E-7: STALE DATA NON-SURVIVAL: Stale BFPME 3% margin & TMM relationship cannot survive to production matching');
+  assert(!staleDataSurvives, 'E2E-Stage6.1: STALE DATA NON-SURVIVAL: Stale BFPME 3% margin & TMM relationship cannot survive to production runtime');
 
   return {
     passed,

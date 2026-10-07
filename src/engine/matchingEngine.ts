@@ -307,7 +307,11 @@ export function evaluateProgramCompatibility(
         status: program.verification.status,
         isOutdated: program.verification.status === 'OUTDATED',
         hasUnverifiedFields: program.verification.unverifiedFields.length > 0,
-        confidenceScore: program.verification.status === 'VERIFIED' ? 'HIGH' : 'LOW',
+        confidenceScore: (program.id === 'sotugar_guarantee' || (program as any).operationalStatus === 'HISTORICAL_ONLY' || program.verification.status === 'OUTDATED')
+          ? 'LOW'
+          : (program.verification.unverifiedFields.length > 0 || program.verification.status === 'PARTIALLY_VERIFIED')
+            ? 'MEDIUM'
+            : program.verification.status === 'VERIFIED' ? 'HIGH' : 'LOW',
         notes: program.verification.notes
       },
       reasons: {
@@ -791,6 +795,25 @@ export function evaluateProgramCompatibility(
         });
       }
     }
+  } else if (program.id === 'premier_logement') {
+    const cost = applicant.totalProjectCost || 0;
+    const isProjectCostOk = (!program.projectCostMin || cost >= program.projectCostMin) &&
+                            (!program.projectCostMax || cost <= program.projectCostMax);
+    if (isProjectCostOk) {
+      amountStatus = 'PASS';
+      matchedBecause.push({
+        fr: `Coût du logement (${cost.toLocaleString('fr-TN')} TND) dans la fourchette d'éligibilité Premier Logement (80k - 250k TND).`,
+        ar: `كلفة المسكن (${cost.toLocaleString('fr-TN')} د) ضمن النطاق المؤهل لبرنامج المسكن الأول.`
+      });
+    } else {
+      amountStatus = 'FAIL';
+      const detail = {
+        fr: `Coût du logement (${cost.toLocaleString('fr-TN')} TND) hors barème Premier Logement (80k - 250k TND).`,
+        ar: `كلفة المسكن (${cost.toLocaleString('fr-TN')} د) خارج النطاق المؤهل للمسكن الأول.`
+      };
+      financialDetails.push(detail);
+      potentialIssues.push(detail);
+    }
   } else {
     // General amount checks for other programs
     if (applicant.financingRequested !== undefined && applicant.financingRequested > 0) {
@@ -881,13 +904,27 @@ export function evaluateProgramCompatibility(
     });
   }
 
-  const isHistorical = program.id === 'sotugar_guarantee' || (program as any).operationalStatus === 'HISTORICAL_ONLY' || program.verification.status === 'OUTDATED';
+  const isHistorical = program.id === 'sotugar_guarantee' || 
+    (program as any).operationalStatus === 'HISTORICAL_ONLY' || 
+    program.verification.status === 'OUTDATED' ||
+    (program.verification.status as string) === 'HISTORICAL';
+
+  const hasUnverified = program.verification.unverifiedFields && program.verification.unverifiedFields.length > 0;
+  const isPartiallyVerified = program.verification.status === 'PARTIALLY_VERIFIED' || hasUnverified;
+
+  const confidenceScore = isHistorical
+    ? 'LOW'
+    : isPartiallyVerified
+      ? 'MEDIUM'
+      : program.verification.status === 'VERIFIED'
+        ? 'HIGH'
+        : 'LOW';
 
   const evidenceEvaluation: EvidenceEvaluation = {
-    status: program.verification.status,
+    status: isHistorical ? (program.verification.status === 'OUTDATED' ? 'OUTDATED' : 'PARTIALLY_VERIFIED') : isPartiallyVerified ? 'PARTIALLY_VERIFIED' : program.verification.status,
     isOutdated,
-    hasUnverifiedFields: program.verification.unverifiedFields.length > 0,
-    confidenceScore: program.verification.status === 'VERIFIED' ? 'HIGH' : isHistorical ? 'LOW' : 'MEDIUM',
+    hasUnverifiedFields: Boolean(hasUnverified),
+    confidenceScore,
     notes: program.verification.notes
   };
 

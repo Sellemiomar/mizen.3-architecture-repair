@@ -343,7 +343,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       )}
 
       {/* COMBINATIONS TO INVESTIGATE — UNKNOWN IS NEVER PRESENTED AS COMPATIBLE */}
-      {stackResult.unverifiedCombinations.length > 0 && (
+      {(stackResult.unverifiedCombinations || []).length > 0 && (
         <div className="p-6 sm:p-7 rounded-3xl bg-amber-50/60 border border-amber-200 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-amber-200/70 pb-4">
             <div>
@@ -352,7 +352,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   {language === 'ar' ? 'تركيبات تتطلب التثبت' : 'Pistes à investiguer'}
                 </span>
                 <span className="text-xs text-amber-800/80 font-medium">
-                  {stackResult.unverifiedCombinations.length} {language === 'ar' ? 'تركيبات معروضة' : 'combinaisons affichées'}
+                  {(stackResult.unverifiedCombinations || []).length} {language === 'ar' ? 'تركيبات معروضة' : 'combinaisons affichées'}
                   {' · '}
                   {stackResult.evidenceSummary.unknownPairs} {language === 'ar' ? 'علاقات توافق غير موثقة' : 'relations de compatibilité non documentées'}
                 </span>
@@ -372,7 +372,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 gap-3">
-            {stackResult.unverifiedCombinations.slice(0, 6).map((stack) => {
+            {(stackResult.unverifiedCombinations || []).slice(0, 6).map((stack) => {
               const names = [...stack.components, ...stack.supportComponents].map((c) => c.programName[language]);
               return (
                 <div key={`unknown-${stack.id}`} className="p-4 rounded-2xl bg-white border border-amber-200/80">

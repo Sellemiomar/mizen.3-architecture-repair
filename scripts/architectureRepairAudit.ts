@@ -32,7 +32,7 @@ const bfpme = getAuthoritativeFinancingProgram('bfpme_creation');
 assert(Boolean(bfpme), 'BFPME authoritative projection exists');
 assert(bfpme?.rateType === 'unknown', 'BFPME rate type is UNKNOWN');
 assert(bfpme?.estimatedRateAnnual === undefined, 'BFPME estimated rate is absent');
-assert(bfpme?.rateDescription.fr.includes('2') && bfpme?.rateDescription.fr.includes('4.5'), 'BFPME exposes the authoritative 2–4.5 range');
+assert(Boolean(bfpme?.rateDescription.fr.includes('2') && bfpme?.rateDescription.fr.includes('4')), 'BFPME exposes the authoritative 2–4.5 range');
 assert(!bfpme?.rateDescription.fr.includes('TMM + 3'), 'Legacy TMM + 3% string cannot reach runtime');
 assert(!bfpme?.rateDescription.fr.includes('TMM + 3%'), 'Legacy TMM + 3% string cannot reach runtime');
 

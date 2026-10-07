@@ -27,7 +27,7 @@ import {
   BusinessStage,
   DemoScenario
 } from '../types/financing';
-import { TUNISIAN_GOVERNORATES } from '../data/financingData';
+import { TUNISIAN_GOVERNORATES } from '../data/geography';
 import { TRANSLATIONS } from '../i18n/translations';
 import { TrustBadge } from './TrustBadge';
 import { parseTextToProfileFallback } from '../utils/intakeParser';

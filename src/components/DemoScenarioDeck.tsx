@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles, ArrowRight, Building2, Home, Factory, TrendingUp, Wrench, CheckCircle2, Shield, Car } from 'lucide-react';
 import { DemoScenario, Language, ApplicantProfile } from '../types/financing';
-import { DEMO_SCENARIOS } from '../data/financingData';
+import { DEMO_SCENARIOS } from '../data/demoScenarios';
 import { TRANSLATIONS } from '../i18n/translations';
 
 interface DemoScenarioDeckProps {

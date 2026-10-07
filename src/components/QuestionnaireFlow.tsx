@@ -46,7 +46,7 @@ import {
   AgriculturalActivityType,
   AgriculturalLandStatus
 } from '../types/financing';
-import { TUNISIAN_GOVERNORATES, REGIONAL_DEVELOPMENT_ZONES } from '../data/financingData';
+import { TUNISIAN_GOVERNORATES, REGIONAL_DEVELOPMENT_ZONES } from '../data/geography';
 import { TRANSLATIONS } from '../i18n/translations';
 import { TrustBadge } from './TrustBadge';
 import { JOURNEY_METAS, cleanProfileForJourney } from '../engine/journeyEngine';
