@@ -352,7 +352,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   {language === 'ar' ? 'تركيبات تتطلب التثبت' : 'Pistes à investiguer'}
                 </span>
                 <span className="text-xs text-amber-800/80 font-medium">
-                  {stackResult.evidenceSummary.unknownPairs} {language === 'ar' ? 'توافقات غير موثقة' : 'compatibilités non documentées'}
+                  {stackResult.unverifiedCombinations.length} {language === 'ar' ? 'تركيبات معروضة' : 'combinaisons affichées'}
+                  {' · '}
+                  {stackResult.evidenceSummary.unknownPairs} {language === 'ar' ? 'علاقات توافق غير موثقة' : 'relations de compatibilité non documentées'}
                 </span>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-display">
@@ -407,6 +409,24 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               );
             })}
           </div>
+
+          {stackResult.unknownPairEvaluations && stackResult.unknownPairEvaluations.length > 0 && (
+            <div className="pt-4 border-t border-amber-200/70 space-y-2">
+              <div className="text-[11px] font-bold text-amber-900 uppercase tracking-wider">
+                {language === 'ar' ? 'علاقات توافق بقيت غير موثقة' : 'Relations de compatibilité restant non documentées'}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {stackResult.unknownPairEvaluations.map((pair, idx) => (
+                  <div key={`unknown-pair-${pair.programAId}-${pair.programBId}-${idx}`} className="p-3 rounded-xl bg-white/80 border border-amber-200 text-[11px] text-slate-600">
+                    <div className="font-semibold text-slate-800">
+                      {pair.programAId} + {pair.programBId}
+                    </div>
+                    <div className="mt-1 leading-relaxed">{pair.rationale[language]}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
