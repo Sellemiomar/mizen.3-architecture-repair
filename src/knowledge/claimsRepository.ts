@@ -116,6 +116,29 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
   // -------------------------------------------------------------
   // BFPME CMLT Claims
   // -------------------------------------------------------------
+  // Current evidence establishes project-cost and financing ceilings,
+  // but does not establish a minimum financing amount. Keep the legacy 50k
+  // structural value from becoming a current user-facing fact.
+  {
+    claimId: 'claim_bfpme_min_financing_amount_unknown',
+    entityId: 'bfpme_creation',
+    field: 'minFinancingAmount',
+    value: 'UNKNOWN',
+    source: CANONICAL_SOURCES.bfpme_guide_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    sourceDate: '2024-01-15',
+    retrievalDate: '2026-09-20',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'UNKNOWN',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: "Le montant minimum de financement CMLT n'est pas établi par la source actuelle. Ne pas reprendre l'ancien plancher structurel de 50 000 TND comme fait vérifié.",
+      ar: "الحد الأدنى لمبلغ تمويل CMLT غير مثبت في المصدر الحالي. لا يجب اعتماد الحد الهيكلي القديم البالغ 50 ألف دينار كمعطى موثق."
+    }
+  },
   {
     claimId: 'claim_bfpme_min_cost_current',
     entityId: 'bfpme_creation',
