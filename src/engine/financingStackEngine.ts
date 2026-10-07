@@ -254,6 +254,7 @@ export function generateFinancingStacks(
   const unverified: FinancingStackCandidate[] = [];
   const signatures = new Set<string>();
   let evaluatedPairCount = 0, verifiedPairs = 0, potentialPairs = 0, unknownPairs = 0;
+  const unknownPairEvaluations: StackCompatibilityEvaluation[] = [];
 
   const ids = eligible.map(m => m.program.id);
   for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
@@ -261,7 +262,10 @@ export function generateFinancingStacks(
     const c = getStackCompatibility(ids[i], ids[j]);
     if (c.compatibilityStatus === 'VERIFIED_COMPATIBLE') verifiedPairs++;
     else if (c.compatibilityStatus === 'POTENTIALLY_COMPATIBLE') potentialPairs++;
-    else if (c.compatibilityStatus === 'UNKNOWN') unknownPairs++;
+    else if (c.compatibilityStatus === 'UNKNOWN') {
+      unknownPairs++;
+      unknownPairEvaluations.push(c);
+    }
   }
 
   const addCandidate = (candidate: FinancingStackCandidate | null) => {
@@ -319,6 +323,7 @@ export function generateFinancingStacks(
     userContribution: profile.userContribution,
     stacks,
     unverifiedCombinations: unverified,
+    unknownPairEvaluations,
     evaluatedPairCount,
     evidenceSummary: { verifiedPairs, potentialPairs, unknownPairs }
   };
