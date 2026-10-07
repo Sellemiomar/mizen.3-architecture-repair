@@ -172,6 +172,17 @@ function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
     case 'maxFinancingAmount':
       if (typeof claim.value === 'number') program.maxAmount = claim.value;
       break;
+    case 'minFinancingAmount':
+      if (typeof claim.value === 'number') {
+        program.minAmount = claim.value;
+      } else if (claim.value === 'UNKNOWN') {
+        program.minAmount = 0;
+        program.importantCaveats.push({
+          fr: "Montant minimum de financement non établi par les sources actuelles.",
+          ar: "الحد الأدنى لمبلغ التمويل غير مثبت في المصادر الحالية."
+        });
+      }
+      break;
     case 'publishedMarginRange': {
       const v = claim.value as { min?: number; max?: number };
       if (typeof v?.min === 'number' && typeof v?.max === 'number') {
