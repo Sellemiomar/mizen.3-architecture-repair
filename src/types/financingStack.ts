@@ -93,6 +93,8 @@ export interface FinancingStackResult {
   userContribution?: number;
   stacks: FinancingStackCandidate[];
   unverifiedCombinations?: FinancingStackCandidate[];
+  /** Pair relationships that remain UNKNOWN; these are not necessarily renderable stack candidates. */
+  unknownPairEvaluations?: StackCompatibilityEvaluation[];
   evaluatedPairCount: number;
   evidenceSummary: {
     verifiedPairs: number;
