@@ -571,7 +571,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   <div>
                     <span className="text-slate-500 font-medium block text-[11px]">Plafond d’intervention</span>
                     <strong className="text-slate-900 font-bold sm:text-sm">
-                      {program.minAmount.toLocaleString('fr-FR')} – {program.maxAmount.toLocaleString('fr-FR')} DT
+                      {program.minAmount > 0
+                        ? `${program.minAmount.toLocaleString('fr-FR')} – ${program.maxAmount.toLocaleString('fr-FR')} DT`
+                        : `Minimum non établi — plafond ${program.maxAmount.toLocaleString('fr-FR')} DT`}
                     </strong>
                   </div>
 
@@ -585,7 +587,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   <div>
                     <span className="text-slate-500 font-medium block text-[11px]">Durée & Différé</span>
                     <strong className="text-slate-900 font-bold sm:text-sm">
-                      Jusqu’à {Math.round(program.durationMonthsMax / 12)} ans ({program.gracePeriodMonthsMin}m différé)
+                      {program.durationMonthsMax > 0
+                        ? `Jusqu’à ${Math.round(program.durationMonthsMax / 12)} ans (${program.gracePeriodMonthsMin}m différé)`
+                        : 'Durée non établie'}
                     </strong>
                   </div>
 
