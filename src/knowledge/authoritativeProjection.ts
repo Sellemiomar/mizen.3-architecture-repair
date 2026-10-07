@@ -27,20 +27,20 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
     .sort((a, b) => rank(b) - rank(a) || String(b.retrievalDate).localeCompare(String(a.retrievalDate)))[0];
 }
 
-function mapCategory(category: string): FinancingCategory {
-  const map: Record<string, FinancingCategory> = {
-    BANK_LOAN: 'bank_loan',
-    SUBSIDIZED_LOAN: 'subsidized_loan',
-    MICROFINANCE: 'microcredit',
-    GUARANTEE: 'guarantee',
-    GRANT: 'grant_subsidy',
-    PUBLIC_FUNDING: 'grant_subsidy',
-    STARTUP: 'equity_quasi_equity',
-    EQUITY: 'equity_quasi_equity',
-    ISLAMIC_FINANCE: 'islamic_finance',
-    LEASING: 'bank_loan'
-  };
-  return map[category] || 'bank_loan';
+function mapCategory(product: FinancingProduct): FinancingCategory {
+  const category = product.category;
+  if (category === 'PUBLIC_FUNDING' || product.financingDomains.includes('PUBLIC_FUNDING')) return 'grant_subsidy';
+  if (category === 'MICROFINANCE') return 'microcredit';
+  if (category === 'GUARANTEE') return 'guarantee';
+  if (category === 'GRANT') return 'grant_subsidy';
+  if (category === 'EQUITY') return 'equity_quasi_equity';
+  if (category === 'ISLAMIC_FINANCE') return 'islamic_finance';
+  if (category === 'SUBSIDIZED_LOAN' || product.financialTerms.rate?.type === 'INTEREST_FREE_SUBSIDIZED') return 'subsidized_loan';
+  if (category === 'BANK_LOAN' || category === 'LEASING') return 'bank_loan';
+  // Canonical STARTUP is a domain label, not a funding role. Keep debt-like
+  // products as loans and reserve equity/quasi-equity for explicit equity data.
+  if (product.financialTerms.paymentStructure === 'AMORTIZING_MONTHLY') return 'bank_loan';
+  return 'equity_quasi_equity';
 }
 
 function mapPurpose(purpose: string): FinancingPurpose | undefined {
@@ -92,7 +92,7 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     providerId: product.providerId,
     name: product.name as { fr: string; ar: string },
     tagline: product.shortDescription as { fr: string; ar: string },
-    category: mapCategory(product.category),
+    category: mapCategory(product),
     purposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
     minAmount: amount?.min ?? 0,
     maxAmount: amount?.max ?? Number.MAX_SAFE_INTEGER,
