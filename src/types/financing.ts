@@ -338,7 +338,7 @@ export interface FinancingProgram {
   purposes: FinancingPurpose[];
   
   // Financial boundaries
-  minAmount: number;             // TND — financing amount only
+  minAmount: number;             // TND — financing amount only; 0 means no established floor
   maxAmount: number;             // TND — financing amount only
   minContributionPercent: number;// Min % apport personnel requis (e.g. 10%, 20%)
   // Claims-first investment constraints. These are intentionally separate from financing amount.
