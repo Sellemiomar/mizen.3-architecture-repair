@@ -7,7 +7,7 @@ const root = path.resolve(process.cwd(), 'src');
 const forbiddenDirectCanonicalImport = /(?:from\s+['"]\.\/canonicalCatalogue['"]|from\s+['"][^'"]*\/canonicalCatalogue['"])/;
 const forbiddenLegacyProgramImport = /import\s*\{[^}]*\bFINANCING_PROGRAMS\b[^}]*\}\s*from\s*['"][^'"]*\/data\/financingData['"]/s;
 const forbiddenLegacyCanonicalProductsImport = /import\s*\{[^}]*\bCANONICAL_PRODUCTS\b[^}]*\}\s*from\s*['"][^'"]*\/canonicalCatalogue['"]/s;
-const forbiddenDirectFinancingDataInEngine = /from\s*['"][^'"]*\/data\/financingData['"]/;
+const forbiddenDirectFinancingDataImport = /from\s*['"][^'"]*\/data\/financingData['"]/;
 
 function walk(dir: string): string[] {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
@@ -18,12 +18,13 @@ function walk(dir: string): string[] {
 
 // 1. Check all production source files (excluding only the two sanctioned bridge modules)
 const productionViolations = walk(root)
-  .filter(file => !file.endsWith('authoritativeCatalogueProjection.ts') && !file.endsWith('authoritativeProjection.ts'))
+  .filter(file => !file.endsWith('authoritativeCatalogueProjection.ts'))
   .filter(file => {
     const content = fs.readFileSync(file, 'utf8');
     return forbiddenDirectCanonicalImport.test(content) || 
            forbiddenLegacyProgramImport.test(content) ||
-           forbiddenLegacyCanonicalProductsImport.test(content);
+           forbiddenLegacyCanonicalProductsImport.test(content) ||
+           forbiddenDirectFinancingDataImport.test(content);
   })
   .map(file => path.relative(process.cwd(), file));
 
@@ -37,7 +38,7 @@ const engineDir = path.join(root, 'engine');
 if (fs.existsSync(engineDir)) {
   const engineViolations = walk(engineDir).filter(file => {
     const content = fs.readFileSync(file, 'utf8');
-    return forbiddenDirectFinancingDataInEngine.test(content) || forbiddenDirectCanonicalImport.test(content);
+    return forbiddenDirectFinancingDataImport.test(content) || forbiddenDirectCanonicalImport.test(content);
   }).map(file => path.relative(process.cwd(), file));
 
   if (engineViolations.length > 0) {
