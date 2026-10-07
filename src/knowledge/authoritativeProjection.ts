@@ -1,16 +1,13 @@
-import { FINANCING_PROGRAMS, PROVIDERS, REGIONAL_DEVELOPMENT_ZONES } from '../data/financingData';
+import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from './canonicalCatalogue';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
 import { FinancingClaim } from '../types/claims';
-import { FinancingProgram } from '../types/financing';
+import { FinancingProgram, Provider, FinancingCategory, FinancingPurpose } from '../types/financing';
+import { FinancingProduct } from '../types/knowledge';
 
-/**
- * Claims-first runtime projection.
- *
- * FINANCING_PROGRAMS is a structural compatibility layer only. Whenever a
- * researched field exists in CLAIMS_REPOSITORY, the legacy value is shadowed
- * and cannot leak into runtime. In particular, project-cost limits are never
- * mapped onto financing-amount limits.
- */
+const REGIONAL_DEVELOPMENT_ZONES = [
+  'Kasserine', 'Sidi Bouzid', 'Gafsa', 'Kébili', 'Tataouine', 'Tozeur',
+  'Siliana', 'Le Kef', 'Jendouba', 'Béja', 'Kairouan', 'Médenine', 'Gabès'
+] as const;
 
 function rank(c: FinancingClaim): number {
   if (c.ruleStatus === 'VERIFIED_HISTORICAL' || c.operationalStatus === 'HISTORICAL_ONLY') return -100;
@@ -28,6 +25,137 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
     .filter(c => c.field === field && c.conflictStatus !== 'SUPERSEDED')
     .filter(c => c.ruleStatus !== 'VERIFIED_HISTORICAL' && c.operationalStatus !== 'HISTORICAL_ONLY')
     .sort((a, b) => rank(b) - rank(a) || String(b.retrievalDate).localeCompare(String(a.retrievalDate)))[0];
+}
+
+function mapCategory(category: string): FinancingCategory {
+  const map: Record<string, FinancingCategory> = {
+    BANK_LOAN: 'bank_loan',
+    SUBSIDIZED_LOAN: 'subsidized_loan',
+    MICROFINANCE: 'microcredit',
+    GUARANTEE: 'guarantee',
+    GRANT: 'grant_subsidy',
+    PUBLIC_FUNDING: 'grant_subsidy',
+    STARTUP: 'equity_quasi_equity',
+    EQUITY: 'equity_quasi_equity',
+    ISLAMIC_FINANCE: 'islamic_finance',
+    LEASING: 'bank_loan'
+  };
+  return map[category] || 'bank_loan';
+}
+
+function mapPurpose(purpose: string): FinancingPurpose | undefined {
+  const map: Record<string, FinancingPurpose> = {
+    BUSINESS_CREATION: 'creation',
+    EQUIPMENT_PURCHASE: 'equipment',
+    WORKING_CAPITAL: 'working_capital',
+    BUSINESS_EXPANSION: 'expansion',
+    AGRICULTURE: 'agriculture',
+    INNOVATION_RD: 'innovation_rd',
+    EXPORT: 'export',
+    VEHICLE_PERSONAL: 'vehicle',
+    VEHICLE_PRO: 'vehicle',
+    HOME_PURCHASE: 'first_home',
+    HOME_CONSTRUCTION: 'home_construction'
+  };
+  return map[purpose];
+}
+
+function mapRateType(rate: FinancingProduct['financialTerms']['rate']): FinancingProgram['rateType'] {
+  if (!rate) return 'unknown';
+  switch (rate.type) {
+    case 'FIXED':
+      return rate.margin !== undefined ? 'fixed' : 'unknown';
+    case 'TMM_PLUS_MARGIN':
+      return 'variable_tmm';
+    case 'INTEREST_FREE_SUBSIDIZED':
+      return rate.value === 0 ? 'interest_free' : 'subsidized';
+    case 'PROFIT_MARGIN':
+      return 'profit_margin';
+    case 'NEGOTIATED':
+    case 'UNKNOWN':
+    case 'NOT_APPLICABLE':
+    default:
+      return 'unknown';
+  }
+}
+
+function productToProgram(product: FinancingProduct): FinancingProgram {
+  const amount = product.financialTerms.amount;
+  const contribution = product.financialTerms.contributionPercentage;
+  const duration = product.financialTerms.durationMonths;
+  const grace = product.financialTerms.gracePeriodMonths;
+  const rate = product.financialTerms.rate;
+
+  const program: FinancingProgram = {
+    id: product.id,
+    code: product.id,
+    providerId: product.providerId,
+    name: product.name as { fr: string; ar: string },
+    tagline: product.shortDescription as { fr: string; ar: string },
+    category: mapCategory(product.category),
+    purposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
+    minAmount: amount?.min ?? 0,
+    maxAmount: amount?.max ?? Number.MAX_SAFE_INTEGER,
+    minContributionPercent: contribution?.min ?? 0,
+    projectCostMin: product.financialTerms.projectCost?.min,
+    projectCostMax: product.financialTerms.projectCost?.max,
+    maxFinancingPercentage: undefined,
+    rateType: mapRateType(rate),
+    rateDescription: rate?.explanation || { fr: 'Taux non établi.', ar: 'نسبة التمويل غير مثبتة.' },
+    estimatedRateAnnual: rate?.value,
+    durationMonthsMin: duration?.min ?? 0,
+    durationMonthsMax: duration?.max ?? 0,
+    gracePeriodMonthsMin: grace?.min ?? 0,
+    gracePeriodMonthsMax: grace?.max ?? 0,
+    guaranteeRequirements: {
+      fr: product.guarantees?.map(g => g.description.fr).join(' ') || 'Aucune exigence de garantie documentée.',
+      ar: product.guarantees?.map(g => g.description.ar).join(' ') || 'لا توجد متطلبات ضمان موثقة.'
+    },
+    targetAudience: product.shortDescription as { fr: string; ar: string },
+    eligibilityCriteria: {
+      stages: (product.applicability.allowedBusinessStages || []) as any,
+      sectors: (product.applicability.allowedSectors || []) as any,
+      allowedLegalForms: [],
+      minAge: undefined,
+      maxAge: undefined,
+      requiresDegree: product.applicability.requiresHigherEducationDegree,
+      requiresStartupLabel: product.applicability.requiresStartupActLabel,
+      regionalPriorityZonesOnly: false,
+      otherRules: product.criteria.map(c => c.description)
+    },
+    requiredDocuments: (product.requiredDocuments || []).map(d => ({
+      id: d.id,
+      name: d.name,
+      category: 'legal',
+      mandatory: d.mandatory
+    })) as any,
+    applicationSteps: [],
+    importantCaveats: [],
+    hasRegionalDevelopmentBonus: product.financingDomains.includes('AGRICULTURE') || product.financingDomains.includes('BUSINESS'),
+    accessibleWithoutHeavyCollateral: undefined,
+    applicability: {
+      supportedPurposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
+      requiresBusinessEntity: product.applicability.requiresBusinessEntity,
+      isFirstPropertyOnly: false,
+      unverifiedApplicability: product.verification.status === 'UNVERIFIED'
+    },
+    verification: {
+      status: product.verification.status === 'VERIFIED' ? 'VERIFIED' : 'PARTIALLY_VERIFIED',
+      sourceUrl: product.sources[0]?.url || '',
+      sourceTitle: product.sources[0]?.title || '',
+      sourceType: 'official_portal',
+      dateChecked: product.lastVerifiedAt || product.sources[0]?.retrievedAt || '',
+      verifiedFields: product.verification.fields.filter(f => f.status === 'VERIFIED').map(f => f.field),
+      unverifiedFields: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.field),
+      notes: {
+        fr: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.fr).filter(Boolean).join(' ') || '',
+        ar: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.ar).filter(Boolean).join(' ') || ''
+      },
+      lastUpdateYear: Number((product.lastVerifiedAt || '').slice(0, 4)) || new Date().getFullYear()
+    }
+  };
+
+  return program;
 }
 
 function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
@@ -60,12 +188,8 @@ function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
       if (claim.value === 'UNKNOWN') {
         program.rateType = 'unknown';
         program.estimatedRateAnnual = undefined;
-        const existing = program.rateDescription.fr || '';
-        const range = existing.match(/\d+(?:[.,]\d+)? à \d+(?:[.,]\d+)?/i)?.[0];
         program.rateDescription = {
-          fr: range
-            ? `Marge publiée : ${range} points. Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.`
-            : 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
+          fr: 'Relation de tarification avec le TMM : inconnue. Aucune simulation automatique de taux.',
           ar: 'العلاقة السعرية مع TMM غير معلومة. لا توجد محاكاة آلية للنسبة.'
         };
       }
@@ -73,60 +197,96 @@ function applyClaim(program: FinancingProgram, claim: FinancingClaim): void {
     case 'repaymentDuration':
     case 'repaymentDurationMonths':
       if (claim.value === 'UNKNOWN') {
-        program.importantCaveats = [
-          ...program.importantCaveats,
-          { fr: 'Durée de remboursement non établie par une revendication actuelle.', ar: 'مدة السداد غير مثبتة بمعلومة حالية.' }
-        ];
+        program.durationMonthsMin = 0;
+        program.durationMonthsMax = 0;
+        program.importantCaveats.push({
+          fr: 'Durée de remboursement non établie par une revendication actuelle.',
+          ar: 'مدة السداد غير مثبتة بمعلومة حالية.'
+        });
       }
       break;
     case 'gracePeriod':
     case 'gracePeriodMonths':
       if (claim.value === 'UNKNOWN') {
-        program.importantCaveats = [
-          ...program.importantCaveats,
-          { fr: 'Période de grâce non établie par une revendication actuelle.', ar: 'فترة الإمهال غير مثبتة بمعلومة حالية.' }
-        ];
+        program.gracePeriodMonthsMin = 0;
+        program.gracePeriodMonthsMax = 0;
+        program.importantCaveats.push({
+          fr: 'Période de grâce non établie par une revendication actuelle.',
+          ar: 'فترة الإمهال غير مثبتة بمعلومة حالية.'
+        });
       }
       break;
   }
 }
 
-function project(base: FinancingProgram): FinancingProgram {
-  const product = structuredClone(base) as FinancingProgram;
+function project(base: FinancingProduct): FinancingProgram {
+  const product = structuredClone(base);
+  const program = productToProgram(product);
   const claims = CLAIMS_REPOSITORY.getAllClaims(base.id);
   const claimedFields = new Set(claims.map(c => c.field));
 
-  if (claimedFields.has('minProjectCost')) product.projectCostMin = undefined;
-  if (claimedFields.has('maxProjectCost')) product.projectCostMax = undefined;
-  if (claimedFields.has('maxFinancingPercentage')) product.maxFinancingPercentage = undefined;
+  if (claimedFields.has('minProjectCost')) program.projectCostMin = undefined;
+  if (claimedFields.has('maxProjectCost')) program.projectCostMax = undefined;
+  if (claimedFields.has('maxFinancingPercentage')) program.maxFinancingPercentage = undefined;
 
   for (const field of claimedFields) {
     const claim = getAuthoritativeClaim(base.id, field);
-    if (claim) applyClaim(product, claim);
+    if (claim) applyClaim(program, claim);
   }
 
   const pricingClaim = getAuthoritativeClaim(base.id, 'pricingRelationship');
   if (pricingClaim?.value === 'UNKNOWN') {
-    product.rateType = 'unknown';
-    product.estimatedRateAnnual = undefined;
+    program.rateType = 'unknown';
+    program.estimatedRateAnnual = undefined;
   }
 
-  return product;
+  return program;
 }
 
 export function getAuthoritativeFinancingPrograms(): FinancingProgram[] {
-  return FINANCING_PROGRAMS.map(project);
+  return CANONICAL_PRODUCTS.map(project);
 }
 
 export function getAuthoritativeFinancingProgram(id: string): FinancingProgram | undefined {
-  const base = FINANCING_PROGRAMS.find(p => p.id === id);
+  const base = CANONICAL_PRODUCTS.find(p => p.id === id);
   return base ? project(base) : undefined;
 }
 
-export function getAuthoritativeProviders() {
-  return PROVIDERS;
+function mapProviderType(type: string): Provider['type'] {
+  switch (type) {
+    case 'PUBLIC_BANK':
+    case 'BANK':
+      return 'commercial_bank';
+    case 'MICROFINANCE':
+      return 'microfinance';
+    case 'GUARANTEE_MECHANISM':
+      return 'guarantee_fund';
+    case 'PUBLIC_FUNDING_AGENCY':
+      return 'public_agency';
+    case 'ISLAMIC_BANK':
+      return 'islamic_bank';
+    default:
+      return 'commercial_bank';
+  }
 }
 
-export function getAuthoritativeRegionalDevelopmentZones() {
+export function getAuthoritativeProviders(): Provider[] {
+  return CANONICAL_PROVIDERS.map(p => ({
+    id: p.id,
+    name: p.name,
+    acronym: p.acronym,
+    type: mapProviderType(p.type),
+    description: p.description as { fr: string; ar: string },
+    website: p.website,
+    headquarters: '',
+    networkCoverage: { fr: 'Tunisie', ar: 'تونس' },
+    officialBadgeText: {
+      fr: 'Source officielle référencée',
+      ar: 'مصدر رسمي موثق'
+    }
+  }));
+}
+
+export function getAuthoritativeRegionalDevelopmentZones(): readonly string[] {
   return REGIONAL_DEVELOPMENT_ZONES;
 }
