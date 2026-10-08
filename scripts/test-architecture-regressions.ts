@@ -33,7 +33,7 @@ function collectSourceFiles(dir: string): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
     if (entry.isDirectory()) out.push(...collectSourceFiles(full));
-    else if (/\\.(ts|tsx)$/.test(entry.name)) out.push(full);
+    else if (/\.(ts|tsx)$/.test(entry.name)) out.push(full);
   }
   return out;
 }
