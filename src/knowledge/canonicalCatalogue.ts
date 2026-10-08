@@ -1133,6 +1133,17 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         lastVerifiedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
       }
+      {
+        id: 'src_mehat_foprolos_flyer',
+        url: 'https://www.mehat.gov.tn/wp-content/uploads/2024/02/new-flyer-Foprolos-2-0-24-P2-2.pdf',
+        title: 'FOPROLOS — Flyer officiel',
+        publisher: 'Ministère de l’Équipement et de l’Habitat',
+        sourceType: 'OFFICIAL_PDF',
+        language: 'fr',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
+        evidenceStatus: 'VERIFIED'
+      },
     ],
     status: 'ACTIVE',
     lastCheckedAt: '2026-10-08'
