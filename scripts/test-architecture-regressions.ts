@@ -59,14 +59,14 @@ assert(foprolos?.maxFinancingPercentage === 90, 'FOPROLOS construction financing
 assert(foprolos?.minContributionPercent === 5, 'FOPROLOS minimum documented contribution floor is 5%');
 assert(foprolos?.durationMonthsMax === 300, 'FOPROLOS construction repayment ceiling is 25 years');
 assert(foprolos?.gracePeriodMonthsMax === 24, 'FOPROLOS construction grace period is up to 2 years');
-assert(foprolos?.verification.verifiedFields.includes('gracePeriodMonths'), 'FOPROLOS grace period is field-level verified');
-const startupBourse = getAuthoritativeFinancingProgram('startup_act_bourse');
-assert(startupBourse !== undefined, 'Startup Act founder stipend must exist');
-assert(startupBourse?.maxAmount === 0, 'Startup stipend must not be represented as a fixed total amount');
-assert(startupBourse?.rateDescription.fr.includes('1 000') && startupBourse?.rateDescription.fr.includes('5 000'), 'Startup stipend current range is 1,000–5,000 TND net/month');
-assert(!startupBourse?.rateDescription.fr.includes('non remboursable'), 'Startup stipend must not be mislabeled as a non-refundable grant');
-assert(!String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.financialTerms.rate.explanation?.ar || '').includes('غير مستردة'), 'Startup stipend Arabic explanation must not mislabel it as a non-refundable grant');
-assert(String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription?.ar || '').includes('5,000'), 'Startup stipend Arabic description must include the current 5,000 TND upper range');
+assert(foprolos?.verification.verifiedFields.includes('gracePeriodMonths') === true, 'FOPROLOS grace period is field-level verified');
+const startupBourseEarly = programs.find(p => p.id === 'startup_act_bourse');
+assert(startupBourseEarly !== undefined, 'Startup Act founder stipend must exist');
+assert(startupBourseEarly?.maxAmount === 0, 'Startup stipend must not be represented as a fixed total amount');
+assert(startupBourseEarly?.rateDescription.fr.includes('1 000') && startupBourseEarly?.rateDescription.fr.includes('5 000'), 'Startup stipend current range is 1,000–5,000 TND net/month');
+assert(!startupBourseEarly?.rateDescription.fr.includes('non remboursable'), 'Startup stipend must not be mislabeled as a non-refundable grant');
+assert(!String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.financialTerms.rate?.explanation?.ar || '').includes('غير مستردة'), 'Startup stipend Arabic explanation must not mislabel it as a non-refundable grant');
+assert(String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription?.ar || '').includes('5,000') === true, 'Startup stipend Arabic description must include the current 5,000 TND upper range');
 assert(foprolos?.rateType === 'fixed' && foprolos?.rateDescription.fr.includes('1%, 3%, 5% ou 7%'), 'FOPROLOS exposes the verified income-category rate schedule');
 assert(foprolos?.maxAmount === 0, 'FOPROLOS does not invent a fixed DT ceiling from the 300-SMIG formula');
 assert(foprodi !== undefined, 'FOPRODI must exist in authoritative runtime');
@@ -228,8 +228,8 @@ assert(zitounaCurrent?.rateType === 'unknown', 'Banque Zitouna does not expose a
 assert(sotugar?.category === 'guarantee', 'SOTUGAR remains a guarantee mechanism, not a lending product');
 assert(sotugar?.maxAmount === 0, 'SOTUGAR has no fabricated borrower financing amount');
 const sotugarCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'sotugar_guarantee');
-assert(String(sotugarCanonical?.shortDescription?.en || '').includes('depends on the specific fund'), 'SOTUGAR coverage is explicitly mechanism-specific, not a universal percentage');
-assert(sotugarCanonical?.financialTerms.verification.some(v => v.field === 'fees' && v.status === 'UNKNOWN'), 'SOTUGAR generic fees remain unknown unless a mechanism-specific source verifies them');
+assert(String(sotugarCanonical?.shortDescription?.en || '').includes('depends on the specific fund') === true, 'SOTUGAR coverage is explicitly mechanism-specific, not a universal percentage');
+assert(sotugarCanonical?.financialTerms.verification.some(v => v.field === 'fees' && v.status === 'UNVERIFIED') === true, 'SOTUGAR generic fees remain unknown unless a mechanism-specific source verifies them');
 
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourse?.maxAmount === undefined, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling');
