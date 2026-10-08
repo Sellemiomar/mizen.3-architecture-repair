@@ -81,7 +81,7 @@ function mapRateType(rate: FinancingProduct['financialTerms']['rate']): Financin
 }
 
 function productToProgram(product: FinancingProduct): FinancingProgram {
-  const verification = verification ?? { status: 'UNVERIFIED' as const, fields: [] };
+  const verification = product.verification ?? { status: 'UNVERIFIED' as const, fields: [] };
   const amount = product.financialTerms.amount;
   const contribution = product.financialTerms.contributionPercentage;
   const duration = product.financialTerms.durationMonths;
