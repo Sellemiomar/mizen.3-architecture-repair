@@ -76,6 +76,11 @@ assert(foprodiClaims.some(c => c.field === 'programStatus' && c.ruleStatus === '
 assert(foprodiClaims.some(c => c.field === 'supportedPurposes' && c.ruleStatus === 'VERIFIED_CURRENT'), 'FOPRODI creation/expansion purpose is claim-backed');
 assert(foprodi?.rateType === 'unknown', 'FOPRODI rate remains UNKNOWN');
 assert(foprodi?.estimatedRateAnnual === undefined, 'FOPRODI exposes no fabricated annual rate');
+// 3b. FOPRODI dotation is repayable/quasi-equity, not a grant.
+const foprodiComponent = foprodi ? mapProgramToStackComponent(foprodi, { financingRequested: 240000, totalProjectCost: 300000 }) : undefined;
+assert(foprodiComponent?.role === 'QUASI_EQUITY', 'FOPRODI repayable dotation is classified as QUASI_EQUITY, not GRANT');
+assert(foprodiComponent?.isCashFunding === true, 'FOPRODI quasi-equity can be counted as cash only when its amount is explicitly established');
+
 
 // 4. Enda Bidaya: current amount/duration are present, rate stays unknown.
 assert(enda?.minAmount === 200, 'Enda Bidaya current minimum is 200 DT');
@@ -137,6 +142,17 @@ const badStack = stackResult.stacks.find(s =>
   s.components.some(c => c.programId === 'banque_zitouna_mourabaha')
 );
 assert(!badStack, 'UNKNOWN compatibility is excluded from viable financing stacks');
+
+
+// 8. High-risk legacy financial literals must not leak back into runtime.
+const bfpme = programs.find(p => p.id === 'bfpme_creation');
+assert(bfpme?.minAmount === 0, 'BFPME has no stale 50,000 DT minimum financing floor');
+assert(bfpme?.rateType === 'unknown', 'BFPME does not expose a fabricated TMM-plus-3% rate');
+assert(bfpme?.durationMonthsMin === undefined && bfpme?.durationMonthsMax === undefined, 'BFPME duration remains UNKNOWN until current evidence establishes it');
+const zitouna = programs.find(p => p.id === 'banque_zitouna_mourabaha');
+assert(zitouna?.rateType === 'unknown', 'Banque Zitouna Mourabaha does not expose an unsupported fixed 3% margin');
+const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
+assert(startupBourse?.maxAmount === undefined, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling');
 
 if (failed > 0) {
   console.error(`❌ ${failed} architecture regression guard(s) failed.`);
