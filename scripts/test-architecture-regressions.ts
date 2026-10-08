@@ -41,7 +41,7 @@ function collectSourceFiles(dir: string): string[] {
 const sourceFiles = collectSourceFiles(join(process.cwd(), 'src'));
 const legacyImports = sourceFiles.filter(file => {
   const text = readFileSync(file, 'utf8');
-  return /(?:from\\s+|import\\s*\\()['"][^'"]*data\\/financingData(?:\\.ts)?['"]/.test(text);
+  return /(?:from\s+|import\s*\()['"][^'"]*data\/financingData(?:\.ts)?['"]/.test(text);
 });
 assert(legacyImports.length === 0, 'Deprecated financingData fixture must never be imported by production source files');
 
