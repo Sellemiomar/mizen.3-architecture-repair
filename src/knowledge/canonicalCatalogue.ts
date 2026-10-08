@@ -937,7 +937,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         currency: 'PERCENT',
         explanation: {
           fr: 'Allocation mensuelle de subsistance versée au co-fondateur et actionnaire d’une startup en phase de lancement; montant indexé sur la rémunération antérieure ou forfaitaire selon le statut.',
-          ar: 'منحة عمومية مباشرة غير مستردة تصرف شهرياً للمؤسسين.'
+          ar: 'إعانة شهرية لمدة سنة للمؤسس الشريك والمساهم في شركة ناشئة في مرحلة الإطلاق؛ يتحدد المبلغ حسب الأجر السابق أو المنحة الجزافية، ضمن نطاق 1,000 إلى 5,000 دينار صافٍ شهرياً وفق الشروط الرسمية.'
         }
       },
       paymentStructure: 'OTHER',
