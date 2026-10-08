@@ -904,7 +904,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     },
     shortDescription: {
       fr: 'Allocation mensuelle pour co-fondateurs et actionnaires d’une startup en phase de lancement, de 1 000 à 5 000 TND net/mois pendant 1 an, selon la rémunération antérieure ou l’indemnité forfaitaire applicable.',
-      ar: 'منحة شهرية لمؤسسي الشركات المتحصلة على علامة مؤسسة ناشئة (حتى 3000 د/شهرياً) وإعفاءات جبائية.',
+      ar: 'إعانة شهرية لمدة سنة للمؤسس الشريك والمساهم في شركة ناشئة في مرحلة الإطلاق؛ يتحدد المبلغ حسب الأجر السابق أو المنحة الجزافية، ضمن نطاق 1,000 إلى 5,000 دينار صافٍ شهرياً وفق الشروط الرسمية.',
       en: 'Monthly startup stipend of 1,000–5,000 TND net/month for one year, indexed to prior remuneration for employees or a fixed allowance for non-employees.'
     },
     category: 'STARTUP',
