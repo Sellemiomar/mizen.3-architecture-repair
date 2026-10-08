@@ -222,6 +222,9 @@ assert(zitounaCurrent?.rateType === 'unknown', 'Banque Zitouna does not expose a
 
 assert(sotugar?.category === 'guarantee', 'SOTUGAR remains a guarantee mechanism, not a lending product');
 assert(sotugar?.maxAmount === 0, 'SOTUGAR has no fabricated borrower financing amount');
+const sotugarCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'sotugar_guarantee');
+assert(String(sotugarCanonical?.shortDescription?.en || '').includes('depends on the specific fund'), 'SOTUGAR coverage is explicitly mechanism-specific, not a universal percentage');
+assert(sotugarCanonical?.financialTerms.verification.some(v => v.field === 'fees' && v.status === 'UNKNOWN'), 'SOTUGAR generic fees remain unknown unless a mechanism-specific source verifies them');
 
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourse?.maxAmount === undefined, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling');
