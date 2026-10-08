@@ -247,7 +247,7 @@ export function generateFinancingStacks(
     requiredFunding = raw.requiredFunding ?? profile.financingRequested ?? (profile.totalProjectCost ? profile.totalProjectCost - (profile.userContribution || 0) : 80000);
   }
 
-  const eligible = matches.filter(m => ['STRONG_ALIGNMENT', 'REQUIRES_CONFIRMATION', 'ELIGIBLE', 'PARTIALLY_ELIGIBLE'].includes(m.status as string));
+  const eligible = matches.filter(m => ['STRONG_ALIGNMENT', 'POTENTIAL_ALIGNMENT', 'REQUIRES_CONFIRMATION', 'ELIGIBLE', 'PARTIALLY_ELIGIBLE'].includes(m.status as string));
   const cash = eligible.filter(m => isCashRole(determineStackFundingRole(m.program)));
   const support = eligible.filter(m => !isCashRole(determineStackFundingRole(m.program)));
   const stacks: FinancingStackCandidate[] = [];
