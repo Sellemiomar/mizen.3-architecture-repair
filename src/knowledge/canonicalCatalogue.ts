@@ -594,15 +594,15 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         expectedValue: 220000,
         critical: true,
         description: {
-          fr: 'Prix d\'acquisition du logement neuf plafonné à 250 000 TND selon barème réglementaire',
-          ar: 'ثمن المسكن الجديد لا يتجاوز سقف 250 ألف دينار'
+          fr: 'Prix du logement plafonné à 220 000 TND selon la fiche actuelle Al Masken Al Awal',
+          ar: 'ثمن المسكن لا يتجاوز سقف 220 ألف دينار وفق بطاقة المسكن الأول الحالية'
         }
       }
     ],
     financialTerms: {
       amount: { max: 40000, currency: 'TND' }, // Covers 20% own contribution
       projectCost: { max: 220000, currency: 'TND' },
-      durationMonths: { max: 84, currency: 'MONTHS' }, // 15 to 20 years
+      durationMonths: { max: 84, currency: 'MONTHS' }, // 7 years repayment after 5 years grace
       contributionPercentage: { min: 0, max: 0, currency: 'PERCENT' }, // The mechanism replaces own contribution
       rate: {
         type: 'FIXED',
@@ -635,9 +635,9 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         id: 'src_premier_logement_jort',
         url: 'https://www.bhbank.tn/le-credit-masken-awal',
         title: 'BH Bank — Le Crédit Masken Awal',
-        publisher: 'JORT / Ministère de l\'Équipement',
-        sourceType: 'OFFICIAL_REGULATION',
-        retrievedAt: '2026-09-20',
+        publisher: 'BH Bank',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        retrievedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
       }
     ],
@@ -695,7 +695,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       official: true,
       evidence: {
         id: 'src_bh_simulator',
-        url: 'https://www.bhbank.tn/particuliers/simulateur-de-credit',
+        url: 'https://bhbank.tn/credit_bh_auto',
         publisher: 'BH Bank',
         sourceType: 'OFFICIAL_PRODUCT_PAGE',
         retrievedAt: '2026-10-08',
@@ -706,7 +706,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       status: 'VERIFIED',
       fields: [
         { field: 'bct_rules', status: 'VERIFIED', sourceIds: ['src_bct_car_rules'] },
-        { field: 'rate', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bh_simulator'] }
+        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bh_simulator'], unknownReason: 'Current official page does not publish a numeric rate or margin.' }
       ],
       lastVerifiedAt: '2026-10-08'
     },
@@ -826,8 +826,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       en: 'SOTUGAR National SME Loan Guarantee Scheme'
     },
     shortDescription: {
-      fr: 'Mécanisme national de couverture des risques facilitant l\'octroi des crédits bancaires aux PME (couvre jusqu\'à 75% du risque de crédit, ne prête pas de fonds).',
-      ar: 'آلية وطنية لتغطية المخاطر وتيسير حصول المؤسسات على قروض بنكية (تغطي حتى 75% من المخاطر وليست جهة إقراض مباشر).',
+      fr: 'Mécanisme national de garantie facilitant l\'accès des PME au financement; SOTUGAR ne prête pas directement et la couverture dépend du mécanisme.',
+      ar: 'آلية وطنية للضمان وتيسير التمويل؛ سوتوغار لا تمنح قروضا مباشرة وتختلف التغطية حسب الآلية.',
       en: 'Public guarantee mechanism covering up to 75% of bank credit default risk (not a direct lending fund).'
     },
     category: 'GUARANTEE',
@@ -870,11 +870,6 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'coverage', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
         { field: 'directLending', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
         { field: 'fees', status: 'UNKNOWN', sourceIds: ['src_sotugar_official'], unknownReason: 'No generic current fee should be projected across guarantee mechanisms.' }
-      ]
-    },
-    verification: [
-        { field: 'fees', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
-        { field: 'coverage', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] }
       ]
     },
     verification: {
