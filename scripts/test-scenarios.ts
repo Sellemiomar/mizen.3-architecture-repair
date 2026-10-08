@@ -251,14 +251,11 @@ assert(bfpmeCost.rateOrigin === 'unavailable', 'Variable TMM rate origin is unav
 
 // 2. Microcredit (Enda Tamweel / non-authoritative)
 const endaProg = FINANCING_PROGRAMS.find(p => p.id === 'enda_microcredit_equip');
-if (endaProg) {
-  const endaCost = calculateFinancingCost(10000, endaProg);
-  assert(endaCost.canCalculateReliably === false, 'Microcredit does not fabricate a fixed 18% quote');
-  assert(endaCost.monthlyPayment === undefined, 'Microcredit monthlyPayment is undefined');
-  assert(endaCost.rateOrigin === 'unavailable', 'Microcredit rate origin is unavailable');
-} else {
-  assert(true, 'Legacy unprojected microcredit program excluded from authoritative runtime');
-}
+assert(endaProg !== undefined, 'Current Enda Bidaya product is evaluated in authoritative runtime');
+const endaCost = calculateFinancingCost(10000, endaProg!);
+assert(endaCost.canCalculateReliably === false, 'Microcredit does not fabricate a fixed rate quote');
+assert(endaCost.monthlyPayment === undefined, 'Microcredit monthlyPayment is undefined');
+assert(endaCost.rateOrigin === 'unavailable', 'Microcredit rate origin is unavailable');
 
 // 3. Islamic finance (Zitouna Mourabaha)
 const zitounaProg = FINANCING_PROGRAMS.find(p => p.id === 'banque_zitouna_mourabaha')!;
@@ -451,11 +448,8 @@ for (const sc of DEMO_SCENARIOS) {
   const scResults = runMatchingEngine(sc.profile);
   assert(scResults.length > 0, `Demo scenario ${sc.id} produces matching results`);
   const topResult = scResults[0];
-  if (sc.id === 'demo_home_construction') {
-    assert(topResult !== undefined, `Demo scenario ${sc.id} safely evaluates candidate products`);
-  } else {
-    assert(topResult.reasons.alignmentLevel === 'strong_alignment', `Demo scenario ${sc.id} has a top aligned program`);
-  }
+  assert(topResult !== undefined, `Demo scenario ${sc.id} has at least one evaluated candidate`);
+  assert(topResult.reasons.alignmentLevel === 'strong_alignment', `Demo scenario ${sc.id} has a top aligned program`);
 }
 
 // -------------------------------------------------------------
@@ -483,12 +477,9 @@ const foprolosForCar = carResults.find(r => r.program.id === 'foprolos_construct
 const premierLogementForCar = carResults.find(r => r.program.id === 'premier_logement');
 const bfpmeForCar = carResults.find(r => r.program.id === 'bfpme_creation');
 
-if (foprolosForCar) {
-  assert(foprolosForCar?.status === 'NOT_APPLICABLE', 'FOPROLOS is NOT_APPLICABLE for car purchase');
-  assert(foprolosForCar?.reasons.alignmentLevel === 'not_applicable', 'FOPROLOS alignment level is not_applicable for car');
-} else {
-  assert(true, 'Legacy FOPROLOS program excluded from authoritative runtime');
-}
+assert(foprolosForCar !== undefined, 'FOPROLOS is present in authoritative runtime for hard applicability gating');
+assert(foprolosForCar?.status === 'NOT_APPLICABLE', 'FOPROLOS is NOT_APPLICABLE for car purchase');
+assert(foprolosForCar?.reasons.alignmentLevel === 'not_applicable', 'FOPROLOS alignment level is not_applicable for car');
 assert(premierLogementForCar?.status === 'NOT_APPLICABLE', 'Premier Logement is NOT_APPLICABLE for car purchase');
 assert(bfpmeForCar?.status === 'NOT_APPLICABLE', 'BFPME is NOT_APPLICABLE for individual car purchase');
 
@@ -514,12 +505,9 @@ const homeConstructUser: ApplicantProfile = {
 
 const homeConstructResults = runMatchingEngine(homeConstructUser);
 const foprolosForHome = homeConstructResults.find(r => r.program.id === 'foprolos_construction');
-if (foprolosForHome) {
-  assert(foprolosForHome?.applicabilityStatus === 'APPLICABLE', 'FOPROLOS is APPLICABLE for home construction');
-  assert(foprolosForHome?.status === 'STRONG_ALIGNMENT', 'FOPROLOS has strong alignment for salaried applicant constructing on titled land');
-} else {
-  assert(true, 'FOPROLOS not in current authoritative canonical catalogue (requires official decree evidence)');
-}
+assert(foprolosForHome !== undefined, 'FOPROLOS must be present for the home-construction regression scenario');
+assert(foprolosForHome?.applicabilityStatus === 'APPLICABLE', 'FOPROLOS is APPLICABLE for home construction');
+assert(foprolosForHome?.status === 'STRONG_ALIGNMENT', 'FOPROLOS has strong alignment for salaried applicant constructing on titled land');
 
 const carCreditForHome = homeConstructResults.find(r => r.program.id === 'banque_credit_auto');
 assert(carCreditForHome?.status === 'NOT_APPLICABLE', 'Crédit auto is NOT_APPLICABLE for home construction');
