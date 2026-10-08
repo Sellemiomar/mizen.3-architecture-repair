@@ -495,7 +495,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       amount: { max: 200000, currency: 'TND' },
       projectCost: { max: 200000, currency: 'TND' },
       durationMonths: { max: 84, currency: 'MONTHS' },
-      contributionPercentage: { min: 0, max: 10, currency: 'PERCENT' },
+      maxFinancingPercentage: 90,
       rate: {
         type: 'FIXED',
         explanation: {
@@ -620,21 +620,6 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'gracePeriodMonths', status: 'VERIFIED', sourceIds: ['src_premier_logement_jort'] },
         { field: 'projectCost', status: 'VERIFIED', sourceIds: ['src_premier_logement_jort'] }
       ]
-    },
-    simulator: {
-      id: 'sim_bh_housing',
-      providerId: 'bh_bank',
-      url: 'https://www.bhbank.tn/particuliers/simulateur-de-credit',
-      simulatorType: 'MORTGAGE',
-      official: true,
-      evidence: {
-        id: 'src_bh_simulator',
-        url: 'https://www.bhbank.tn/particuliers/simulateur-de-credit',
-        publisher: 'BH Bank',
-        sourceType: 'OFFICIAL_SIMULATOR',
-        retrievedAt: '2026-09-25',
-        evidenceStatus: 'VERIFIED'
-      }
     },
     verification: {
       status: 'VERIFIED',
@@ -1032,7 +1017,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
           ar: 'يحدد هامش الربح تعاقديا؛ وتذكر صفحة المنتج الحالية تمويلا يصل إلى 70% من احتياجات الاستثمار مع تغطية الباقي من الأموال الذاتية.'
         }
       },
-      amount: { max: 70, currency: 'PERCENT' },
+      maxFinancingPercentage: 70,
       durationMonths: { max: 84, currency: 'MONTHS' },
       paymentStructure: 'AMORTIZING_MONTHLY',
       verification: [
