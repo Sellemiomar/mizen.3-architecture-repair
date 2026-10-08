@@ -124,6 +124,7 @@ assert(foprodiComponent?.isCashFunding === true, 'FOPRODI quasi-equity can be co
 // 4. Enda Bidaya: current amount/duration are present, rate stays unknown.
 assert(enda?.minAmount === 200, 'Enda Bidaya current minimum is 200 DT');
 assert(enda?.maxAmount === 40000, 'Enda Bidaya current maximum is 40,000 DT');
+assert(enda?.durationMonthsMin === undefined && enda?.durationMonthsMax === undefined, 'Enda Bidaya duration remains unknown because the official product page does not publish it');
 assert(enda?.rateType === 'unknown', 'Enda Bidaya rate remains UNKNOWN');
 const endaCost = calculateFinancingCost(10000, enda!);
 assert(!endaCost.canCalculateReliably && endaCost.monthlyPayment === undefined, 'Enda Bidaya never fabricates a monthly payment without a verified rate');
