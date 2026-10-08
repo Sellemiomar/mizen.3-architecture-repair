@@ -110,6 +110,7 @@ const foprodiClaims = CLAIMS_REPOSITORY.getAllClaims('foprodi_dotation');
 assert(foprodiClaims.some(c => c.field === 'programStatus' && c.ruleStatus === 'VERIFIED_CURRENT'), 'FOPRODI current existence is claim-backed');
 assert(foprodiClaims.some(c => c.field === 'supportedPurposes' && c.ruleStatus === 'VERIFIED_CURRENT'), 'FOPRODI creation/expansion purpose is claim-backed');
 assert(foprodi?.rateType === 'fixed' && foprodi?.estimatedRateAnnual === 3, 'FOPRODI current repayable dotation rate is 3% annually');
+assert(foprolos?.rateType === 'fixed', 'FOPROLOS verified rate schedule remains classified as fixed when represented as a min/max band');
 assert(foprodi?.durationMonthsMax === 144, 'FOPRODI repayable dotation repayment duration is 12 years');
 assert(foprodi?.gracePeriodMonthsMin === 60 && foprodi?.gracePeriodMonthsMax === 60, 'FOPRODI current grace period is 5 years');
 assert(foprodi?.maxAmount === 0, 'FOPRODI does not confuse the 500,000 DT project-cost threshold with a financing amount');
