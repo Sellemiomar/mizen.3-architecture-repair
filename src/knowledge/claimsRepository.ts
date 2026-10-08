@@ -605,7 +605,7 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
     entityId: 'foprolos_construction',
     field: 'programStatus',
     value: 'CURRENT_PROGRAM',
-    source: CANONICAL_SOURCES.meht_foprolos_current,
+    source: CANONICAL_SOURCES.mehat_foprolos_current,
     sourceType: 'OFFICIAL_PRODUCT_PAGE',
     retrievalDate: '2026-10-08',
     evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
@@ -624,7 +624,7 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
     entityId: 'foprolos_construction',
     field: 'supportedPurpose',
     value: 'HOME_CONSTRUCTION',
-    source: CANONICAL_SOURCES.meht_foprolos_current,
+    source: CANONICAL_SOURCES.mehat_foprolos_current,
     sourceType: 'OFFICIAL_PRODUCT_PAGE',
     retrievalDate: '2026-10-08',
     evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
@@ -643,7 +643,7 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
     entityId: 'foprolos_construction',
     field: 'incomeCapSmigMultiple',
     value: 6,
-    source: CANONICAL_SOURCES.meht_foprolos_current,
+    source: CANONICAL_SOURCES.mehat_foprolos_current,
     sourceType: 'OFFICIAL_PRODUCT_PAGE',
     retrievalDate: '2026-10-08',
     evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
@@ -758,7 +758,7 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
       ar: 'مدة قرض بداية المعلنة من شهر إلى 60 شهراً.'
     }
   },
-\n/**
+/**
  * Compatibility Claims Registry
  * Empirical, evidence-backed matrix of cross-mechanism stacking and co-financing.
  */
