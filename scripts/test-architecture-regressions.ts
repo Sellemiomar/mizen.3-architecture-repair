@@ -182,6 +182,7 @@ assert(bts?.estimatedRateAnnual === undefined, 'BTS does not expose an unsupport
 const bhAuto = programs.find(p => p.id === 'banque_credit_auto');
 assert(bhAuto?.maxAmount === 0, 'BH AUTO unknown financing ceiling is represented as UNKNOWN, not a fake number');
 assert(bhAuto?.durationMonthsMax === 84, 'BH AUTO current maximum duration is 7 years');
+assert(bhAuto?.gracePeriodMonthsMin === 0 && bhAuto?.gracePeriodMonthsMax === 0, 'BH AUTO has no unsupported grace period claim');
 assert(bhAuto?.rateType === 'unknown', 'BH AUTO does not expose a fabricated TMM or margin');
 assert(!String(bhAuto?.rateDescription.fr || '').includes('7,99'), 'BH AUTO has no stale 7.99% TMM literal');
 assert(!String(bhAuto?.rateDescription.fr || '').includes('3,0%'), 'BH AUTO has no stale 3.0% margin literal');
