@@ -1169,7 +1169,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
           ar: 'بالنسبة للـdotation القابلة للاسترجاع: 3% سنوياً لمدة 12 سنة مع 5 سنوات إمهال.'
         }
       },
-      quasiEquityStructure: {
+      quasiEquity: {
         instrument: 'REPAYABLE_DOTATION',
         projectCostThreshold: 500000,
         dotationMaxPercentOfMinimumCapital: 30,
