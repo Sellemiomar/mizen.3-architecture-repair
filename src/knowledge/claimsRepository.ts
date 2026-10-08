@@ -757,7 +757,9 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
       fr: 'Durée Bidaya annoncée de 1 à 60 mois.',
       ar: 'مدة قرض بداية المعلنة من شهر إلى 60 شهراً.'
     }
-  },
+  }
+];
+
 /**
  * Compatibility Claims Registry
  * Empirical, evidence-backed matrix of cross-mechanism stacking and co-financing.
