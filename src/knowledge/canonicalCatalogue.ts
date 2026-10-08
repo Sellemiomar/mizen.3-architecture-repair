@@ -421,7 +421,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'amount', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
         { field: 'contributionPercentage', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
-        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bfpme_official'], notes: { fr: 'Marge exacte déterminée selon le profil de risque en comité', ar: 'الهامش البنكي الدقيق يحدد في لجنة التمويل' } }
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_bfpme_official'], notes: { fr: 'Marge exacte déterminée selon le profil de risque en comité', ar: 'الهامش البنكي الدقيق يحدد في لجنة التمويل' } }
       ]
     },
     guarantees: [
@@ -511,7 +511,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
         { field: 'gracePeriodMonths', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
         { field: 'rateType', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
-        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bts_official'], unknownReason: 'Current official page states a fixed rate but does not publish the numeric rate.' },
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_bts_official'], unknownReason: 'Current official page states a fixed rate but does not publish the numeric rate.' },
         { field: 'fees', status: 'VERIFIED', sourceIds: ['src_bts_official'] }
       ]
     },
@@ -684,7 +684,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       paymentStructure: 'AMORTIZING_MONTHLY',
       verification: [
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_bh_simulator'] },
-        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bh_simulator'], unknownReason: 'Current official page does not publish a numeric rate or margin.' }
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_bh_simulator'], unknownReason: 'Current official page does not publish a numeric rate or margin.' }
       ]
     },
     simulator: {
@@ -706,7 +706,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       status: 'VERIFIED',
       fields: [
         { field: 'bct_rules', status: 'VERIFIED', sourceIds: ['src_bct_car_rules'] },
-        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bh_simulator'], unknownReason: 'Current official page does not publish a numeric rate or margin.' }
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_bh_simulator'], unknownReason: 'Current official page does not publish a numeric rate or margin.' }
       ],
       lastVerifiedAt: '2026-10-08'
     },
@@ -776,7 +776,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       verification: [
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_tlf_official'] },
         { field: 'rateType', status: 'VERIFIED', sourceIds: ['src_tlf_official'] },
-        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_tlf_official'], unknownReason: 'Current official page confirms fixed rate but does not publish the numeric rate.' }
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_tlf_official'], unknownReason: 'Current official page confirms fixed rate but does not publish the numeric rate.' }
       ]
     },
     simulator: {
@@ -869,7 +869,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       verification: [
         { field: 'coverage', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
         { field: 'directLending', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
-        { field: 'fees', status: 'UNKNOWN', sourceIds: ['src_sotugar_official'], unknownReason: 'No generic current fee should be projected across guarantee mechanisms.' }
+        { field: 'fees', status: 'UNVERIFIED', sourceIds: ['src_sotugar_official'], unknownReason: 'No generic current fee should be projected across guarantee mechanisms.' }
       ]
     },
     verification: {
@@ -1018,7 +1018,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       paymentStructure: 'AMORTIZING_MONTHLY',
       verification: [
         { field: 'structure', status: 'VERIFIED', sourceIds: ['src_zitouna_mourabaha'] },
-        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_zitouna_mourabaha'], unknownReason: 'Current product page confirms Mourabaha and the financing structure but does not publish a numeric margin.' }
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_zitouna_mourabaha'], unknownReason: 'Current product page confirms Mourabaha and the financing structure but does not publish a numeric margin.' }
       ]
     },
     verification: {
@@ -1289,7 +1289,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       },
       verification: [
         { field: 'amount', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
-        { field: 'durationMonths', status: 'UNKNOWN', sourceIds: ['src_enda_bidaya'], unknownReason: 'The official Bidaya product page does not publish a repayment duration.' },
+        { field: 'durationMonths', status: 'UNVERIFIED', sourceIds: ['src_enda_bidaya'], unknownReason: 'The official Bidaya product page does not publish a repayment duration.' },
         { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_enda_bidaya'] }
       ]
     },
