@@ -12,6 +12,7 @@ import {
   mapProgramToStackComponent
 } from '../src/engine/financingStackEngine';
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
+import { CANONICAL_PRODUCTS } from '../src/knowledge/canonicalCatalogue';
 import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
 import { readdirSync, readFileSync } from 'node:fs';
