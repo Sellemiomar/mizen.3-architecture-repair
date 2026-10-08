@@ -1279,7 +1279,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     ],
     financialTerms: {
       amount: { min: 200, max: 40000, currency: 'TND' },
-      durationMonths: { min: 1, max: 60, currency: 'MONTHS' },
+
       rate: {
         type: 'UNKNOWN',
         explanation: {
@@ -1289,7 +1289,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       },
       verification: [
         { field: 'amount', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
-        { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
+        { field: 'durationMonths', status: 'UNKNOWN', sourceIds: ['src_enda_bidaya'], unknownReason: 'The official Bidaya product page does not publish a repayment duration.' },
         { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_enda_bidaya'] }
       ]
     },
