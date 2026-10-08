@@ -647,7 +647,7 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     category: 'equity_quasi_equity',
     purposes: ['creation', 'equipment', 'expansion'],
     minAmount: 0,
-    maxAmount: Number.MAX_SAFE_INTEGER,
+    maxAmount: 0,
     minContributionPercent: 0,
     rateType: 'unknown',
     rateDescription: {
@@ -1001,7 +1001,7 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     category: 'islamic_finance',
     purposes: ['equipment', 'expansion', 'creation'],
     minAmount: 0,
-    maxAmount: Number.MAX_SAFE_INTEGER,
+    maxAmount: 0,
     minContributionPercent: 0,
     rateType: 'profit_margin',
     rateDescription: {
@@ -1590,7 +1590,7 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     category: 'bank_loan',
     purposes: ['equipment', 'vehicle', 'expansion'],
     minAmount: 0,
-    maxAmount: Number.MAX_SAFE_INTEGER,
+    maxAmount: 0,
     minContributionPercent: 0,
     rateType: 'unknown',
     rateDescription: {
@@ -1705,7 +1705,7 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     category: 'bank_loan',
     purposes: ['equipment', 'vehicle'],
     minAmount: 0,
-    maxAmount: Number.MAX_SAFE_INTEGER,
+    maxAmount: 0,
     minContributionPercent: 0,
     rateType: 'unknown',
     rateDescription: {
