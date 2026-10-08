@@ -65,6 +65,8 @@ assert(startupBourse !== undefined, 'Startup Act founder stipend must exist');
 assert(startupBourse?.maxAmount === 0, 'Startup stipend must not be represented as a fixed total amount');
 assert(startupBourse?.rateDescription.fr.includes('1 000') && startupBourse?.rateDescription.fr.includes('5 000'), 'Startup stipend current range is 1,000–5,000 TND net/month');
 assert(!startupBourse?.rateDescription.fr.includes('non remboursable'), 'Startup stipend must not be mislabeled as a non-refundable grant');
+assert(!String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.financialTerms.rate.explanation?.ar || '').includes('غير مستردة'), 'Startup stipend Arabic explanation must not mislabel it as a non-refundable grant');
+assert(String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription?.ar || '').includes('5,000'), 'Startup stipend Arabic description must include the current 5,000 TND upper range');
 assert(foprolos?.rateType === 'fixed' && foprolos?.rateDescription.fr.includes('1%, 3%, 5% ou 7%'), 'FOPROLOS exposes the verified income-category rate schedule');
 assert(foprolos?.maxAmount === 0, 'FOPROLOS does not invent a fixed DT ceiling from the 300-SMIG formula');
 assert(foprodi !== undefined, 'FOPRODI must exist in authoritative runtime');
