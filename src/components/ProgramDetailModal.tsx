@@ -227,7 +227,7 @@ export const ProgramDetailModal: React.FC<ProgramDetailModalProps> = ({
                   </span>
                 </div>
                 <span className="text-sm font-bold text-slate-900">
-                  Jusqu'à {Math.round(program.durationMonthsMax / 12)} ans ({program.durationMonthsMax} mois)
+                  {program.category === 'guarantee' ? 'Non applicable' : `Jusqu'à ${Math.round(program.durationMonthsMax / 12)} ans (${program.durationMonthsMax} mois)`}
                 </span>
               </div>
 
@@ -245,7 +245,7 @@ export const ProgramDetailModal: React.FC<ProgramDetailModalProps> = ({
                   </span>
                 </div>
                 <span className="text-sm font-bold text-slate-900">
-                  {program.gracePeriodMonthsMin} à {program.gracePeriodMonthsMax} mois
+                  {program.category === 'guarantee' ? 'Non applicable' : `${program.gracePeriodMonthsMin} à ${program.gracePeriodMonthsMax} mois`}
                 </span>
               </div>
             </div>
