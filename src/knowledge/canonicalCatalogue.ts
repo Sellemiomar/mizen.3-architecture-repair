@@ -1192,6 +1192,16 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'], notes: { fr: 'Montants et taux détaillés non projetés sans preuve primaire exploitable.', ar: 'المبالغ والنسب التفصيلية غير مسقطة دون دليل أولي قابل للتحقق.' } }
       ]
     },
+    verification: {
+      status: 'PARTIALLY_VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
+    },
     sources: [
       {
         id: 'src_mehat_foprolos',
@@ -1246,6 +1256,15 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
         { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'] }
       ]
+    },
+    verification: {
+      status: 'PARTIALLY_VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
