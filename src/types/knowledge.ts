@@ -261,6 +261,12 @@ export interface FinancialTerms {
   fees?: FeeStructure[];
   insurance?: InsuranceRequirement[];
   gracePeriodMonths?: NumericRange;
+  quasiEquity?: {
+    instrument: 'REPAYABLE_DOTATION' | 'CAPITAL_PARTICIPATION';
+    projectCostThreshold?: number;
+    dotationMaxPercentOfMinimumCapital?: number;
+    interpretation?: 'MINIMUM_CAPITAL_NOT_TOTAL_PROJECT_COST';
+  };
   paymentStructure?: 'AMORTIZING_MONTHLY' | 'LEASING_RENTAL' | 'DEFERRED_SEASONAL' | 'SINGLE_BULLET' | 'OTHER';
   verification: FieldEvidence[];
   guaranteeDetails?: { coveragePercentMin?: number; coveragePercentMax?: number; coverageBasis?: string; governorates?: string[] };
