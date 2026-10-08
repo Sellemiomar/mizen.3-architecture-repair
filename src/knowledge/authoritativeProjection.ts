@@ -98,7 +98,7 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     category: mapCategory(product),
     purposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
     minAmount: amount?.min ?? 0,
-    maxAmount: amount?.max ?? Number.MAX_SAFE_INTEGER,
+    maxAmount: amount?.max ?? 0,
     minContributionPercent: contribution?.min ?? 0,
     projectCostMin: product.financialTerms.projectCost?.min,
     projectCostMax: product.financialTerms.projectCost?.max,
