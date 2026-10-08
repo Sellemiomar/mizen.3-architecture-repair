@@ -29,6 +29,7 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
 
 function mapCategory(product: FinancingProduct): FinancingCategory {
   const category = product.category as string;
+  if (product.id === 'foprodi_dotation') return 'equity_quasi_equity';
   if (category === 'PUBLIC_FUNDING' || product.financingDomains.includes('PUBLIC_FUNDING' as any)) return 'grant_subsidy';
   if (category === 'MICROFINANCE') return 'microcredit';
   if (category === 'GUARANTEE') return 'guarantee';
