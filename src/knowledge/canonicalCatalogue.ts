@@ -903,9 +903,9 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       en: 'Startup Act Founder Stipend & Tax Shield'
     },
     shortDescription: {
-      fr: 'Allocation mensuelle pour co-fondateurs labellisés (jusqu\'à 3 000 TND/mois pendant 1 an) et exonération de charges patronales.',
+      fr: 'Allocation mensuelle pour co-fondateurs et actionnaires d’une startup en phase de lancement, de 1 000 à 5 000 TND net/mois pendant 1 an, selon la rémunération antérieure ou l’indemnité forfaitaire applicable.',
       ar: 'منحة شهرية لمؤسسي الشركات المتحصلة على علامة مؤسسة ناشئة (حتى 3000 د/شهرياً) وإعفاءات جبائية.',
-      en: 'Monthly stipend up to 3,000 TND for labeled startup founders for 12 months.'
+      en: 'Monthly startup stipend of 1,000–5,000 TND net/month for one year, indexed to prior remuneration for employees or a fixed allowance for non-employees.'
     },
     category: 'STARTUP',
     financingDomains: ['STARTUP', 'PUBLIC_FUNDING'],
@@ -936,7 +936,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
-          fr: 'Subvention directe non remboursable versée mensuellement aux fondateurs labellisés.',
+          fr: 'Allocation mensuelle de subsistance versée au co-fondateur et actionnaire d’une startup en phase de lancement; montant indexé sur la rémunération antérieure ou forfaitaire selon le statut.',
           ar: 'منحة عمومية مباشرة غير مستردة تصرف شهرياً للمؤسسين.'
         }
       },
@@ -960,7 +960,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         title: 'Avantages officiels du label Startup Act',
         publisher: 'Smart Capital / JORT',
         sourceType: 'OFFICIAL_REGULATION',
-        retrievedAt: '2026-09-20',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
       }
     ],
