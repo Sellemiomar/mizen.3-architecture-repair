@@ -53,10 +53,12 @@ const foprodi = programs.find(p => p.id === 'foprodi_dotation');
 const enda = programs.find(p => p.id === 'enda_microcredit_equip');
 
 assert(foprolos !== undefined, 'FOPROLOS must exist in authoritative runtime');
+assert(foprolos?.category === 'subsidized_loan', 'FOPROLOS construction is classified as a subsidized loan, not a generic grant');
 assert(foprolos?.maxFinancingPercentage === 90, 'FOPROLOS construction financing can reach 90% of eligible cost');
 assert(foprolos?.minContributionPercent === 5, 'FOPROLOS minimum documented contribution floor is 5%');
 assert(foprolos?.durationMonthsMax === 300, 'FOPROLOS construction repayment ceiling is 25 years');
 assert(foprolos?.gracePeriodMonthsMax === 24, 'FOPROLOS construction grace period is up to 2 years');
+assert(foprolos?.verification.verifiedFields.includes('gracePeriodMonths'), 'FOPROLOS grace period is field-level verified');
 assert(foprolos?.rateType === 'fixed' && foprolos?.rateDescription.fr.includes('1%, 3%, 5% ou 7%'), 'FOPROLOS exposes the verified income-category rate schedule');
 assert(foprolos?.maxAmount === 0, 'FOPROLOS does not invent a fixed DT ceiling from the 300-SMIG formula');
 assert(foprodi !== undefined, 'FOPRODI must exist in authoritative runtime');
