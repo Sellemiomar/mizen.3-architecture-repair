@@ -137,6 +137,68 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     lastVerifiedAt: '2026-09-22'
   },
   {
+    id: 'mehat',
+    name: 'Ministère de l\'Équipement et de l\'Habitat',
+    legalName: 'Ministère de l\'Équipement et de l\'Habitat',
+    acronym: 'MEHAT',
+    type: 'PUBLIC_FUNDING_AGENCY',
+    website: 'https://www.mehat.gov.tn',
+    officialDomain: 'mehat.gov.tn',
+    country: 'TN',
+    active: true,
+    status: 'VERIFIED',
+    description: {
+      fr: 'Ministère de tutelle du FOPROLOS et des dispositifs publics de financement du logement des salariés.',
+      ar: 'وزارة الإشراف على صندوق النهوض بالمسكن لفائدة الأجراء وبرامج السكن العمومية.',
+      en: 'Government ministry overseeing FOPROLOS and public housing-finance mechanisms for employees.'
+    },
+    sources: [
+      {
+        id: 'src_mehat_foprolos',
+        url: 'https://www.mehat.gov.tn/fr/principaux-secteurs/habitat/programmes-projets/foprolos/',
+        title: 'FOPROLOS — Ministère de l\'Équipement et de l\'Habitat',
+        publisher: 'Ministère de l\'Équipement et de l\'Habitat',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        language: 'fr',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
+        evidenceStatus: 'VERIFIED'
+      }
+    ],
+    lastVerifiedAt: '2026-10-08'
+  },
+  {
+    id: 'apii',
+    name: 'Agence de Promotion de l\'Industrie et de l\'Innovation',
+    legalName: 'Agence de Promotion de l\'Industrie et de l\'Innovation',
+    acronym: 'APII',
+    type: 'PUBLIC_FUNDING_AGENCY',
+    website: 'https://www.tunisieindustrie.nat.tn',
+    officialDomain: 'tunisieindustrie.nat.tn',
+    country: 'TN',
+    active: true,
+    status: 'VERIFIED',
+    description: {
+      fr: 'Agence publique chargée notamment de l\'information, de l\'accompagnement et de la gestion des dispositifs d\'incitation industrielle tels que le FOPRODI.',
+      ar: 'وكالة عمومية تعنى بالتنمية الصناعية والابتكار وإدارة آليات التحفيز مثل فوبرودي.',
+      en: 'Public agency supporting industrial development and administering incentive mechanisms including FOPRODI.'
+    },
+    sources: [
+      {
+        id: 'src_apii_foprodi',
+        url: 'https://www.tunisieindustrie.nat.tn/en/doc.asp?mcat=12&mrub=208',
+        title: 'Granting and release of financial benefits — FOPRODI',
+        publisher: 'APII',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        language: 'en',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
+        evidenceStatus: 'VERIFIED'
+      }
+    ],
+    lastVerifiedAt: '2026-10-08'
+  },
+  {
     id: 'bh_bank',
     name: 'BH Bank',
     legalName: 'BH Bank S.A. (ex-Banque de l\'Habitat)',
@@ -1046,7 +1108,241 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     status: 'ACTIVE'
+  },
+  // 7. FOPROLOS — salaried housing finance
+  {
+    id: 'foprolos_construction',
+    providerId: 'mehat',
+    name: {
+      fr: 'FOPROLOS — Construction de logement',
+      ar: 'فوبرولوس — بناء مسكن',
+      en: 'FOPROLOS — Home Construction'
+    },
+    shortDescription: {
+      fr: 'Dispositif public de prêts et dons pour le logement des salariés, notamment la construction d’un logement principal.',
+      ar: 'آلية عمومية في شكل قروض ومنح لفائدة الأجراء، ومنها تمويل بناء المسكن الرئيسي.',
+      en: 'Public housing-finance mechanism providing loans and grants to eligible salaried employees, including home construction.'
+    },
+    category: 'PUBLIC_FUNDING',
+    financingDomains: ['HOME', 'PUBLIC_FUNDING'],
+    financingPurposes: ['HOME_CONSTRUCTION', 'FIRST_HOME'],
+    applicantTypes: ['INDIVIDUAL'],
+    assetTypes: ['REAL_ESTATE'],
+    applicability: {
+      domains: ['HOME', 'PUBLIC_FUNDING'],
+      purposes: ['HOME_CONSTRUCTION', 'FIRST_HOME'],
+      applicantTypes: ['INDIVIDUAL'],
+      isFirstPropertyOnly: true
+    },
+    criteria: [
+      {
+        id: 'crit_foprolos_salaried',
+        field: 'employmentStatus',
+        operator: 'CUSTOM',
+        expectedValue: 'SALARIED',
+        critical: true,
+        description: {
+          fr: 'Réservé aux catégories de salariés répondant aux conditions légales du FOPROLOS.',
+          ar: 'مخصص لفئات الأجراء المستوفين للشروط القانونية لفوبرولوس.'
+        }
+      },
+      {
+        id: 'crit_foprolos_income',
+        field: 'monthlyGrossHouseholdIncomeSmigMultiple',
+        operator: 'LTE',
+        expectedValue: 'UNKNOWN',
+        critical: true,
+        description: {
+          fr: 'Revenu mensuel brut du ménage ne dépassant pas six fois le SMIG selon la page officielle actuelle.',
+          ar: 'الدخل الشهري الخام للأسرة لا يتجاوز ست مرات الأجر الأدنى المهني المضمون وفق الصفحة الرسمية الحالية.'
+        }
+      }
+    ],
+    financialTerms: {
+      rate: {
+        type: 'UNKNOWN',
+        explanation: {
+          fr: 'Taux et barèmes financiers détaillés non repris ici tant qu’ils ne sont pas vérifiés champ par champ.',
+          ar: 'لا يتم عرض النسب والجداول المالية التفصيلية قبل التثبت منها خانة بخانة.'
+        }
+      },
+      verification: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'], notes: { fr: 'Montants et taux détaillés non projetés sans preuve primaire exploitable.', ar: 'المبالغ والنسب التفصيلية غير مسقطة دون دليل أولي قابل للتحقق.' } }
+      ]
+    },
+    verification: {
+      status: 'PARTIALLY_VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
+    },
+    sources: [
+      {
+        id: 'src_mehat_foprolos',
+        url: 'https://www.mehat.gov.tn/fr/principaux-secteurs/habitat/programmes-projets/foprolos/',
+        title: 'FOPROLOS — Ministère de l\'Équipement et de l\'Habitat',
+        publisher: 'Ministère de l\'Équipement et de l\'Habitat',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        language: 'fr',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
+        evidenceStatus: 'VERIFIED'
+      }
+    ],
+    status: 'ACTIVE',
+    lastCheckedAt: '2026-10-08'
+  },
+
+  // 8. FOPRODI — public industrial-development funding mechanism
+  {
+    id: 'foprodi_dotation',
+    providerId: 'apii',
+    name: {
+      fr: 'FOPRODI — Fonds de Promotion et de Décentralisation Industrielle',
+      ar: 'فوبرودي — صندوق النهوض باللامركزية الصناعية',
+      en: 'FOPRODI — Industrial Development Fund'
+    },
+    shortDescription: {
+      fr: 'Mécanisme public d’incitation et de financement pour la création et le développement de projets industriels et de services.',
+      ar: 'آلية عمومية للتحفيز والتمويل موجهة لإحداث وتطوير المشاريع الصناعية والخدماتية.',
+      en: 'Public incentive and financing mechanism supporting industrial and service project creation and development.'
+    },
+    category: 'PUBLIC_FUNDING',
+    financingDomains: ['PUBLIC_FUNDING', 'BUSINESS', 'EQUIPMENT'],
+    financingPurposes: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION', 'EQUIPMENT_PURCHASE'],
+    applicantTypes: ['BUSINESS', 'STARTUP', 'MICRO_ENTERPRISE'],
+    applicability: {
+      domains: ['PUBLIC_FUNDING', 'BUSINESS', 'EQUIPMENT'],
+      purposes: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION', 'EQUIPMENT_PURCHASE'],
+      applicantTypes: ['BUSINESS', 'STARTUP', 'MICRO_ENTERPRISE']
+    },
+    criteria: [],
+    financialTerms: {
+      rate: {
+        type: 'UNKNOWN',
+        explanation: {
+          fr: 'Structure financière et barèmes détaillés non projetés sans preuve actuelle suffisamment précise.',
+          ar: 'لا يتم إسقاط الهيكلة المالية والجداول التفصيلية دون دليل حالي دقيق بما يكفي.'
+        }
+      },
+      verification: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'] }
+      ]
+    },
+    verification: {
+      status: 'PARTIALLY_VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
+    },
+    sources: [
+      {
+        id: 'src_apii_foprodi',
+        url: 'https://www.tunisieindustrie.nat.tn/en/doc.asp?mcat=12&mrub=208',
+        title: 'Granting and release of financial benefits — FOPRODI',
+        publisher: 'APII',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        language: 'en',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
+        evidenceStatus: 'VERIFIED'
+      }
+    ],
+    status: 'ACTIVE',
+    lastCheckedAt: '2026-10-08'
+  },
+
+  // 9. Enda Bidaya — current microfinance creation product
+  {
+    id: 'enda_microcredit_equip',
+    providerId: 'enda_tamweel',
+    name: {
+      fr: 'Crédit Bidaya — Enda Tamweel',
+      ar: 'قرض بداية — أندا تمويل',
+      en: 'Bidaya Microcredit — Enda Tamweel'
+    },
+    shortDescription: {
+      fr: 'Microcrédit destiné aux jeunes entrepreneurs tunisiens pour la création ou le redémarrage d’une micro-entreprise.',
+      ar: 'قرض تمويل صغير موجه للشباب التونسيين لإحداث أو إعادة إطلاق مؤسسة صغرى.',
+      en: 'Microcredit for young Tunisian entrepreneurs creating or relaunching a micro-enterprise.'
+    },
+    category: 'MICROFINANCE',
+    financingDomains: ['MICROFINANCE', 'BUSINESS', 'EQUIPMENT'],
+    financingPurposes: ['BUSINESS_CREATION', 'EQUIPMENT_PURCHASE'],
+    applicantTypes: ['INDIVIDUAL', 'MICRO_ENTERPRISE', 'STARTUP'],
+    applicability: {
+      domains: ['MICROFINANCE', 'BUSINESS', 'EQUIPMENT'],
+      purposes: ['BUSINESS_CREATION', 'EQUIPMENT_PURCHASE'],
+      applicantTypes: ['INDIVIDUAL', 'MICRO_ENTERPRISE', 'STARTUP'],
+      allowedBusinessStages: ['idea_project', 'creation_underway']
+    },
+    criteria: [
+      {
+        id: 'crit_enda_bidaya_age',
+        field: 'applicantAge',
+        operator: 'BETWEEN',
+        expectedValue: [18, 40],
+        critical: true,
+        description: {
+          fr: 'Âge de 18 à 40 ans pour le Crédit Bidaya.',
+          ar: 'العمر بين 18 و40 سنة لقرض بداية.'
+        }
+      }
+    ],
+    financialTerms: {
+      amount: { min: 200, max: 40000, currency: 'TND' },
+      durationMonths: { min: 1, max: 60, currency: 'MONTHS' },
+      rate: {
+        type: 'UNKNOWN',
+        explanation: {
+          fr: 'Tarification exacte non projetée comme taux fixe : elle dépend de l’offre et de l’étude du dossier.',
+          ar: 'لا يتم اعتماد نسبة ثابتة محددة؛ التسعير يعتمد على العرض ودراسة الملف.'
+        }
+      },
+      verification: [
+        { field: 'amount', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
+        { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_enda_bidaya'] }
+      ]
+    },
+    verification: {
+      status: 'VERIFIED',
+      fields: [
+        { field: 'amount', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
+        { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_enda_bidaya'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
+    },
+    sources: [
+      {
+        id: 'src_enda_bidaya',
+        url: 'https://www.endatamweel.tn/nos-services/micro-credits/pack-creation/',
+        title: 'Pack création (Bidaya) — Enda Tamweel',
+        publisher: 'Enda Tamweel',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        language: 'fr',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
+        evidenceStatus: 'VERIFIED'
+      }
+    ],
+    status: 'ACTIVE',
+    lastCheckedAt: '2026-10-08'
   }
+
 ];
 
 export const CANONICAL_METADATA: CatalogueMetadata = {
@@ -1057,5 +1353,5 @@ export const CANONICAL_METADATA: CatalogueMetadata = {
   productCount: CANONICAL_PRODUCTS.length,
   sourceCount: CANONICAL_PROVIDERS.reduce((acc, p) => acc + p.sources.length, 0) +
                CANONICAL_PRODUCTS.reduce((acc, pr) => acc + pr.sources.length, 0),
-  productsRequiringReview: CANONICAL_PRODUCTS.filter(p => p.verification.status !== 'VERIFIED').length
+  productsRequiringReview: CANONICAL_PRODUCTS.filter(p => p.verification?.status !== 'VERIFIED').length
 };

@@ -106,6 +106,40 @@ export const CANONICAL_SOURCES: Record<string, SourceReference> = {
     lastVerifiedAt: '2026-09-10',
     evidenceStatus: 'VERIFIED'
   }
+,
+  mehat_foprolos_current: {
+    id: 'src_mehat_foprolos',
+    url: 'https://www.mehat.gov.tn/fr/principaux-secteurs/habitat/programmes-projets/foprolos/',
+    title: 'FOPROLOS — Ministère de l\'Équipement et de l\'Habitat',
+    publisher: 'Ministère de l\'Équipement et de l\'Habitat',
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    language: 'fr',
+    retrievedAt: '2026-10-08',
+    lastVerifiedAt: '2026-10-08',
+    evidenceStatus: 'VERIFIED'
+  },
+  apii_foprodi_current: {
+    id: 'src_apii_foprodi',
+    url: 'https://www.tunisieindustrie.nat.tn/en/doc.asp?mcat=12&mrub=208',
+    title: 'Granting and release of financial benefits — FOPRODI',
+    publisher: 'APII',
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    language: 'en',
+    retrievedAt: '2026-10-08',
+    lastVerifiedAt: '2026-10-08',
+    evidenceStatus: 'VERIFIED'
+  },
+  enda_bidaya_current: {
+    id: 'src_enda_bidaya',
+    url: 'https://www.endatamweel.tn/nos-services/micro-credits/pack-creation/',
+    title: 'Pack création (Bidaya) — Enda Tamweel',
+    publisher: 'Enda Tamweel',
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    language: 'fr',
+    retrievedAt: '2026-10-08',
+    lastVerifiedAt: '2026-10-08',
+    evidenceStatus: 'VERIFIED'
+  }
 };
 
 /**
@@ -560,6 +594,168 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
     notes: {
       fr: "Plafonds par emprunteur et conditions précises de mise en œuvre bancaire non publiés intégralement.",
       ar: "السقوف الفردية وشروط التفعيل البنكي الدقيقة لم تنشر بالكامل."
+    }
+  }
+,
+  // -------------------------------------------------------------
+  // FOPROLOS current evidence closure
+  // -------------------------------------------------------------
+  {
+    claimId: 'claim_foprolos_program_current',
+    entityId: 'foprolos_construction',
+    field: 'programStatus',
+    value: 'CURRENT_PROGRAM',
+    source: CANONICAL_SOURCES.mehat_foprolos_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'La page officielle actuelle du ministère présente FOPROLOS comme un fonds intervenant par prêts et dons.',
+      ar: 'الصفحة الرسمية الحالية للوزارة تعرض فوبرولوس كصندوق يتدخل بالقروض والمنح.'
+    }
+  },
+  {
+    claimId: 'claim_foprolos_construction_current',
+    entityId: 'foprolos_construction',
+    field: 'supportedPurpose',
+    value: 'HOME_CONSTRUCTION',
+    source: CANONICAL_SOURCES.mehat_foprolos_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'La page officielle liste les prêts pour financer la construction d’un logement.',
+      ar: 'الصفحة الرسمية تذكر القروض لتمويل بناء مسكن.'
+    }
+  },
+  {
+    claimId: 'claim_foprolos_income_cap_current',
+    entityId: 'foprolos_construction',
+    field: 'incomeCapSmigMultiple',
+    value: 6,
+    source: CANONICAL_SOURCES.mehat_foprolos_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'La page officielle indique un revenu mensuel brut du ménage ne dépassant pas six fois le SMIG, sous réserve des autres conditions.',
+      ar: 'الصفحة الرسمية تحدد سقف الدخل الشهري الخام للأسرة في ست مرات الأجر الأدنى، مع بقية الشروط.'
+    }
+  },
+  // -------------------------------------------------------------
+  // FOPRODI current existence/purpose closure
+  // -------------------------------------------------------------
+  {
+    claimId: 'claim_foprodi_program_current',
+    entityId: 'foprodi_dotation',
+    field: 'programStatus',
+    value: 'CURRENT_PROGRAM',
+    source: CANONICAL_SOURCES.apii_foprodi_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'La page APII actuelle référence explicitement le FOPRODI parmi les dispositifs de bénéfices financiers.',
+      ar: 'صفحة APII الحالية تدرج فوبرودي ضمن آليات الامتيازات المالية.'
+    }
+  },
+  {
+    claimId: 'claim_foprodi_creation_development_current',
+    entityId: 'foprodi_dotation',
+    field: 'supportedPurposes',
+    value: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION'],
+    source: CANONICAL_SOURCES.apii_foprodi_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Le mécanisme est conservé comme financement public à vérifier pour les détails de barème; aucun plafond non vérifié n’est injecté.',
+      ar: 'يتم الاحتفاظ بالآلية كتمويل عمومي مع إبقاء تفاصيل الجداول غير المثبتة دون إدخال أرقام مفترضة.'
+    }
+  },
+  // -------------------------------------------------------------
+  // Enda Bidaya current evidence closure
+  // -------------------------------------------------------------
+  {
+    claimId: 'claim_enda_bidaya_min_current',
+    entityId: 'enda_microcredit_equip',
+    field: 'minFinancingAmount',
+    value: 200,
+    source: CANONICAL_SOURCES.enda_bidaya_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Le Crédit Bidaya est annoncé de 200 à 40 000 DT.',
+      ar: 'قرض بداية معلن من 200 إلى 40 ألف دينار.'
+    }
+  },
+  {
+    claimId: 'claim_enda_bidaya_max_current',
+    entityId: 'enda_microcredit_equip',
+    field: 'maxFinancingAmount',
+    value: 40000,
+    source: CANONICAL_SOURCES.enda_bidaya_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Plafond Bidaya vérifié à 40 000 DT sur la page officielle actuelle.',
+      ar: 'السقف الحالي لقرض بداية مثبت في 40 ألف دينار وفق الصفحة الرسمية.'
+    }
+  },
+  {
+    claimId: 'claim_enda_bidaya_duration_current',
+    entityId: 'enda_microcredit_equip',
+    field: 'repaymentDurationMonths',
+    value: { min: 1, max: 60 },
+    source: CANONICAL_SOURCES.enda_bidaya_current,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Durée Bidaya annoncée de 1 à 60 mois.',
+      ar: 'مدة قرض بداية المعلنة من شهر إلى 60 شهراً.'
     }
   }
 ];
