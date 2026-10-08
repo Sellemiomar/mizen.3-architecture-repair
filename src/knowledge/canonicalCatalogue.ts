@@ -1158,13 +1158,14 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     financialTerms: {
       projectCost: { max: 500000, currency: 'TND' },
       durationMonths: { max: 144, currency: 'MONTHS' },
+      gracePeriodMonths: { max: 60, currency: 'MONTHS' },
       rate: {
         type: 'FIXED',
         value: 0.03,
         currency: 'PERCENT',
         explanation: {
-          fr: 'Pour la dotation remboursable: 3% par an sur 12 ans. Le délai de grâce n’est pas projeté sans preuve primaire actuelle explicite.',
-          ar: 'بالنسبة للـdotation القابلة للاسترجاع: 3% سنوياً لمدة 12 سنة. لا يتم عرض فترة إمهال دون دليل أولي حالي صريح.'
+          fr: 'Pour la dotation remboursable: 3% par an sur 12 ans. avec 5 ans de délai de grâce.',
+          ar: 'بالنسبة للـdotation القابلة للاسترجاع: 3% سنوياً لمدة 12 سنة. مع 5 سنوات إمهال.'
         }
       },
       quasiEquity: {
@@ -1180,7 +1181,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'repayableDotation', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
         { field: 'dotationMaxPercentOfMinimumCapital', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
         { field: 'repaymentDuration', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
-        { field: 'interestRate', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] }
+        { field: 'interestRate', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'gracePeriod', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] }
       ]
     },
     verification: {
