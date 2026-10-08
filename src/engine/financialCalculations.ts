@@ -150,8 +150,8 @@ export function calculateFinancingCost(
 
   // 3. Leasing Véhicules & Équipements Professionnels (e.g. TLF)
   if (program.id === 'leasing_vehicule_pro' || structure === 'LEASING') {
-    const minDur = program.durationMonthsMin || 24;
-    const maxDur = program.durationMonthsMax || 60;
+    const minDur = program.durationMonthsMin ?? 36;
+    const maxDur = program.durationMonthsMax ?? 60;
     const duration = preferredDurationMonths 
       ? Math.min(Math.max(preferredDurationMonths, minDur), maxDur)
       : Math.round((minDur + maxDur) / 2);
@@ -162,8 +162,8 @@ export function calculateFinancingCost(
       evidenceStatus,
       rateOrigin: 'unavailable',
       rateOriginLabel: {
-        fr: 'Loyer financier indexé TMM + marge du bailleur',
-        ar: 'إيجار مالي مرتبط بـ TMM + هامش شركة الإيجار'
+        fr: 'Taux de leasing fixe; taux numérique non publié, simulation suspendue',
+        ar: 'نسبة إيجار مالي ثابتة؛ النسبة الرقمية غير منشورة، تم تعليق المحاكاة'
       },
       monthlyPayment: undefined,
       totalRepayment: undefined,
