@@ -102,7 +102,7 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     minContributionPercent: contribution?.min ?? 0,
     projectCostMin: product.financialTerms.projectCost?.min,
     projectCostMax: product.financialTerms.projectCost?.max,
-    maxFinancingPercentage: undefined,
+    maxFinancingPercentage: product.financialTerms.maxFinancingPercentage,
     rateType: mapRateType(rate),
     rateDescription: {
       fr: rate?.explanation?.fr || 'Taux non établi.',
