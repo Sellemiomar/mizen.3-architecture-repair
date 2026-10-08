@@ -152,6 +152,16 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
       ar: 'وزارة الإشراف على صندوق النهوض بالمسكن لفائدة الأجراء وبرامج السكن العمومية.',
       en: 'Government ministry overseeing FOPROLOS and public housing-finance mechanisms for employees.'
     },
+    verification: {
+      status: 'VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
+    },
     sources: [
       {
         id: 'src_mehat_foprolos',
@@ -182,6 +192,15 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
       fr: 'Agence publique chargée notamment de l\'information, de l\'accompagnement et de la gestion des dispositifs d\'incitation industrielle tels que le FOPRODI.',
       ar: 'وكالة عمومية تعنى بالتنمية الصناعية والابتكار وإدارة آليات التحفيز مثل فوبرودي.',
       en: 'Public agency supporting industrial development and administering incentive mechanisms including FOPRODI.'
+    },
+    verification: {
+      status: 'VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
@@ -1297,6 +1316,15 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
         { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_enda_bidaya'] }
       ]
+    },
+    verification: {
+      status: 'VERIFIED',
+      fields: [
+        { field: 'amount', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
+        { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_enda_bidaya'] },
+        { field: 'rate', status: 'UNVERIFIED', sourceIds: ['src_enda_bidaya'] }
+      ],
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
