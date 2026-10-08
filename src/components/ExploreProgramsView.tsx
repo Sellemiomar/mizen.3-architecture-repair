@@ -216,7 +216,9 @@ export const ExploreProgramsView: React.FC<ExploreProgramsViewProps> = ({
                       <div>
                         <span className="text-slate-500 block">{language === 'ar' ? 'السقف المالي :' : 'Plafond :'}</span>
                         <span className="font-bold text-slate-900">
-                          {program.minAmount.toLocaleString('fr-TN')} - {program.maxAmount.toLocaleString('fr-TN')} TND
+                          {program.maxAmount > 0
+                            ? `${program.minAmount.toLocaleString('fr-TN')} - ${program.maxAmount.toLocaleString('fr-TN')} TND`
+                            : (language === 'ar' ? 'السقف المالي غير مثبت' : 'Plafond financier non établi')}
                         </span>
                       </div>
                       <div>
