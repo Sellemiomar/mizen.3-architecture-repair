@@ -14,6 +14,8 @@ import {
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
 import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 let failed = 0;
 function assert(condition: boolean, message: string) {
@@ -24,6 +26,23 @@ function assert(condition: boolean, message: string) {
     console.log(`✅ PASS: ${message}`);
   }
 }
+
+function collectSourceFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...collectSourceFiles(full));
+    else if (/\\.(ts|tsx)$/.test(entry.name)) out.push(full);
+  }
+  return out;
+}
+
+const sourceFiles = collectSourceFiles(join(process.cwd(), 'src'));
+const legacyImports = sourceFiles.filter(file => {
+  const text = readFileSync(file, 'utf8');
+  return /(?:from\\s+|import\\s*\\()['"][^'"]*data\\/financingData(?:\\.ts)?['"]/.test(text);
+});
+assert(legacyImports.length === 0, 'Deprecated financingData fixture must never be imported by production source files');
 
 const programs = getAuthoritativeFinancingPrograms();
 const providers = getAuthoritativeProviders();
