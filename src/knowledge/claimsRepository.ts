@@ -55,13 +55,13 @@ export const CANONICAL_SOURCES: Record<string, SourceReference> = {
     language: 'fr',
     publishedAt: '2015-08-07',
     retrievedAt: '2026-09-18',
-    lastVerifiedAt: '2026-09-18',
+    lastVerifiedAt: '2026-10-08',
     evidenceStatus: 'VERIFIED'
   },
   sotugar_official_bareme: {
     id: 'src_sotugar_official_bareme',
-    url: 'https://www.sotugar.com.tn/mecanismes-de-garantie/',
-    title: 'SOTUGAR — Mécanismes et Barèmes de Garantie des PME',
+    url: 'https://sotugar.com.tn/garantie-des-credits-accordes-aux-pme/',
+    title: 'SOTUGAR — Garantie des crédits accordés aux PME',
     publisher: 'SOTUGAR',
     sourceType: 'OFFICIAL_PRODUCT_PAGE',
     language: 'fr',
