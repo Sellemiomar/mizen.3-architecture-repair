@@ -67,7 +67,12 @@ function mapRateType(rate: FinancingProduct['financialTerms']['rate']): Financin
   if (!rate) return 'unknown';
   switch (rate.type as string) {
     case 'FIXED':
-      return rate.margin !== undefined ? 'fixed' : 'unknown';
+      // Fixed schedules may be represented as a single value, a min/max band,
+      // or a margin. Preserve the known fixed-rate classification without
+      // pretending a band is one exact annual rate.
+      return rate.value !== undefined || rate.min !== undefined || rate.max !== undefined || rate.margin !== undefined
+        ? 'fixed'
+        : 'unknown';
     case 'TMM_PLUS_MARGIN':
       return 'variable_tmm';
     case 'INTEREST_FREE_SUBSIDIZED':
