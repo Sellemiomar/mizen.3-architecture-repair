@@ -389,19 +389,19 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     },
     category: 'subsidized_loan',
     purposes: ['creation', 'equipment', 'working_capital', 'expansion', 'agriculture'],
-    minAmount: 5000,
-    maxAmount: 150000,
-    minContributionPercent: 10,
-    rateType: 'subsidized',
+    minAmount: 0,
+    maxAmount: 200000,
+    minContributionPercent: 0,
+    rateType: 'unknown',
     rateDescription: {
-      fr: 'Taux bonifié préférentiel de 5% à 7% l’an (taux d’intérêt réduit soutenu par l’État).',
-      ar: 'نسبة فائدة تفاضلية ميسرة بين 5% و 7% سنوياً مدعومة من الدولة.'
+      fr: 'DEPRECATED: current BTS Crédit Professionnel numeric rate is not published.',
+      ar: 'مهمل: النسبة الرقمية للقرض المهني الحالي لـBTS غير منشورة.'
     },
-    estimatedRateAnnual: 6.0,
-    durationMonthsMin: 24,
+    estimatedRateAnnual: undefined,
+    durationMonthsMin: 0,
     durationMonthsMax: 84,
-    gracePeriodMonthsMin: 6,
-    gracePeriodMonthsMax: 24,
+    gracePeriodMonthsMin: 3,
+    gracePeriodMonthsMax: 12,
     guaranteeRequirements: {
       fr: 'Caution personnelle ou aval solidaire, sans obligation d’hypothèque immobilière.',
       ar: 'ضمان شخصي أو كفالة تضامنية دون اشتراط رهن عقاري.'
@@ -644,21 +644,21 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
       fr: 'Apport de quasi-fonds propres sous forme de dotation remboursable à taux préférentiel de 1% à 3%.',
       ar: 'مساهمة في التمويل الذاتي كأموال شبه ذاتية قابلة للاسترجاع بنسبة 1% إلى 3%.'
     },
-    category: 'grant_subsidy',
+    category: 'equity_quasi_equity',
     purposes: ['creation', 'equipment', 'expansion'],
-    minAmount: 30000,
-    maxAmount: 800000,
-    minContributionPercent: 10,
-    rateType: 'subsidized',
+    minAmount: 0,
+    maxAmount: Number.MAX_SAFE_INTEGER,
+    minContributionPercent: 0,
+    rateType: 'unknown',
     rateDescription: {
-      fr: 'Taux symbolique de 1% à 3% sur la dotation remboursable étatique.',
-      ar: 'نسبة رمزية بين 1% و 3% على المبالغ القابلة للاسترجاع.'
+      fr: 'DEPRECATED: FOPRODI repayable dotation is quasi-equity; do not treat its 30% rule as 30% of project cost.',
+      ar: 'مهمل: dotation FOPRODI القابلة للاسترجاع هي شبه أموال ذاتية؛ لا تفسر قاعدة 30% على أنها 30% من كلفة المشروع.'
     },
-    estimatedRateAnnual: 2.0,
-    durationMonthsMin: 60,
-    durationMonthsMax: 144,
-    gracePeriodMonthsMin: 36,
-    gracePeriodMonthsMax: 60,
+    estimatedRateAnnual: undefined,
+    durationMonthsMin: 0,
+    durationMonthsMax: 0,
+    gracePeriodMonthsMin: 0,
+    gracePeriodMonthsMax: 0,
     guaranteeRequirements: {
       fr: 'Sans hypothèque personnelle, adossé à la participation au capital.',
       ar: 'بدون رهن عقاري، مرتبط بالمساهمة في رأس المال.'
@@ -1000,13 +1000,13 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     },
     category: 'islamic_finance',
     purposes: ['equipment', 'expansion', 'creation'],
-    minAmount: 15000,
-    maxAmount: 1000000,
-    minContributionPercent: 20,
+    minAmount: 0,
+    maxAmount: Number.MAX_SAFE_INTEGER,
+    minContributionPercent: 0,
     rateType: 'profit_margin',
     rateDescription: {
-      fr: 'Marge bénéficiaire Mourabaha fixée par contrat bilatéral lors de l’acquisition du matériel.',
-      ar: 'هامش ربح مرابحة يحدد بموجب العقد عند شراء التجهيزات من المزود.'
+      fr: 'DEPRECATED: Mourabaha margin is contract-specific; current product facts live in the authoritative knowledge layer.',
+      ar: 'مهمل: هامش المرابحة يحدد تعاقديا؛ معطيات المنتج الحالي توجد في طبقة المعرفة الموثوقة.'
     },
     durationMonthsMin: 12,
     durationMonthsMax: 84,
@@ -1589,18 +1589,18 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     },
     category: 'bank_loan',
     purposes: ['equipment', 'vehicle', 'expansion'],
-    minAmount: 15000,
-    maxAmount: 250000,
-    minContributionPercent: 15,
-    rateType: 'variable_tmm',
+    minAmount: 0,
+    maxAmount: Number.MAX_SAFE_INTEGER,
+    minContributionPercent: 0,
+    rateType: 'unknown',
     rateDescription: {
-      fr: 'Loyer financier indexé sur le TMM officiel + marge du bailleur calculée selon la durée du contrat et la valeur résiduelle.',
-      ar: 'أقساط إيجار مالي مرتبطة بنسبة TMM + هامش شركة الإيجار المالي حسب مدة العقد والقيمة المتبقية.'
+      fr: 'DEPRECATED: TLF current leasing rate is fixed but numeric pricing and contribution are offer-specific.',
+      ar: 'مهمل: نسبة TLF في الإيجار المالي ثابتة لكن التسعير الرقمي والتمويل الذاتي يحددهما العرض.'
     },
-    durationMonthsMin: 24,
+    durationMonthsMin: 36,
     durationMonthsMax: 60,
     gracePeriodMonthsMin: 0,
-    gracePeriodMonthsMax: 3,
+    gracePeriodMonthsMax: 0,
     guaranteeRequirements: {
       fr: 'Propriété du véhicule conservée par le bailleur pendant la durée du contrat, assurance tous risques avec délégation.',
       ar: 'ملكية العربة تبقى لشركة الليزينغ طيلة مدة العقد مع تأمين شامل لفائدة المؤجر.'
@@ -1704,13 +1704,13 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     },
     category: 'bank_loan',
     purposes: ['equipment', 'vehicle'],
-    minAmount: 10000,
-    maxAmount: 100000,
-    minContributionPercent: 20,
-    rateType: 'variable_tmm',
+    minAmount: 0,
+    maxAmount: Number.MAX_SAFE_INTEGER,
+    minContributionPercent: 0,
+    rateType: 'unknown',
     rateDescription: {
-      fr: 'Taux variable indexé sur le TMM officiel de la BCT + marge bancaire (selon circulaire BCT sur les crédits à la consommation).',
-      ar: 'نسبة متغيرة مرتبطة بمعدل TMM للبنك المركزي + هامش بنكي وفق مناشير البنك المركزي التونسي.'
+      fr: 'DEPRECATED: current BH AUTO page does not publish a numeric rate or fixed loan ceiling.',
+      ar: 'مهمل: الصفحة الحالية لـBH AUTO لا تنشر نسبة رقمية ولا سقف قرض ثابت.'
     },
     durationMonthsMin: 12,
     durationMonthsMax: 84,
