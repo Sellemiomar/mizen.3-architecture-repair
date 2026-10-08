@@ -59,6 +59,11 @@ assert(foprolos?.minContributionPercent === 5, 'FOPROLOS minimum documented cont
 assert(foprolos?.durationMonthsMax === 300, 'FOPROLOS construction repayment ceiling is 25 years');
 assert(foprolos?.gracePeriodMonthsMax === 24, 'FOPROLOS construction grace period is up to 2 years');
 assert(foprolos?.verification.verifiedFields.includes('gracePeriodMonths'), 'FOPROLOS grace period is field-level verified');
+const startupBourse = getAuthoritativeFinancingProgram('startup_act_bourse');
+assert(startupBourse !== undefined, 'Startup Act founder stipend must exist');
+assert(startupBourse?.maxAmount === 0, 'Startup stipend must not be represented as a fixed total amount');
+assert(startupBourse?.rateDescription.fr.includes('1 000') && startupBourse?.rateDescription.fr.includes('5 000'), 'Startup stipend current range is 1,000–5,000 TND net/month');
+assert(!startupBourse?.rateDescription.fr.includes('non remboursable'), 'Startup stipend must not be mislabeled as a non-refundable grant');
 assert(foprolos?.rateType === 'fixed' && foprolos?.rateDescription.fr.includes('1%, 3%, 5% ou 7%'), 'FOPROLOS exposes the verified income-category rate schedule');
 assert(foprolos?.maxAmount === 0, 'FOPROLOS does not invent a fixed DT ceiling from the 300-SMIG formula');
 assert(foprodi !== undefined, 'FOPRODI must exist in authoritative runtime');
