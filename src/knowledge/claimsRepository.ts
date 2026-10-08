@@ -118,6 +118,17 @@ export const CANONICAL_SOURCES: Record<string, SourceReference> = {
     lastVerifiedAt: '2026-10-08',
     evidenceStatus: 'VERIFIED'
   },
+  apii_foprodi_financing_guide: {
+    id: 'src_apii_foprodi_financing_guide',
+    url: 'https://caipe.tunisieindustrie.nat.tn/IMG/pdf/Guide_Francais.pdf',
+    title: 'Guide de financement des petites et moyennes entreprises — FOPRODI',
+    publisher: 'APII',
+    sourceType: 'OFFICIAL_PDF',
+    language: 'fr',
+    retrievedAt: '2026-10-08',
+    lastVerifiedAt: '2026-10-08',
+    evidenceStatus: 'VERIFIED'
+  },
   apii_foprodi_current: {
     id: 'src_apii_foprodi',
     url: 'https://www.tunisieindustrie.nat.tn/en/doc.asp?mcat=12&mrub=208',
@@ -698,6 +709,86 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
       ar: 'يتم الاحتفاظ بالآلية كتمويل عمومي مع إبقاء تفاصيل الجداول غير المثبتة دون إدخال أرقام مفترضة.'
     }
   },
+  // -------------------------------------------------------------
+  // FOPRODI financing-detail claims
+  // -------------------------------------------------------------
+  {
+    claimId: 'claim_foprodi_dotation_project_threshold_current',
+    entityId: 'foprodi_dotation',
+    field: 'dotationProjectCostThreshold',
+    value: 500000,
+    source: CANONICAL_SOURCES.apii_foprodi_financing_guide,
+    sourceType: 'OFFICIAL_PDF',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Le guide APII indique que pour les projets dont le coût est inférieur ou égal à 500 000 DT, le promoteur peut choisir entre participation FOPRODI et dotation remboursable.',
+      ar: 'دليل APII يذكر أنه بالنسبة للمشاريع التي لا تتجاوز كلفتها 500 ألف دينار يمكن للباعث الاختيار بين مساهمة FOPRODI والدوتاسيون القابلة للسداد.'
+    }
+  },
+  {
+    claimId: 'claim_foprodi_dotation_capital_share_current',
+    entityId: 'foprodi_dotation',
+    field: 'dotationCapitalMinimumShareMax',
+    value: 30,
+    source: CANONICAL_SOURCES.apii_foprodi_financing_guide,
+    sourceType: 'OFFICIAL_PDF',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'La dotation remboursable ne dépasse pas 30% du capital minimum dans le schéma documenté; ce pourcentage ne doit pas être traité comme un pourcentage automatique du coût total du projet.',
+      ar: 'الدوتاسيون القابلة للسداد لا تتجاوز 30% من رأس المال الأدنى في المخطط الموثق؛ ولا يجب اعتبار هذه النسبة تلقائيا نسبة من كلفة المشروع الإجمالية.'
+    }
+  },
+  {
+    claimId: 'claim_foprodi_dotation_repayment_current',
+    entityId: 'foprodi_dotation',
+    field: 'repaymentDurationMonths',
+    value: 144,
+    source: CANONICAL_SOURCES.apii_foprodi_financing_guide,
+    sourceType: 'OFFICIAL_PDF',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Le guide indique un remboursement des dotations sur 12 ans.',
+      ar: 'الدليل يذكر سداد الدوتاسيونات على مدى 12 سنة.'
+    }
+  },
+  {
+    claimId: 'claim_foprodi_dotation_rate_current',
+    entityId: 'foprodi_dotation',
+    field: 'dotationInterestRate',
+    value: 3,
+    source: CANONICAL_SOURCES.apii_foprodi_financing_guide,
+    sourceType: 'OFFICIAL_PDF',
+    retrievalDate: '2026-10-08',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Le guide indique un taux d’intérêt annuel de 3% pour le remboursement des dotations.',
+      ar: 'الدليل يذكر نسبة فائدة سنوية قدرها 3% لسداد الدوتاسيونات.'
+    }
+  },
+
   // -------------------------------------------------------------
   // Enda Bidaya current evidence closure
   // -------------------------------------------------------------
