@@ -180,7 +180,7 @@ assert(bts?.gracePeriodMonthsMin === 3 && bts?.gracePeriodMonthsMax === 12, 'BTS
 assert(bts?.estimatedRateAnnual === undefined, 'BTS does not expose an unsupported numeric fixed rate');
 
 const bhAuto = programs.find(p => p.id === 'banque_credit_auto');
-assert(bhAuto?.maxAmount === Number.MAX_SAFE_INTEGER, 'BH AUTO has no fabricated fixed financing ceiling');
+assert(bhAuto?.maxAmount === 0, 'BH AUTO unknown financing ceiling is represented as UNKNOWN, not a fake number');
 assert(bhAuto?.durationMonthsMax === 84, 'BH AUTO current maximum duration is 7 years');
 assert(bhAuto?.rateType === 'unknown', 'BH AUTO does not expose a fabricated TMM or margin');
 assert(!String(bhAuto?.rateDescription.fr || '').includes('7,99'), 'BH AUTO has no stale 7.99% TMM literal');
@@ -193,16 +193,18 @@ assert(firstHome?.durationMonthsMax === 84 && firstHome?.gracePeriodMonthsMax ==
 
 const leasing = programs.find(p => p.id === 'leasing_vehicule_pro');
 assert(leasing?.durationMonthsMin === 36 && leasing?.durationMonthsMax === 60, 'TLF professional vehicle leasing duration is 3-5 years');
+assert(leasing?.maxAmount === 0, 'TLF unknown financing ceiling is not rendered as a numeric placeholder');
 assert(leasing?.rateType === 'unknown', 'TLF leasing does not expose an unsupported numeric rate');
 assert(!String(leasing?.rateDescription.fr || '').toLowerCase().includes('tmm +'), 'TLF leasing does not inherit a stale TMM-plus-margin assumption');
 
 const zitounaCurrent = programs.find(p => p.id === 'banque_zitouna_mourabaha');
 assert(zitounaCurrent?.maxFinancingPercentage === 70, 'Banque Zitouna professional equipment financing can reach 70% of investment needs');
+assert(zitounaCurrent?.maxAmount === 0, 'Banque Zitouna unknown financing ceiling is not rendered as a numeric placeholder');
 assert(zitounaCurrent?.durationMonthsMax === 84, 'Banque Zitouna professional equipment financing maximum duration is 7 years');
 assert(zitounaCurrent?.rateType === 'unknown', 'Banque Zitouna does not expose an unsupported numeric Mourabaha margin');
 
 assert(sotugar?.category === 'guarantee', 'SOTUGAR remains a guarantee mechanism, not a lending product');
-assert(sotugar?.maxAmount === Number.MAX_SAFE_INTEGER, 'SOTUGAR has no fabricated borrower financing amount');
+assert(sotugar?.maxAmount === 0, 'SOTUGAR has no fabricated borrower financing amount');
 
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourse?.maxAmount === undefined, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling');
