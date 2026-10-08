@@ -1132,7 +1132,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         retrievedAt: '2026-10-08',
         lastVerifiedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
-      }
+      },
       {
         id: 'src_mehat_foprolos_flyer',
         url: 'https://www.mehat.gov.tn/wp-content/uploads/2024/02/new-flyer-Foprolos-2-0-24-P2-2.pdf',
