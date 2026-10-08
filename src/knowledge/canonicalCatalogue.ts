@@ -1353,5 +1353,5 @@ export const CANONICAL_METADATA: CatalogueMetadata = {
   productCount: CANONICAL_PRODUCTS.length,
   sourceCount: CANONICAL_PROVIDERS.reduce((acc, p) => acc + p.sources.length, 0) +
                CANONICAL_PRODUCTS.reduce((acc, pr) => acc + pr.sources.length, 0),
-  productsRequiringReview: CANONICAL_PRODUCTS.filter(p => p.verification.status !== 'VERIFIED').length
+  productsRequiringReview: CANONICAL_PRODUCTS.filter(p => p.verification?.status !== 'VERIFIED').length
 };
