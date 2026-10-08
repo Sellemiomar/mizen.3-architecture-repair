@@ -81,6 +81,7 @@ function mapRateType(rate: FinancingProduct['financialTerms']['rate']): Financin
 }
 
 function productToProgram(product: FinancingProduct): FinancingProgram {
+  const verification = verification ?? { status: 'UNVERIFIED' as const, fields: [] };
   const amount = product.financialTerms.amount;
   const contribution = product.financialTerms.contributionPercentage;
   const duration = product.financialTerms.durationMonths;
@@ -144,19 +145,19 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       supportedPurposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
       requiresBusinessEntity: product.applicability.requiresBusinessEntity,
       isFirstPropertyOnly: false,
-      unverifiedApplicability: product.verification.status === 'UNVERIFIED'
+      unverifiedApplicability: verification.status === 'UNVERIFIED'
     },
     verification: {
-      status: (product.verification.status === 'VERIFIED' && !product.verification.fields.some(f => f.status !== 'VERIFIED')) ? 'VERIFIED' : 'PARTIALLY_VERIFIED',
+      status: (verification.status === 'VERIFIED' && !verification.fields.some(f => f.status !== 'VERIFIED')) ? 'VERIFIED' : 'PARTIALLY_VERIFIED',
       sourceUrl: product.sources[0]?.url || '',
       sourceTitle: product.sources[0]?.title || '',
       sourceType: 'official_portal',
       dateChecked: (product as any).lastVerifiedAt || product.sources[0]?.retrievedAt || '',
-      verifiedFields: product.verification.fields.filter(f => f.status === 'VERIFIED').map(f => f.field),
-      unverifiedFields: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.field),
+      verifiedFields: verification.fields.filter(f => f.status === 'VERIFIED').map(f => f.field),
+      unverifiedFields: verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.field),
       notes: {
-        fr: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.fr).filter(Boolean).join(' ') || '',
-        ar: product.verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.ar).filter(Boolean).join(' ') || ''
+        fr: verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.fr).filter(Boolean).join(' ') || '',
+        ar: verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.ar).filter(Boolean).join(' ') || ''
       },
       lastUpdateYear: Number(((product as any).lastVerifiedAt || product.sources[0]?.retrievedAt || '').slice(0, 4)) || new Date().getFullYear()
     }
