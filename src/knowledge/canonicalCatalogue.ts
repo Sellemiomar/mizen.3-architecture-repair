@@ -1042,7 +1042,18 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
   },
   // 7. FOPROLOS — salaried housing finance
   {
-    id: 'foprolos_construction',
+    id: 'fo
+      {
+        id: 'src_mehat_foprolos_flyer',
+        url: 'https://www.mehat.gov.tn/wp-content/uploads/2024/02/new-flyer-Foprolos-2-0-24-P2-2.pdf',
+        title: 'FOPROLOS — Flyer officiel',
+        publisher: 'Ministère de l’Équipement et de l’Habitat',
+        sourceType: 'OFFICIAL_PDF',
+        language: 'fr',
+        retrievedAt: '2026-10-08',
+        lastVerifiedAt: '2026-10-08',
+        evidenceStatus: 'VERIFIED'
+      },prolos_construction',
     providerId: 'mehat',
     name: {
       fr: 'FOPROLOS — Construction de logement',
@@ -1090,18 +1101,25 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
+      maxFinancingPercentage: 90,
+      contributionPercentage: { min: 5, max: 12.5, currency: 'PERCENT' },
+      durationMonths: { max: 300, currency: 'MONTHS' },
+      gracePeriodMonths: { max: 24, currency: 'MONTHS' },
       rate: {
-        type: 'UNKNOWN',
+        type: 'FIXED',
+        min: 0.01,
+        max: 0.07,
+        currency: 'PERCENT',
         explanation: {
-          fr: 'Taux et barèmes financiers détaillés non repris ici tant qu’ils ne sont pas vérifiés champ par champ.',
-          ar: 'لا يتم عرض النسب والجداول المالية التفصيلية قبل التثبت منها خانة بخانة.'
+          fr: 'Barème par catégorie de revenu FOPROLOS: 1%, 3%, 5% ou 7%. Le prêt peut couvrir jusqu’à 90% du coût; le montant maximal est exprimé à 300 fois le SMIG et ne doit pas être converti en plafond DT fixe sans SMIG applicable vérifié.',
+          ar: 'نسب حسب فئة الدخل في فوبرولوس: 1% أو 3% أو 5% أو 7%. يمكن أن يصل القرض إلى 90% من الكلفة؛ السقف الأقصى يعادل 300 مرة الأجر الأدنى المهني المضمون ولا ينبغي تحويله إلى سقف ثابت بالدينار دون التثبت من قيمة SMIG المعمول بها.'
         }
       },
       verification: [
         { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
-        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'], notes: { fr: 'Montants et taux détaillés non projetés sans preuve primaire exploitable.', ar: 'المبالغ والنسب التفصيلية غير مسقطة دون دليل أولي قابل للتحقق.' } }
+        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos', 'src_mehat_foprolos_flyer'] }
       ]
     },
     verification: {
@@ -1110,7 +1128,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
-        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'] }
+        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos', 'src_mehat_foprolos_flyer'] }
       ],
       lastVerifiedAt: '2026-10-08'
     },
