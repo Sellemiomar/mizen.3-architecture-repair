@@ -726,7 +726,7 @@ export function evaluateProgramCompatibility(
     }
 
     // 3. Absolute CMLT Ceiling: 2,500,000 TND
-    if (applicant.financingRequested !== undefined && applicant.financingRequested > program.maxAmount) {
+    if (applicant.financingRequested !== undefined && program.maxAmount > 0 && applicant.financingRequested > program.maxAmount) {
       amountStatus = 'FAIL';
       const detail = {
         fr: `Montant CMLT demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) dépasse le plafond de ${program.maxAmount.toLocaleString('fr-TN')} TND.`,
@@ -779,7 +779,7 @@ export function evaluateProgramCompatibility(
         financialDetails.push(detail);
         potentialIssues.push(detail);
       } else if (
-        (program.maxAmount === undefined || applicant.financingRequested <= program.maxAmount) &&
+        (program.maxAmount <= 0 || applicant.financingRequested <= program.maxAmount) &&
         (program.projectCostMin === undefined || applicant.totalProjectCost >= program.projectCostMin) &&
         (program.projectCostMax === undefined || applicant.totalProjectCost <= program.projectCostMax)
       ) {
