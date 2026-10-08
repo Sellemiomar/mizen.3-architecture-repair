@@ -429,8 +429,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         id: 'guar_sotugar',
         type: 'STATE_GUARANTEE_SOTUGAR',
         description: {
-          fr: 'Couverture par le fonds de garantie SOTUGAR jusqu\'à 75% du risque.',
-          ar: 'تغطية صندوق الضمان سوتوغار بنسبة تصل إلى 75% من المخاطر.'
+          fr: 'Couverture de garantie selon le fonds et l’opération éligible; le taux ne doit pas être généralisé à tous les crédits.',
+          ar: 'تختلف تغطية الضمان حسب الصندوق والعملية وشروط الأهلية؛ ولا ينبغي تعميم نسبة واحدة على جميع القروض.'
         },
         mandatory: false
       }
@@ -828,7 +828,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     shortDescription: {
       fr: 'Mécanisme national de garantie facilitant l\'accès des PME au financement; SOTUGAR ne prête pas directement et la couverture dépend du mécanisme.',
       ar: 'آلية وطنية للضمان وتيسير التمويل؛ سوتوغار لا تمنح قروضا مباشرة وتختلف التغطية حسب الآلية.',
-      en: 'Public guarantee mechanism covering up to 75% of bank credit default risk (not a direct lending fund).'
+      en: 'Public risk-sharing and guarantee mechanism; coverage depends on the specific fund, operation and eligibility rules. SOTUGAR does not lend directly.'
     },
     category: 'GUARANTEE',
     financingDomains: ['GUARANTEE', 'STARTUP', 'BUSINESS', 'EQUIPMENT', 'AGRICULTURE'],
