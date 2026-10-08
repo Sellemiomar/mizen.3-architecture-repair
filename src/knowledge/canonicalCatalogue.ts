@@ -1108,7 +1108,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     status: 'ACTIVE'
-  }
+  },
   // 7. FOPROLOS — salaried housing finance
   {
     id: 'foprolos_construction',
