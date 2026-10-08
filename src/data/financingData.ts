@@ -493,8 +493,8 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
     ],
     importantCaveats: [
       {
-        fr: 'Plafond strict de 150 000 DT pour les diplômés supérieurs (limité à 25 000 DT sans diplôme universitaire via la filière petits métiers).',
-        ar: 'السقف محدد بـ 150 ألف دينار لأصحاب الشهادات العليا (و25 ألف دينار لغير الحاملين لشهادات).'
+        fr: 'DEPRECATED: do not use legacy BTS ceiling or diploma rule; authoritative current facts are maintained in the knowledge layer.',
+        ar: 'مهمل: لا تعتمد سقف BTS القديم أو شرط الشهادة؛ المعطيات الحالية توجد في طبقة المعرفة الموثوقة.'
       }
     ],
     hasRegionalDevelopmentBonus: false,
@@ -508,8 +508,8 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
       verifiedFields: ['maxAmount', 'rate', 'minContributionPercent', 'requiresDegree', 'durationMonths', 'gracePeriodMonths'],
       unverifiedFields: ['guaranteeRequirements'],
       notes: {
-        fr: 'Plafond (150 000 DT), apport minimum (10%) et conditions de diplôme vérifiés via circulaire BTS. La caution ou garantie locale exacte reste soumise à la commission régionale.',
-        ar: 'تم التحقق من سقف 150 ألف د والتمويل الذاتي 10% والشهادة الجامعية. الضمان الشخصي أو العيني يحدده الفرع الجهوي.'
+        fr: 'Legacy verification note neutralized; current BTS facts are maintained in the authoritative knowledge layer.',
+        ar: 'تم تحييد ملاحظة التحقق القديمة؛ معطيات BTS الحالية توجد في طبقة المعرفة الموثوقة.'
       },
       lastUpdateYear: 2026
     }
@@ -737,8 +737,8 @@ export const FINANCING_PROGRAMS: FinancingProgram[] = [
       verifiedFields: ['maxAmount', 'rate', 'durationMonthsMax', 'gracePeriodMonthsMax', 'minContributionPercent', 'purposes'],
       unverifiedFields: ['regionalBonusRate'],
       notes: {
-        fr: 'Plafond de dotation (jusqu’à 800 000 DT) et taux symbolique (1-3%) vérifiés par décret APII. Le taux exact de la prime dépend de la délégation de rattachement.',
-        ar: 'سقف المساهمة ونسبة الفائدة الرمزية محددة بالقانون. النسبة الدقيقة لمنحة التنمية الجهوية تتبع المعتمدية.'
+        fr: 'Legacy FOPRODI financial note neutralized; current repayable dotation facts are maintained in the authoritative knowledge layer.',
+        ar: 'تم تحييد الملاحظة المالية القديمة لفوبرودي؛ المعطيات الحالية للـdotation القابلة للاسترجاع توجد في طبقة المعرفة الموثوقة.'
       },
       lastUpdateYear: 2026
     }
