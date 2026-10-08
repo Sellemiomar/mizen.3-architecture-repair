@@ -49,8 +49,8 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     legalName: 'Banque Tunisienne de Solidarité S.A.',
     acronym: 'BTS',
     type: 'PUBLIC_BANK',
-    website: 'https://www.bts.com.tn',
-    officialDomain: 'bts.com.tn',
+    website: 'https://www.btsbank.net',
+    officialDomain: 'btsbank.net',
     country: 'TN',
     active: true,
     status: 'VERIFIED',
@@ -62,8 +62,8 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     sources: [
       {
         id: 'src_bts_official',
-        url: 'https://www.bts.com.tn/produits-et-services/credits-dinvestissement/',
-        title: 'Conditions d\'octroi des crédits BTS',
+        url: 'https://www.btsbank.net/solutions/produit/credit-professionnel-Mg',
+        title: 'BTS — Crédit Professionnel',
         publisher: 'BTS',
         sourceType: 'OFFICIAL_PRODUCT_PAGE',
         language: 'fr',
@@ -93,8 +93,8 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     sources: [
       {
         id: 'src_sotugar_official',
-        url: 'https://www.sotugar.com.tn/mecanismes-de-garantie/',
-        title: 'Barème et mécanismes de garantie SOTUGAR',
+        url: 'https://sotugar.com.tn/garantie-des-credits-accordes-aux-pme/',
+        title: 'SOTUGAR — Garantie des crédits accordés aux PME',
         publisher: 'SOTUGAR',
         sourceType: 'OFFICIAL_PRODUCT_PAGE',
         language: 'fr',
@@ -217,8 +217,8 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     sources: [
       {
         id: 'src_bh_simulator',
-        url: 'https://www.bhbank.tn/particuliers/simulateur-de-credit',
-        title: 'Simulateur officiel de crédit BH Bank',
+        url: 'https://bhbank.tn/credit_bh_auto',
+        title: 'BH Bank — BH AUTO',
         publisher: 'BH Bank',
         sourceType: 'OFFICIAL_SIMULATOR',
         language: 'fr',
@@ -248,8 +248,8 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     sources: [
       {
         id: 'src_tlf_official',
-        url: 'https://www.tlf.com.tn/simulateur-leasing',
-        title: 'Simulateur officiel de leasing TLF',
+        url: 'https://www.tlf.com.tn/site/fr/conditions-financieres.316.html',
+        title: 'TLF — Conditions financières du leasing',
         publisher: 'TLF',
         sourceType: 'OFFICIAL_SIMULATOR',
         language: 'fr',
@@ -279,8 +279,8 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     sources: [
       {
         id: 'src_zitouna_mourabaha',
-        url: 'https://www.banquezitouna.com/fr/financement-entreprises/mourabaha-equipement',
-        title: 'Conditions Mourabaha Entreprises Zitouna',
+        url: 'https://www.banquezitouna.com/fr/business/financer-mon-activite/developper-mon-activite/tamouil-mouaddet-mehnia',
+        title: 'Banque Zitouna — Tamouil Mouaddet Mehnia',
         publisher: 'Banque Zitouna',
         sourceType: 'OFFICIAL_PRODUCT_PAGE',
         language: 'fr',
@@ -463,103 +463,89 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     status: 'ACTIVE'
   },
 
-  // 2. BTS Diplômés
+  // 2. BTS — Crédit Professionnel (current official product)
   {
     id: 'bts_diplomes',
     providerId: 'bts',
-    name: {
-      fr: 'Crédit BTS Diplômés de l\'Enseignement Supérieur',
-      ar: 'قرض البنك التونسي للتضامن لحاملي الشهادات العليا',
-      en: 'BTS Higher Education Graduates Loan'
-    },
+    name: { fr: 'BTS — Crédit Professionnel', ar: 'البنك التونسي للتضامن — القرض المهني', en: 'BTS Professional Credit' },
     shortDescription: {
-      fr: 'Crédit à taux d\'intérêt bonifié sans exigence de garanties lourdes pour diplômés créant leur entreprise.',
-      ar: 'قرض بنسبة فائدة ميسرة ودون ضمانات عينية معقدة لحاملي الشهادات العليا.',
-      en: 'Subsidized loan for university and higher technical graduates with zero heavy collateral requirement.'
+      fr: 'Crédit professionnel pour créer, développer ou moderniser une activité, avec financement pouvant atteindre 90% du coût du projet.',
+      ar: 'قرض مهني لإحداث أو تطوير أو تحديث النشاط مع تمويل يصل إلى 90% من كلفة المشروع.',
+      en: 'Professional credit for creating, developing or modernizing an activity, financing up to 90% of project cost.'
     },
-    category: 'STARTUP',
-    financingDomains: ['STARTUP', 'EQUIPMENT', 'AGRICULTURE', 'BUSINESS'],
-    financingPurposes: ['BUSINESS_CREATION', 'EQUIPMENT_PURCHASE', 'WORKING_CAPITAL', 'AGRICULTURE'],
-    applicantTypes: ['INDIVIDUAL', 'STARTUP', 'LIBERAL_PROFESSION', 'MICRO_ENTERPRISE'],
+    category: 'BUSINESS',
+    financingDomains: ['BUSINESS', 'EQUIPMENT', 'MICROFINANCE'],
+    financingPurposes: ['BUSINESS_CREATION', 'EQUIPMENT_PURCHASE', 'WORKING_CAPITAL', 'BUSINESS_EXPANSION'],
+    applicantTypes: ['INDIVIDUAL', 'BUSINESS', 'LIBERAL_PROFESSION', 'MICRO_ENTERPRISE'],
     applicability: {
-      domains: ['STARTUP', 'EQUIPMENT', 'AGRICULTURE', 'BUSINESS'],
-      purposes: ['BUSINESS_CREATION', 'EQUIPMENT_PURCHASE', 'WORKING_CAPITAL', 'AGRICULTURE'],
-      applicantTypes: ['INDIVIDUAL', 'STARTUP', 'LIBERAL_PROFESSION', 'MICRO_ENTERPRISE'],
-      requiresHigherEducationDegree: true,
-      allowedBusinessStages: ['idea_project', 'creation_underway', 'established_under_2y']
+      domains: ['BUSINESS', 'EQUIPMENT', 'MICROFINANCE'],
+      purposes: ['BUSINESS_CREATION', 'EQUIPMENT_PURCHASE', 'WORKING_CAPITAL', 'BUSINESS_EXPANSION'],
+      applicantTypes: ['INDIVIDUAL', 'BUSINESS', 'LIBERAL_PROFESSION', 'MICRO_ENTERPRISE'],
+      allowedBusinessStages: ['idea_project', 'creation_underway', 'established_under_2y', 'established_over_2y']
     },
-    criteria: [
-      {
-        id: 'crit_bts_degree',
-        field: 'hasHigherEducationDegree',
-        operator: 'EQ',
-        expectedValue: true,
-        critical: true,
-        description: {
-          fr: 'Diplôme de l\'enseignement supérieur (Licence, Master, Ingénieur) ou BTP/BTS homologué requis',
-          ar: 'شهادة جامعية (إجازة، ماجستير، مهندس) أو مؤهل تقني سامي معترف به'
-        }
-      },
-      {
-        id: 'crit_bts_amount_cap',
-        field: 'financingRequested',
-        operator: 'LTE',
-        expectedValue: 150000,
-        critical: true,
-        description: {
-          fr: 'Plafond réglementaire d\'intervention BTS fixé à 150 000 TND pour les diplômés',
-          ar: 'سقف التمويل الأقصى محدد بـ 150 ألف دينار لحاملي الشهادات العليا'
-        }
-      }
-    ],
+    criteria: [{
+      id: 'crit_bts_age',
+      field: 'applicantAge',
+      operator: 'BETWEEN',
+      expectedValue: [20, 60],
+      critical: true,
+      description: { fr: 'Âge de 20 à 60 ans selon la page officielle du Crédit Professionnel BTS.', ar: 'العمر من 20 إلى 60 سنة وفق الصفحة الرسمية للقرض المهني.' }
+    }],
     financialTerms: {
-      amount: { min: 5000, max: 150000, currency: 'TND' },
-      projectCost: { min: 5000, max: 200000, currency: 'TND' },
-      durationMonths: { min: 24, max: 84, currency: 'MONTHS' },
+      amount: { max: 200000, currency: 'TND' },
+      projectCost: { max: 200000, currency: 'TND' },
+      durationMonths: { max: 84, currency: 'MONTHS' },
       contributionPercentage: { min: 0, max: 10, currency: 'PERCENT' },
       rate: {
-        type: 'INTEREST_FREE_SUBSIDIZED',
-        value: 0.05, // 5% subsidized fixed rate under state decree
-        currency: 'PERCENT',
+        type: 'FIXED',
         explanation: {
-          fr: 'Taux bonifié par l\'État tunisien fixé à 5% l\'an sans commissions cachées.',
-          ar: 'نسبة فائدة تفاضلية مدعمة من الدولة محددة بـ 5% سنوياً دون عمولات إضافية.'
+          fr: 'Taux d’intérêt fixe annoncé par BTS; le taux numérique n’est pas publié sur la fiche actuelle et reste UNKNOWN.',
+          ar: 'نسبة فائدة ثابتة معلنة من BTS؛ النسبة الرقمية غير منشورة في البطاقة الحالية وتبقى غير معلومة.'
         }
       },
-      gracePeriodMonths: { min: 6, max: 18, currency: 'MONTHS' },
+      gracePeriodMonths: { min: 3, max: 12, currency: 'MONTHS' },
       paymentStructure: 'AMORTIZING_MONTHLY',
       verification: [
-        { field: 'amount', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
-        { field: 'rate', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
-        { field: 'contributionPercentage', status: 'VERIFIED', sourceIds: ['src_bts_official'] }
+        { field: 'maxAmount', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
+        { field: 'maxFinancingPercentage', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
+        { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
+        { field: 'gracePeriodMonths', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
+        { field: 'rateType', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
+        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bts_official'], unknownReason: 'Current official page states a fixed rate but does not publish the numeric rate.' },
+        { field: 'fees', status: 'VERIFIED', sourceIds: ['src_bts_official'] }
       ]
     },
+    guarantees: [{
+      id: 'guar_bts_no_real',
+      type: 'NONE',
+      description: { fr: 'Aucune garantie réelle exigée selon la fiche actuelle.', ar: 'لا يطلب ضمان عيني وفق البطاقة الحالية.' },
+      mandatory: false
+    }],
     requiredDocuments: [
-      { id: 'doc_diploma', category: 'LEGAL', name: { fr: 'Copie conforme du diplôme universitaire', ar: 'نسخة مطابقة للأصل من الشهادة الجامعية' }, mandatory: true },
-      { id: 'doc_bp', category: 'PROJECT_PROFORMA', name: { fr: 'Fiche descriptive du projet & Devis d\'équipement', ar: 'بطاقة وصف المشروع وفواتير تقديرية' }, mandatory: true },
-      { id: 'doc_cin', category: 'IDENTITY', name: { fr: 'Copie CIN du promoteur', ar: 'نسخة من بطاقة التعريف الوطنية' }, mandatory: true }
+      { id: 'doc_bts_business_plan', category: 'PROJECT_PROFORMA', name: { fr: 'Business plan et justificatifs du projet', ar: 'دراسة المشروع والوثائق المثبتة' }, mandatory: true }
     ],
     verification: {
       status: 'VERIFIED',
       fields: [
-        { field: 'amount', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
-        { field: 'rate', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
-        { field: 'criteria', status: 'VERIFIED', sourceIds: ['src_bts_official'] }
+        { field: 'currentProduct', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
+        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_bts_official'] },
+        { field: 'numericRate', status: 'UNVERIFIED', sourceIds: ['src_bts_official'] }
       ],
-      lastVerifiedAt: '2026-09-20'
+      lastVerifiedAt: '2026-10-08'
     },
-    sources: [
-      {
-        id: 'src_bts_official',
-        url: 'https://www.bts.com.tn/produits-et-services/credits-dinvestissement/',
-        title: 'Guide BTS Crédits Diplômés',
-        publisher: 'BTS',
-        sourceType: 'OFFICIAL_PRODUCT_PAGE',
-        retrievedAt: '2026-09-20',
-        evidenceStatus: 'VERIFIED'
-      }
-    ],
-    status: 'ACTIVE'
+    sources: [{
+      id: 'src_bts_official',
+      url: 'https://www.btsbank.net/solutions/produit/credit-professionnel-Mg',
+      title: 'BTS — Crédit Professionnel',
+      publisher: 'BTS Bank',
+      sourceType: 'OFFICIAL_PRODUCT_PAGE',
+      language: 'fr',
+      retrievedAt: '2026-10-08',
+      lastVerifiedAt: '2026-10-08',
+      evidenceStatus: 'VERIFIED'
+    }],
+    status: 'ACTIVE',
+    lastCheckedAt: '2026-10-08'
   },
 
   // 3. Premier Logement (Housing)
@@ -605,7 +591,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         id: 'crit_property_price_cap',
         field: 'totalProjectCost',
         operator: 'LTE',
-        expectedValue: 250000,
+        expectedValue: 220000,
         critical: true,
         description: {
           fr: 'Prix d\'acquisition du logement neuf plafonné à 250 000 TND selon barème réglementaire',
@@ -614,9 +600,9 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
-      amount: { min: 10000, max: 50000, currency: 'TND' }, // Covers 20% own contribution
-      projectCost: { min: 80000, max: 250000, currency: 'TND' },
-      durationMonths: { min: 180, max: 240, currency: 'MONTHS' }, // 15 to 20 years
+      amount: { max: 40000, currency: 'TND' }, // Covers 20% own contribution
+      projectCost: { max: 220000, currency: 'TND' },
+      durationMonths: { max: 84, currency: 'MONTHS' }, // 15 to 20 years
       contributionPercentage: { min: 0, max: 0, currency: 'PERCENT' }, // The mechanism replaces own contribution
       rate: {
         type: 'FIXED',
@@ -657,13 +643,13 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'gracePeriodMonths', status: 'VERIFIED', sourceIds: ['src_premier_logement_jort'] },
         { field: 'caps', status: 'VERIFIED', sourceIds: ['src_premier_logement_jort'] }
       ],
-      lastVerifiedAt: '2026-09-20'
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
         id: 'src_premier_logement_jort',
-        url: 'http://www.legislation.tn/detailtexte/Decret-Gouvernemental-num-2017-278',
-        title: 'Décret gouvernemental n° 2017-278 fixant les conditions du Premier Logement',
+        url: 'https://www.bhbank.tn/le-credit-masken-awal',
+        title: 'BH Bank — Le Crédit Masken Awal',
         publisher: 'JORT / Ministère de l\'Équipement',
         sourceType: 'OFFICIAL_REGULATION',
         retrievedAt: '2026-09-20',
@@ -699,47 +685,35 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       assetTypes: ['VEHICLE_NEW', 'VEHICLE_USED'],
       allowedVehicleConditions: ['new', 'used']
     },
-    criteria: [
-      {
-        id: 'crit_car_min_contribution',
-        field: 'userContribution',
-        operator: 'GTE',
-        expectedValue: 20, // 20% minimum under BCT guidelines
-        critical: true,
-        description: {
-          fr: 'Apport personnel minimum de 20% à 40% selon puissance fiscale et nature du véhicule (circulaire BCT)',
-          ar: 'تمويل ذاتي لا يقل عن 20% إلى 40% حسب القوة الجبائية للسيارة (منشور البنك المركزي)'
-        }
-      }
-    ],
+    criteria: [],
     financialTerms: {
+      durationMonths: { max: 84, currency: 'MONTHS' },
       rate: {
         type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
-          fr: 'Taux variable indexé sur le TMM (~7,99%) majoré d\'une marge commerciale de 3,0% à 4,5% selon le profil emprunteur.',
-          ar: 'نسبة فائدة متغيرة مرتبطة بنسبة TMM مع هامش تجاري يتراوح بين 3.0% و 4.5% حسب تقييم الملف.'
+          fr: 'La page officielle indique un taux avantageux sans publier de taux numérique ni de marge TMM. Aucun taux automatique n’est calculé.',
+          ar: 'الصفحة الرسمية تذكر نسبة فائدة ملائمة دون نشر نسبة رقمية أو هامش مرتبط بـ TMM. لا يتم احتساب نسبة آلية.'
         }
       },
       paymentStructure: 'AMORTIZING_MONTHLY',
       verification: [
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_bh_simulator'] },
-        { field: 'contributionPercentage', status: 'VERIFIED', sourceIds: ['src_bct_car_rules'] },
-        { field: 'rate', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bh_simulator'], notes: { fr: 'Marge exacte négociée en agence', ar: 'الهامش الدقيق يخضع للتفاوض في الفرع' } }
+        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bh_simulator'], unknownReason: 'Current official page does not publish a numeric rate or margin.' }
       ]
     },
     simulator: {
       id: 'sim_car_bh',
       providerId: 'bh_bank',
-      url: 'https://www.bhbank.tn/particuliers/simulateur-de-credit',
+      url: 'https://bhbank.tn/credit_bh_auto',
       simulatorType: 'CAR',
       official: true,
       evidence: {
         id: 'src_bh_simulator',
         url: 'https://www.bhbank.tn/particuliers/simulateur-de-credit',
         publisher: 'BH Bank',
-        sourceType: 'OFFICIAL_SIMULATOR',
-        retrievedAt: '2026-09-25',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        retrievedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
       }
     },
@@ -749,7 +723,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'bct_rules', status: 'VERIFIED', sourceIds: ['src_bct_car_rules'] },
         { field: 'rate', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bh_simulator'] }
       ],
-      lastVerifiedAt: '2026-09-25'
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
@@ -804,32 +778,34 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
+      durationMonths: { min: 36, max: 60, currency: 'MONTHS' },
       rate: {
-        type: 'NEGOTIATED',
+        type: 'FIXED',
         currency: 'PERCENT',
         explanation: {
-          fr: 'Loyer financier calculé selon la durée et le premier loyer majoré. Barème exact établi sur devis pro-forma.',
-          ar: 'قسط إيجار مالي محدد حسب المدة والقسط الأول التمهيدي. العرض المالي الدقيق يصدر بناءً على الفاتورة التقديرية.'
+          fr: 'TLF indique que le taux du contrat de leasing est fixe; aucun taux numérique n’est publié sur la page actuelle. Les véhicules légers sont financés généralement sur 3 à 5 ans.',
+          ar: 'تذكر TLF أن نسبة عقد الإيجار المالي ثابتة؛ لا تنشر الصفحة الحالية نسبة رقمية. وتمول العربات الخفيفة عادة على 3 إلى 5 سنوات.'
         }
       },
       paymentStructure: 'LEASING_RENTAL',
       verification: [
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_tlf_official'] },
-        { field: 'rate', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_tlf_official'], notes: { fr: 'Simulation en ligne indicative, offre contractuelle sur devis', ar: 'المحاكاة تأشيرية والعرض النهائي يصدر على الفاتورة' } }
+        { field: 'rateType', status: 'VERIFIED', sourceIds: ['src_tlf_official'] },
+        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_tlf_official'], unknownReason: 'Current official page confirms fixed rate but does not publish the numeric rate.' }
       ]
     },
     simulator: {
       id: 'sim_leasing_tlf',
       providerId: 'tlf',
-      url: 'https://www.tlf.com.tn/simulateur-leasing',
+      url: 'https://www.tlf.com.tn/site/fr/conditions-financieres.316.html',
       simulatorType: 'LEASING',
       official: true,
       evidence: {
         id: 'src_tlf_official',
         url: 'https://www.tlf.com.tn/simulateur-leasing',
         publisher: 'Tunisie Leasing & Factoring',
-        sourceType: 'OFFICIAL_SIMULATOR',
-        retrievedAt: '2026-09-26',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        retrievedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
       }
     },
@@ -839,7 +815,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'simulator', status: 'VERIFIED', sourceIds: ['src_tlf_official'] },
         { field: 'terms', status: 'VERIFIED', sourceIds: ['src_tlf_official'] }
       ],
-      lastVerifiedAt: '2026-09-26'
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
@@ -893,21 +869,25 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     ],
     financialTerms: {
       guaranteeDetails: {
-        coverageBasis: 'UNRECOVERABLE_AMOUNT',
-        governorates: [
-          'Kasserine', 'Sidi Bouzid', 'Gafsa', 'Kébili', 'Tataouine', 'Tozeur',
-          'Siliana', 'Le Kef', 'Jendouba', 'Béja', 'Kairouan', 'Médenine', 'Gabès', 'Zaghouan'
-        ]
+        coveragePercentMin: 50,
+        coveragePercentMax: 75,
+        coverageBasis: 'UNRECOVERABLE_AMOUNT'
       },
       rate: {
-        type: 'UNKNOWN',
+        type: 'NOT_APPLICABLE',
         explanation: {
-          fr: 'La SOTUGAR est un mécanisme de garantie, pas un prêteur. Les taux de couverture, commissions et plafonds applicables dépendent du mécanisme et ne sont pas projetés ici sans preuve actuelle au niveau du produit.',
-          ar: 'سوتوغار آلية ضمان وليست جهة إقراض. نسب التغطية والعمولات والسقوف تختلف حسب الآلية ولا يتم إسقاطها دون دليل حالي خاص بالمنتج.'
+          fr: 'SOTUGAR ne prête pas directement. Dans le système de garantie PME documenté, la prise en charge varie selon le mécanisme: 75% pour certaines catégories éligibles, 60% pour les autres projets et 50% pour les opérations de leasing.',
+          ar: 'سوتوغار لا تمنح قروضا مباشرة. في نظام ضمان المؤسسات الصغرى والمتوسطة الموثق تختلف التغطية حسب الآلية: 75% لبعض الفئات و60% للمشاريع الأخرى و50% لعمليات الإيجار المالي.'
         }
       },
       paymentStructure: 'OTHER',
       verification: [
+        { field: 'coverage', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
+        { field: 'directLending', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
+        { field: 'fees', status: 'UNKNOWN', sourceIds: ['src_sotugar_official'], unknownReason: 'No generic current fee should be projected across guarantee mechanisms.' }
+      ]
+    },
+    verification: [
         { field: 'fees', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
         { field: 'coverage', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] }
       ]
@@ -917,16 +897,16 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       fields: [
         { field: 'guarantee_terms', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] }
       ],
-      lastVerifiedAt: '2026-09-18'
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
         id: 'src_sotugar_official',
-        url: 'https://www.sotugar.com.tn/mecanismes-de-garantie/',
-        title: 'Mécanismes de garantie SOTUGAR',
+        url: 'https://sotugar.com.tn/garantie-des-credits-accordes-aux-pme/',
+        title: 'SOTUGAR — Garantie des crédits accordés aux PME',
         publisher: 'SOTUGAR',
         sourceType: 'OFFICIAL_PRODUCT_PAGE',
-        retrievedAt: '2026-09-18',
+        retrievedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
       }
     ],
@@ -1048,14 +1028,16 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
-          fr: 'Marge bénéficiaire contractuelle fixe sur le coût d\'acquisition du bien, arrêtée définitivement à la signature.',
-          ar: 'هامش ربح معلوم ومحدد نهائياً عند إبرام العقد دون أي زيادة في حال التأخير.'
+          fr: 'La marge bénéficiaire est fixée contractuellement; la page produit actuelle indique un financement pouvant atteindre 70% des besoins d’investissement, avec le reliquat en fonds propres.',
+          ar: 'يحدد هامش الربح تعاقديا؛ وتذكر صفحة المنتج الحالية تمويلا يصل إلى 70% من احتياجات الاستثمار مع تغطية الباقي من الأموال الذاتية.'
         }
       },
+      amount: { max: 70, currency: 'PERCENT' },
+      durationMonths: { max: 84, currency: 'MONTHS' },
       paymentStructure: 'AMORTIZING_MONTHLY',
       verification: [
         { field: 'structure', status: 'VERIFIED', sourceIds: ['src_zitouna_mourabaha'] },
-        { field: 'rate', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_zitouna_mourabaha'], notes: { fr: 'Marge exacte fixée selon l\'étude du comité', ar: 'الهامش الدقيق يحدد في لجنة التمويل' } }
+        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_zitouna_mourabaha'], unknownReason: 'Current product page confirms Mourabaha and the financing structure but does not publish a numeric margin.' }
       ]
     },
     verification: {
@@ -1063,16 +1045,16 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       fields: [
         { field: 'sharia_rules', status: 'VERIFIED', sourceIds: ['src_zitouna_mourabaha'] }
       ],
-      lastVerifiedAt: '2026-09-21'
+      lastVerifiedAt: '2026-10-08'
     },
     sources: [
       {
         id: 'src_zitouna_mourabaha',
-        url: 'https://www.banquezitouna.com/fr/financement-entreprises/mourabaha-equipement',
-        title: 'Guide Mourabaha Entreprises Banque Zitouna',
+        url: 'https://www.banquezitouna.com/fr/business/financer-mon-activite/developper-mon-activite/tamouil-mouaddet-mehnia',
+        title: 'Banque Zitouna — Tamouil Mouaddet Mehnia',
         publisher: 'Banque Zitouna',
         sourceType: 'OFFICIAL_PRODUCT_PAGE',
-        retrievedAt: '2026-09-21',
+        retrievedAt: '2026-10-08',
         evidenceStatus: 'VERIFIED'
       }
     ],
