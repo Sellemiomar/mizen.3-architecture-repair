@@ -251,6 +251,8 @@ export interface ApplicationStep {
 
 export interface FinancialTerms {
   amount?: NumericRange;
+  /** Maximum share of project/investment cost financed when explicitly evidenced. */
+  maxFinancingPercentage?: number;
   projectCost?: NumericRange;
   durationMonths?: NumericRange;
   contribution?: NumericRange;
