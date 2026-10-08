@@ -245,7 +245,7 @@ export const ProgramDetailModal: React.FC<ProgramDetailModalProps> = ({
                   </span>
                 </div>
                 <span className="text-sm font-bold text-slate-900">
-                  {program.category === 'guarantee' ? 'Non applicable' : `${program.gracePeriodMonthsMin} à ${program.gracePeriodMonthsMax} mois`}
+                  {program.category === 'guarantee' ? 'Non applicable' : (program.verification.verifiedFields.includes('gracePeriodMonths') || program.verification.verifiedFields.includes('gracePeriodMonthsMin') || program.verification.verifiedFields.includes('gracePeriodMonthsMax') ? (program.gracePeriodMonthsMin === program.gracePeriodMonthsMax ? `${program.gracePeriodMonthsMin} mois` : `${program.gracePeriodMonthsMin} à ${program.gracePeriodMonthsMax} mois`) : 'Non établi')}
                 </span>
               </div>
             </div>
