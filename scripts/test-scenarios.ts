@@ -1120,17 +1120,11 @@ const gapWithDup = calculateFundingGap(1000000, [compBfpmeDebt, compBfpmeDebt]);
 assert(gapWithDup.verifiedCashFunding === 650000, 'AA.6. Duplicate component ID does not double count cash coverage');
 
 // 4. Unknown compatibility does not produce a confirmed stack
-const testApplicant: ApplicantProfile = {
-  journey: 'startup',
-  purpose: 'creation',
-  totalProjectCost: 1000000,
-  userContribution: 350000,
-  financingRequested: 650000,
-  sector: 'industry',
-  location: 'Sfax',
-  businessStage: 'creation_underway',
-  legalStructure: 'sarl'
-};
+// Reuse the established Scenario B business-expansion profile. Its matching
+// assertions above prove the engine returns strong-alignment business products;
+// the stack test should exercise those real matches instead of a synthetic
+// profile whose journey metadata can exclude every candidate.
+const testApplicant: ApplicantProfile = profileB;
 
 const matchResultsForStack = runMatchingEngine(testApplicant);
 const stacksResult = generateFinancingStacks({
