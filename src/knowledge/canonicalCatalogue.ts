@@ -407,22 +407,16 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
-      amount: { min: 50000, max: 2500000, currency: 'TND' },
+      amount: { max: 2500000, currency: 'TND' },
       projectCost: { min: 150000, max: 15000000, currency: 'TND' },
-      durationMonths: { min: 36, max: 120, currency: 'MONTHS' },
-      contributionPercentage: { min: 20, max: 35, currency: 'PERCENT' },
       rate: {
-        type: 'TMM_PLUS_MARGIN',
-        margin: 0.03,
-        referenceIndex: 'TMM',
+        type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
-          fr: 'Marge commerciale publiée de 2 à 4,5 points (relation exacte avec TMM et tarification effective à confirmer par votre agence).',
-          ar: 'هامش تجاري منشور بين 2 و 4.5 نقطة مئوية (العلاقة الدقيقة مع TMM والشروط النهائية تحدد مع الفرع).'
+          fr: 'Marge publiée de 2 à 4,5 points ; relation exacte avec le TMM non établie. Durée, apport, franchise et structure de remboursement ne sont pas repris sans preuve actuelle suffisamment précise.',
+          ar: 'هامش منشور من 2 إلى 4.5 نقاط؛ العلاقة الدقيقة مع TMM غير مثبتة. لا يتم عرض المدة والمساهمة وفترة الإمهال وهيكلة السداد دون دليل حالي دقيق.'
         }
       },
-      gracePeriodMonths: { min: 12, max: 36, currency: 'MONTHS' },
-      paymentStructure: 'AMORTIZING_MONTHLY',
       verification: [
         { field: 'amount', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
@@ -906,7 +900,6 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
-      amount: { min: 10000, max: 10000000, currency: 'TND' }, // Maximum guaranteeable volume
       guaranteeDetails: {
         coverageBasis: 'UNRECOVERABLE_AMOUNT',
         governorates: [
@@ -915,21 +908,12 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         ]
       },
       rate: {
-        type: 'NOT_APPLICABLE',
+        type: 'UNKNOWN',
         explanation: {
-          fr: 'La SOTUGAR ne facture pas d\'intérêts d\'emprunt mais une commission de garantie réglementée (généralement 0,5% à 1% flat sur l\'encours garanti).',
-          ar: 'سوتوغار لا تتقاضى فوائد إقراض وإنما عمولة ضمان قانونية (عادة 0.5% إلى 1% على المبلغ المضمون).'
+          fr: 'La SOTUGAR est un mécanisme de garantie, pas un prêteur. Les taux de couverture, commissions et plafonds applicables dépendent du mécanisme et ne sont pas projetés ici sans preuve actuelle au niveau du produit.',
+          ar: 'سوتوغار آلية ضمان وليست جهة إقراض. نسب التغطية والعمولات والسقوف تختلف حسب الآلية ولا يتم إسقاطها دون دليل حالي خاص بالمنتج.'
         }
       },
-      fees: [
-        {
-          id: 'fee_sotugar_commission',
-          name: { fr: 'Commission de garantie SOTUGAR', ar: 'عمولة الضمان سوتوغار' },
-          type: 'PERCENTAGE',
-          percentage: 0.0075, // 0.75%
-          mandatory: true
-        }
-      ],
       paymentStructure: 'OTHER',
       verification: [
         { field: 'fees', status: 'VERIFIED', sourceIds: ['src_sotugar_official'] },
@@ -996,10 +980,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
-      amount: { min: 12000, max: 36000, currency: 'TND' }, // 1000 to 3000 TND / month over 12 months
       rate: {
-        type: 'INTEREST_FREE_SUBSIDIZED',
-        value: 0,
+        type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
           fr: 'Subvention directe non remboursable versée mensuellement aux fondateurs labellisés.',
@@ -1070,13 +1052,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
-      amount: { min: 5000, max: 2000000, currency: 'TND' },
-      durationMonths: { min: 12, max: 84, currency: 'MONTHS' },
-      contributionPercentage: { min: 10, max: 30, currency: 'PERCENT' }, // Hamish Jiddiyya (marge de sérieux)
       rate: {
-        type: 'FIXED', // Sharia requirement: fixed profit rate agreed upfront
-        margin: 0.03,
-        referenceIndex: 'TMM_BENCHMARK',
+        type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
           fr: 'Marge bénéficiaire contractuelle fixe sur le coût d\'acquisition du bien, arrêtée définitivement à la signature.',
