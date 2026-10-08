@@ -713,13 +713,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
-      amount: { min: 5000, max: 100000, currency: 'TND' },
-      durationMonths: { min: 12, max: 84, currency: 'MONTHS' },
-      contributionPercentage: { min: 20, max: 40, currency: 'PERCENT' },
       rate: {
-        type: 'TMM_PLUS_MARGIN',
-        margin: 0.035, // Market spread ~3.5% over TMM
-        referenceIndex: 'TMM',
+        type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
           fr: 'Taux variable indexé sur le TMM (~7,99%) majoré d\'une marge commerciale de 3,0% à 4,5% selon le profil emprunteur.',
@@ -809,9 +804,6 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       }
     ],
     financialTerms: {
-      amount: { min: 10000, max: 300000, currency: 'TND' },
-      durationMonths: { min: 24, max: 60, currency: 'MONTHS' },
-      contributionPercentage: { min: 10, max: 30, currency: 'PERCENT' }, // First increased rent
       rate: {
         type: 'NEGOTIATED',
         currency: 'PERCENT',
