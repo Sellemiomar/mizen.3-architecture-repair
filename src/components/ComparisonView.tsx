@@ -169,7 +169,9 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({
               </td>
               {programs.map((p) => (
                 <td key={p.id} className="p-4 text-slate-900 font-bold">
-                  {p.minAmount.toLocaleString('fr-FR')} - {p.maxAmount.toLocaleString('fr-FR')} DT
+                  {p.maxAmount > 0
+                    ? `${p.minAmount.toLocaleString('fr-FR')} - ${p.maxAmount.toLocaleString('fr-FR')} DT`
+                    : 'Plafond non établi'}
                 </td>
               ))}
             </tr>
