@@ -139,6 +139,7 @@ export type FinancingDomain =
   | 'LEASING'
   | 'AGRICULTURE'
   | 'PUBLIC_FUNDING'
+  | 'QUASI_EQUITY'
   | 'GUARANTEE'
   | 'MICROFINANCE'
   | 'ISLAMIC_FINANCE'
