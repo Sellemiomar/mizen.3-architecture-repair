@@ -413,7 +413,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         type: 'UNKNOWN',
         currency: 'PERCENT',
         explanation: {
-          fr: 'Marge publiée de 2 à 4,5 points ; relation exacte avec le TMM non établie. Durée, apport, franchise et structure de remboursement ne sont pas repris sans preuve actuelle suffisamment précise.',
+          fr: 'La page BFPME publie une marge de 2 à 4,5 points selon les conditions. La relation exacte avec le TMM et la tarification applicable au dossier restent à confirmer; aucune simulation automatique de taux n’est effectuée.',
           ar: 'هامش منشور من 2 إلى 4.5 نقاط؛ العلاقة الدقيقة مع TMM غير مثبتة. لا يتم عرض المدة والمساهمة وفترة الإمهال وهيكلة السداد دون دليل حالي دقيق.'
         }
       },
@@ -421,7 +421,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'amount', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
         { field: 'contributionPercentage', status: 'VERIFIED', sourceIds: ['src_bfpme_official'] },
-        { field: 'rate', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bfpme_official'], notes: { fr: 'Marge exacte déterminée selon le profil de risque en comité', ar: 'الهامش البنكي الدقيق يحدد في لجنة التمويل' } }
+        { field: 'rate', status: 'UNKNOWN', sourceIds: ['src_bfpme_official'], notes: { fr: 'Marge exacte déterminée selon le profil de risque en comité', ar: 'الهامش البنكي الدقيق يحدد في لجنة التمويل' } }
       ]
     },
     guarantees: [
@@ -432,7 +432,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
           fr: 'Couverture par le fonds de garantie SOTUGAR jusqu\'à 75% du risque.',
           ar: 'تغطية صندوق الضمان سوتوغار بنسبة تصل إلى 75% من المخاطر.'
         },
-        mandatory: true
+        mandatory: false
       }
     ],
     requiredDocuments: [
@@ -1145,7 +1145,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       ar: 'آلية عمومية للتحفيز والتمويل موجهة لإحداث وتطوير المشاريع الصناعية والخدماتية.',
       en: 'Public incentive and financing mechanism supporting industrial and service project creation and development.'
     },
-    category: 'PUBLIC_FUNDING',
+    category: 'QUASI_EQUITY',
     financingDomains: ['PUBLIC_FUNDING', 'BUSINESS', 'EQUIPMENT'],
     financingPurposes: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION', 'EQUIPMENT_PURCHASE'],
     applicantTypes: ['BUSINESS', 'STARTUP', 'MICRO_ENTERPRISE'],
@@ -1156,17 +1156,34 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     },
     criteria: [],
     financialTerms: {
+      projectCost: { max: 500000, currency: 'TND' },
+      amount: { max: 500000, currency: 'TND' },
+      durationMonths: { max: 144, currency: 'MONTHS' },
+      gracePeriodMonths: { max: 60, currency: 'MONTHS' },
       rate: {
-        type: 'UNKNOWN',
+        type: 'FIXED',
+        value: 0.03,
+        currency: 'PERCENT',
         explanation: {
-          fr: 'Structure financière et barèmes détaillés non projetés sans preuve actuelle suffisamment précise.',
-          ar: 'لا يتم إسقاط الهيكلة المالية والجداول التفصيلية دون دليل حالي دقيق بما يكفي.'
+          fr: 'Pour la dotation remboursable: 3% par an sur 12 ans, avec 5 ans de délai de grâce.',
+          ar: 'بالنسبة للـdotation القابلة للاسترجاع: 3% سنوياً لمدة 12 سنة مع 5 سنوات إمهال.'
         }
+      },
+      quasiEquityStructure: {
+        instrument: 'REPAYABLE_DOTATION',
+        projectCostThreshold: 500000,
+        dotationMaxPercentOfMinimumCapital: 30,
+        interpretation: 'MINIMUM_CAPITAL_NOT_TOTAL_PROJECT_COST'
       },
       verification: [
         { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
         { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
-        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'] }
+        { field: 'projectCostThreshold', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'repayableDotation', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'dotationMaxPercentOfMinimumCapital', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'repaymentDuration', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'interestRate', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'gracePeriod', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] }
       ]
     },
     verification: {
@@ -1174,7 +1191,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       fields: [
         { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
         { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
-        { field: 'financialTerms', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'] }
+        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] }
       ],
       lastVerifiedAt: '2026-10-08'
     },
