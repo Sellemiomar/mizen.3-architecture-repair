@@ -151,6 +151,40 @@ assert(bfpme?.rateType === 'unknown', 'BFPME does not expose a fabricated TMM-pl
 assert(bfpme?.durationMonthsMin === undefined && bfpme?.durationMonthsMax === undefined, 'BFPME duration remains UNKNOWN until current evidence establishes it');
 const zitouna = programs.find(p => p.id === 'banque_zitouna_mourabaha');
 assert(zitouna?.rateType === 'unknown', 'Banque Zitouna Mourabaha does not expose an unsupported fixed 3% margin');
+
+// 9. Current BTS / BH / leasing / Zitouna / SOTUGAR knowledge guardrails.
+const bts = programs.find(p => p.id === 'bts_diplomes');
+assert(bts?.maxAmount === 200000, 'BTS current Crédit Professionnel ceiling is 200,000 DT');
+assert(bts?.maxFinancingPercentage === 90, 'BTS current Crédit Professionnel financing share is capped at 90%');
+assert(bts?.durationMonthsMax === 84, 'BTS current Crédit Professionnel duration is capped at 7 years');
+assert(bts?.gracePeriodMonthsMin === 3 && bts?.gracePeriodMonthsMax === 12, 'BTS current grace period is 3-12 months');
+assert(bts?.estimatedRateAnnual === undefined, 'BTS does not expose an unsupported numeric fixed rate');
+
+const bhAuto = programs.find(p => p.id === 'banque_credit_auto');
+assert(bhAuto?.maxAmount === Number.MAX_SAFE_INTEGER, 'BH AUTO has no fabricated fixed financing ceiling');
+assert(bhAuto?.durationMonthsMax === 84, 'BH AUTO current maximum duration is 7 years');
+assert(bhAuto?.rateType === 'unknown', 'BH AUTO does not expose a fabricated TMM or margin');
+assert(!String(bhAuto?.rateDescription.fr || '').includes('7,99'), 'BH AUTO has no stale 7.99% TMM literal');
+assert(!String(bhAuto?.rateDescription.fr || '').includes('3,0%'), 'BH AUTO has no stale 3.0% margin literal');
+
+const firstHome = programs.find(p => p.id === 'premier_logement');
+assert(firstHome?.maxAmount === 40000, 'BH Al Masken Al Awal own-financing loan ceiling is 40,000 DT');
+assert(firstHome?.projectCostMax === 220000, 'BH Al Masken Al Awal property price ceiling is 220,000 DT');
+assert(firstHome?.durationMonthsMax === 84 && firstHome?.gracePeriodMonthsMax === 60, 'BH Al Masken Al Awal uses 7-year repayment after 5-year grace');
+
+const leasing = programs.find(p => p.id === 'leasing_vehicule_pro');
+assert(leasing?.durationMonthsMin === 36 && leasing?.durationMonthsMax === 60, 'TLF professional vehicle leasing duration is 3-5 years');
+assert(leasing?.rateType === 'unknown', 'TLF leasing does not expose an unsupported numeric rate');
+assert(!String(leasing?.rateDescription.fr || '').toLowerCase().includes('tmm +'), 'TLF leasing does not inherit a stale TMM-plus-margin assumption');
+
+const zitounaCurrent = programs.find(p => p.id === 'banque_zitouna_mourabaha');
+assert(zitounaCurrent?.maxFinancingPercentage === 70, 'Banque Zitouna professional equipment financing can reach 70% of investment needs');
+assert(zitounaCurrent?.durationMonthsMax === 84, 'Banque Zitouna professional equipment financing maximum duration is 7 years');
+assert(zitounaCurrent?.rateType === 'unknown', 'Banque Zitouna does not expose an unsupported numeric Mourabaha margin');
+
+assert(sotugar?.category === 'guarantee', 'SOTUGAR remains a guarantee mechanism, not a lending product');
+assert(sotugar?.maxAmount === Number.MAX_SAFE_INTEGER, 'SOTUGAR has no fabricated borrower financing amount');
+
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourse?.maxAmount === undefined, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling');
 
