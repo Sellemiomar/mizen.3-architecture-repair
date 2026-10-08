@@ -1108,6 +1108,11 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'maxFinancingPercentage', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'contributionPercentage', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'gracePeriodMonths', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'rate', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
         { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos', 'src_mehat_foprolos_flyer'] }
       ]
     },
@@ -1117,6 +1122,11 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'constructionPurpose', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
         { field: 'incomeCap', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos'] },
+        { field: 'maxFinancingPercentage', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'contributionPercentage', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'gracePeriodMonths', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
+        { field: 'rate', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
         { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos', 'src_mehat_foprolos_flyer'] }
       ],
       lastVerifiedAt: '2026-10-08'
