@@ -21,6 +21,7 @@ import { TrustBadge } from './TrustBadge';
 import { getFieldLabel } from '../utils/verificationLabels';
 import { getOfficialSimulator } from '../knowledge/catalogueAdapter';
 import { CLAIMS_REPOSITORY } from '../knowledge/claimsRepository';
+import { formatFinancingAmountRange } from '../utils/financingAmountLabels';
 
 interface ProgramDetailModalProps {
   program: FinancingProgram;
