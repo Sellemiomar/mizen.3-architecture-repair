@@ -1191,7 +1191,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       gracePeriodMonths: { max: 60, currency: 'MONTHS' },
       rate: {
         type: 'FIXED',
-        value: 0.03,
+        value: 3,
         currency: 'PERCENT',
         explanation: {
           fr: 'Pour la dotation remboursable: 3% par an sur 12 ans. avec 5 ans de délai de grâce.',
