@@ -13,7 +13,7 @@ console.log('================================================================\n'
 
 let allPassed = true;
 
-function assert(condition: boolean, message: string) {
+function assert(condition: boolean | undefined, message: string) {
   if (!condition) {
     console.error(`❌ FAIL: ${message}`);
     allPassed = false;
