@@ -1128,7 +1128,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         { field: 'durationMonths', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
         { field: 'gracePeriodMonths', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
         { field: 'rate', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos_flyer'] },
-        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos', 'src_mehat_foprolos_flyer'] }
+        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_mehat_foprolos', 'src_mehat_foprolos_flyer'] },
+        { field: 'operationalStatus', status: 'UNVERIFIED', sourceIds: ['src_mehat_foprolos'], unknownReason: 'The current public pages confirm the program and published terms but do not independently confirm case-by-case operational availability.' }
       ],
       lastVerifiedAt: '2026-10-08'
     },
@@ -1219,7 +1220,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       fields: [
         { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
         { field: 'industrialDevelopmentPurpose', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
-        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] }
+        { field: 'financialTerms', status: 'VERIFIED', sourceIds: ['src_apii_foprodi'] },
+        { field: 'operationalStatus', status: 'UNVERIFIED', sourceIds: ['src_apii_foprodi'], unknownReason: 'The public page documents the mechanism and terms but does not independently confirm current operational availability for a new application.' }
       ],
       lastVerifiedAt: '2026-10-08'
     },
