@@ -46,7 +46,8 @@ assert(resultsA.length > 0, 'Scenario A matches programs');
 const btsDiplomesA = resultsA.find(r => r.program.id === 'bts_diplomes');
 assert(btsDiplomesA !== undefined, 'BTS Diplômés is evaluated');
 assert(btsDiplomesA?.reasons.alignmentLevel === 'strong_alignment', 'BTS Diplômés has strong alignment for graduate with 75k DT');
-assert(Boolean(btsDiplomesA?.reasons.matchedBecause.some(m => m.fr.includes('Diplôme'))), 'Validates higher education degree');
+assert(btsDiplomesA?.program.name.fr.includes('Crédit Professionnel'), 'BTS catalogue identity is the general Crédit Professionnel product, not a degree-only product');
+assert(!btsDiplomesA?.ruleEvaluations.some(r => r.ruleId === 'requiresDegree'), 'General BTS Crédit Professionnel does not invent a higher-education degree requirement');
 
 // -------------------------------------------------------------
 // Scenario B: Existing company, 250,000 DT extension in Sfax (Manufacturing)
@@ -71,7 +72,7 @@ const resultsB = runMatchingEngine(profileB);
 const bfpmeB = resultsB.find(r => r.program.id === 'bfpme_creation');
 const sotugarB = resultsB.find(r => r.program.id === 'sotugar_guarantee');
 assert(bfpmeB !== undefined && bfpmeB.reasons.alignmentLevel === 'strong_alignment', 'BFPME matches 250k DT PME expansion with strong alignment');
-assert(sotugarB !== undefined && sotugarB.reasons.alignmentLevel === 'strong_alignment', 'SOTUGAR matches investment guarantee with strong alignment');
+assert(sotugarB !== undefined && sotugarB.status === 'REQUIRES_CONFIRMATION', 'SOTUGAR remains a candidate but requires confirmation because it guarantees lender credit rather than lending a project amount directly');
 const stackSeedMatchesB = resultsB.filter(r => r.program.id === 'bfpme_creation' || r.program.id === 'sotugar_guarantee').map(r => JSON.parse(JSON.stringify(r)));
 // BTS cap is 150k DT and doesn't cover expansion
 const btsB = resultsB.find(r => r.program.id === 'bts_diplomes');
@@ -99,7 +100,7 @@ const profileC: ApplicantProfile = {
 const resultsC = runMatchingEngine(profileC);
 const startupActC = resultsC.find(r => r.program.id === 'startup_act_bourse');
 assert(startupActC !== undefined, 'Startup Act program evaluated');
-assert(startupActC?.reasons.alignmentLevel === 'strong_alignment', 'Startup Act matches labeled innovative startup with strong alignment');
+assert(startupActC?.status === 'REQUIRES_CONFIRMATION' && startupActC.financialEvaluation.amountStatus === 'UNKNOWN', 'Startup Act stipend is not misrepresented as a lump-sum project loan');
 assert(Boolean(startupActC?.reasons.matchedBecause.some(m => m.fr.includes('Startup Act'))), 'Confirms Startup Act label recognized');
 
 // -------------------------------------------------------------
@@ -147,7 +148,7 @@ const profileE: ApplicantProfile = {
 
 const resultsE = runMatchingEngine(profileE);
 const zitounaE = resultsE.find(r => r.program.id === 'banque_zitouna_mourabaha');
-assert(zitounaE !== undefined && zitounaE.reasons.alignmentLevel === 'strong_alignment', 'Banque Zitouna Mourabaha matches Islamic finance preference with strong alignment');
+assert(zitounaE !== undefined && zitounaE.status === 'REQUIRES_CONFIRMATION' && zitounaE.reasons.matchedBecause.some(m => m.fr.includes('Structure de financement islamique')), 'Mourabaha preference is recognized while unpublished financing ceiling requires confirmation');
 assert(zitounaE?.costEstimate.canCalculateReliably === false, 'Mourabaha does not fabricate a 9.5% fake quote');
 assert(zitounaE?.costEstimate.rateOrigin === 'unavailable', 'Mourabaha rateOrigin is unavailable/contractual');
 
@@ -352,7 +353,7 @@ const resultsCarIndiv = runMatchingEngine(carProfileIndividual);
 assert(resultsCarIndiv.length > 0, 'Car individual matches programs');
 const bnkAuto = resultsCarIndiv.find(r => r.program.id === 'banque_credit_auto');
 assert(bnkAuto !== undefined, 'Crédit auto bancaire is evaluated');
-assert(bnkAuto?.reasons.alignmentLevel === 'strong_alignment', 'Crédit auto has strong alignment for individual salaried car buyer');
+assert(bnkAuto?.status === 'REQUIRES_CONFIRMATION' && bnkAuto.reasons.matchedBecause.some(m => m.fr.includes('véhicule')), 'Crédit auto matches the vehicle journey without treating an unpublished ceiling as zero');
 assert(Boolean(bnkAuto?.reasons.matchedBecause.some(m => m.fr.includes('véhicule'))), 'Recognizes vehicle purpose without demanding business sector');
 
 // Business car / utility leasing
@@ -375,7 +376,7 @@ const carProfileBusiness: ApplicantProfile = {
 const resultsCarBiz = runMatchingEngine(carProfileBusiness);
 const leasingPro = resultsCarBiz.find(r => r.program.id === 'leasing_vehicule_pro');
 assert(leasingPro !== undefined, 'Leasing véhicule pro is evaluated');
-assert(leasingPro?.reasons.alignmentLevel === 'strong_alignment', 'Leasing pro has strong alignment for business commercial vehicle');
+assert(leasingPro?.status === 'REQUIRES_CONFIRMATION', 'Professional leasing is retained as a candidate while unpublished amount limits require confirmation');
 
 // -------------------------------------------------------------
 // Scenario N: Clean Journey Transition (Zero Irrelevant Retained Fields)
@@ -450,7 +451,7 @@ for (const sc of DEMO_SCENARIOS) {
   assert(scResults.length > 0, `Demo scenario ${sc.id} produces matching results`);
   const topResult = scResults[0];
   assert(topResult !== undefined, `Demo scenario ${sc.id} has at least one evaluated candidate`);
-  assert(topResult.reasons.alignmentLevel === 'strong_alignment', `Demo scenario ${sc.id} has a top aligned program`);
+  assert(topResult.status !== 'NOT_MATCHED' && topResult.status !== 'NOT_APPLICABLE', `Demo scenario ${sc.id} retains a relevant top candidate without converting unknown terms into rejection`);
 }
 
 // -------------------------------------------------------------
@@ -485,7 +486,7 @@ assert(premierLogementForCar?.status === 'NOT_APPLICABLE', 'Premier Logement is 
 assert(bfpmeForCar?.status === 'NOT_APPLICABLE', 'BFPME is NOT_APPLICABLE for individual car purchase');
 
 const autoCreditForCar = carResults.find(r => r.program.id === 'banque_credit_auto');
-assert(autoCreditForCar?.status === 'STRONG_ALIGNMENT' || autoCreditForCar?.status === 'POTENTIAL_ALIGNMENT', 'Crédit auto is APPLICABLE and aligned for car purchase');
+assert(autoCreditForCar?.applicabilityStatus === 'APPLICABLE' && autoCreditForCar?.status === 'REQUIRES_CONFIRMATION', 'Crédit auto is applicable to car purchase, with amount limits requiring lender confirmation');
 
 // -------------------------------------------------------------
 // Scenario R: Housing User + FOPROLOS & Premier Logement
@@ -508,7 +509,7 @@ const homeConstructResults = runMatchingEngine(homeConstructUser);
 const foprolosForHome = homeConstructResults.find(r => r.program.id === 'foprolos_construction');
 assert(foprolosForHome !== undefined, 'FOPROLOS must be present for the home-construction regression scenario');
 assert(foprolosForHome?.applicabilityStatus === 'APPLICABLE', 'FOPROLOS is APPLICABLE for home construction');
-assert(foprolosForHome?.status === 'STRONG_ALIGNMENT', 'FOPROLOS has strong alignment for salaried applicant constructing on titled land');
+assert(foprolosForHome?.status === 'REQUIRES_CONFIRMATION' && foprolosForHome.financialEvaluation.amountStatus === 'UNKNOWN', 'FOPROLOS remains applicable but its SMIG-linked ceiling is not fabricated as a fixed TND amount');
 
 const carCreditForHome = homeConstructResults.find(r => r.program.id === 'banque_credit_auto');
 assert(carCreditForHome?.status === 'NOT_APPLICABLE', 'Crédit auto is NOT_APPLICABLE for home construction');
@@ -533,8 +534,8 @@ const noDegreeUser: ApplicantProfile = {
 
 const noDegreeResults = runMatchingEngine(noDegreeUser);
 const btsNoDegree = noDegreeResults.find(r => r.program.id === 'bts_diplomes');
-assert(btsNoDegree?.status === 'NOT_MATCHED', 'BTS Diplômés without degree evaluates to NOT_MATCHED');
-assert(btsNoDegree?.reasons.alignmentLevel !== 'strong_alignment', 'BTS Diplômés without degree CANNOT be strong_alignment');
+assert(btsNoDegree !== undefined && btsNoDegree.status !== 'NOT_MATCHED', 'General BTS Crédit Professionnel is not rejected solely because the applicant has no degree');
+assert(!btsNoDegree?.ruleEvaluations.some(r => r.ruleId === 'requiresDegree'), 'No unsupported degree-only eligibility rule is applied to general BTS Crédit Professionnel');
 
 // 2. Critical Unknown: BTS Diplômés with undefined degree
 const unknownDegreeUser: ApplicantProfile = {
@@ -552,8 +553,8 @@ const unknownDegreeUser: ApplicantProfile = {
 
 const unknownDegreeResults = runMatchingEngine(unknownDegreeUser);
 const btsUnknownDegree = unknownDegreeResults.find(r => r.program.id === 'bts_diplomes');
-assert(btsUnknownDegree?.status === 'REQUIRES_CONFIRMATION', 'BTS Diplômés with unknown degree evaluates to REQUIRES_CONFIRMATION');
-assert(btsUnknownDegree?.reasons.alignmentLevel !== 'strong_alignment', 'BTS Diplômés with unknown degree CANNOT be strong_alignment');
+assert(btsUnknownDegree !== undefined && btsUnknownDegree.status !== 'NOT_MATCHED', 'Unknown degree status does not disqualify general BTS Crédit Professionnel');
+assert(!btsUnknownDegree?.ruleEvaluations.some(r => r.ruleId === 'requiresDegree'), 'Unknown degree is not treated as a requirement when the product does not publish one');
 
 // 3. Amount exceeding max ceiling -> NOT_MATCHED
 const overCeilingUser: ApplicantProfile = {
@@ -561,7 +562,7 @@ const overCeilingUser: ApplicantProfile = {
   purpose: 'creation',
   totalProjectCost: 300000,
   userContribution: 50000,
-  financingRequested: 250000, // BTS max is 150 000 DT
+  financingRequested: 250000, // BTS professional credit published maximum is 200 000 TND
   sector: 'industry',
   businessStage: 'idea_project',
   legalStructure: 'suarl',
@@ -571,7 +572,7 @@ const overCeilingUser: ApplicantProfile = {
 
 const overCeilingResults = runMatchingEngine(overCeilingUser);
 const btsOverCeiling = overCeilingResults.find(r => r.program.id === 'bts_diplomes');
-assert(btsOverCeiling?.status === 'NOT_MATCHED', 'Amount exceeding 150k ceiling evaluates to NOT_MATCHED');
+assert(btsOverCeiling?.status === 'NOT_MATCHED', 'Amount exceeding the published 200k BTS professional-credit ceiling evaluates to NOT_MATCHED');
 
 // -------------------------------------------------------------
 // Scenario T: Core Matching Invariants (Property-based tests)
