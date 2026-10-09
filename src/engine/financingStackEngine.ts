@@ -25,6 +25,7 @@ export function determineStackFundingRole(program: FinancingProgram): StackFundi
   const id = program.id.toLowerCase();
 
   if (category === 'guarantee' || type === 'guarantee' || id.includes('sotugar') || id.includes('guarantee')) return 'GUARANTEE';
+  if (id === 'startup_act_bourse') return 'OTHER_SUPPORT';
   if (category === 'grant_subsidy' || category === 'grant' || category === 'subsidy' || type === 'grant' || type === 'subsidy' || id.includes('prime') || id.includes('subvention') || id.includes('grant') || id.includes('cheque')) return 'GRANT';
   if (id === 'foprodi_dotation' || category === 'quasi_equity' || category === 'equity_quasi_equity' || category === 'equity' || type === 'quasi_equity' || type === 'equity' || id.includes('capital') || id.includes('fond') || id.includes('equity') || id.includes('venture')) return id === 'foprodi_dotation' || category === 'quasi_equity' || type === 'quasi_equity' ? 'QUASI_EQUITY' : 'EQUITY';
   if (category === 'leasing' || type === 'leasing' || id.includes('leasing') || id.includes('ijara')) return 'LEASING';
