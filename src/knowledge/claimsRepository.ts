@@ -1088,9 +1088,19 @@ export class FinancingClaimsRepository {
     return historical.filter(c => c.entityId === entityId);
   }
 
-  public getCompatibility(sourceEntityId: string, targetEntityId: string): CompatibilityClaim | undefined {
+  public getDirectCompatibility(sourceEntityId: string, targetEntityId: string): CompatibilityClaim | undefined {
     const key = `${sourceEntityId}__${targetEntityId}`;
     return this.compatibilityMap.get(key);
+  }
+
+  public getCompatibility(sourceEntityId: string, targetEntityId: string): CompatibilityClaim {
+    const direct = this.getDirectCompatibility(sourceEntityId, targetEntityId);
+    if (direct) return direct;
+    return {
+      id: `compat_unknown_${sourceEntityId}_${targetEntityId}`,
+      sourceEntityId, targetEntityId, compatibilityStatus: 'UNKNOWN', confidence: 'LOW', evidence: [], ruleStatus: 'UNKNOWN',
+      notes: { fr: 'Compatibilité non documentée par des sources officielles ou empiriques.', ar: 'إمكانية الجمع غير موثقة استناداً إلى مصادر رسمية.' }
+    };
   }
 
   public getReconciliationSummary(): ClaimReconciliationResult {
