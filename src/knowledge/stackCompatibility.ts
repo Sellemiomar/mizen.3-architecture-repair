@@ -168,7 +168,7 @@ export function getStackCompatibility(programAId: string, programBId: string): S
   }
 
   // 1. Check direct repository claim
-  const claimCompat = CLAIMS_REPOSITORY.getCompatibility(programAId, programBId);
+  const claimCompat = CLAIMS_REPOSITORY.getDirectCompatibility(programAId, programBId);
   if (claimCompat) {
     const status = claimCompat.compatibilityStatus as string;
     return {
