@@ -17,6 +17,7 @@ import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { formatFinancingAmountRange } from '../src/utils/financingAmountLabels';
 
 let failed = 0;
 function assert(condition: boolean, message: string) {
@@ -116,6 +117,14 @@ assert(foprodi?.gracePeriodMonthsMin === 60 && foprodi?.gracePeriodMonthsMax ===
 assert(foprodi?.maxAmount === 0, 'FOPRODI does not confuse the 500,000 DT project-cost threshold with a financing amount');
 assert(foprodi?.projectCostMax === 500000, 'FOPRODI project-cost threshold is 500,000 DT');
 // 3b. FOPRODI dotation is repayable/quasi-equity, not a grant.
+const foprodiCost = calculateFinancingCost(240000, foprodi!);
+assert(!foprodiCost.canCalculateReliably && foprodiCost.monthlyPayment === undefined, 'FOPRODI does not fabricate a monthly repayment schedule');
+assert(foprodiCost.rateOriginLabel.fr.includes('3%') && !foprodiCost.rateOriginLabel.fr.includes('Taux non disponible'), 'FOPRODI shows its documented 3% rate while clearly withholding an unverified repayment schedule');
+
+assert(formatFinancingAmountRange(0, 0, 'fr') === 'Plafond non publié — à confirmer auprès de l’organisme', 'Unknown financing ceiling never renders as 0 DT');
+assert(formatFinancingAmountRange(0, 0, 'ar').includes('غير منشور'), 'Arabic unknown ceiling is also rendered as unpublished, not zero');
+assert(formatFinancingAmountRange(1000, 0, 'fr').includes('plafond non établi'), 'Known minimum with unknown ceiling does not imply a zero ceiling');
+
 const foprodiComponent = foprodi ? mapProgramToStackComponent(foprodi, { financingRequested: 240000, totalProjectCost: 300000 }) : undefined;
 assert(foprodiComponent?.role === 'QUASI_EQUITY', 'FOPRODI repayable dotation is classified as QUASI_EQUITY, not GRANT');
 assert(foprodiComponent?.isCashFunding === true, 'FOPRODI quasi-equity can be counted as cash only when its amount is explicitly established');
