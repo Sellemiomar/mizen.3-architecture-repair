@@ -63,7 +63,7 @@ assert(foprolos?.verification.verifiedFields.includes('gracePeriodMonths') === t
 const startupBourseEarly = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourseEarly !== undefined, 'Startup Act founder stipend must exist');
 assert(startupBourseEarly?.maxAmount === 0, 'Startup stipend must not be represented as a fixed total amount');
-assert(Boolean(startupBourseEarly?.programName === undefined) === false || Boolean(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription.fr.includes('1 000') && CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription.fr.includes('5 000')), 'Startup stipend current range is 1,000–5,000 TND net/month');
+assert(CANONICAL_PRODUCTS.some(p => p.id === 'startup_act_bourse' && p.shortDescription.fr.includes('net/mois')), 'Startup stipend is described as a monthly benefit, not a total project amount');
 assert(!startupBourseEarly?.rateDescription.fr.includes('non remboursable'), 'Startup stipend must not be mislabeled as a non-refundable grant');
 assert(!String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.financialTerms.rate?.explanation?.ar || '').includes('غير مستردة'), 'Startup stipend Arabic explanation must not mislabel it as a non-refundable grant');
 assert(String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription?.ar || '').includes('5,000') === true, 'Startup stipend Arabic description must include the current 5,000 TND upper range');
