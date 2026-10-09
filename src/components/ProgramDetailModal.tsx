@@ -189,11 +189,7 @@ export const ProgramDetailModal: React.FC<ProgramDetailModalProps> = ({
                   </span>
                 </div>
                 <span className="text-base font-extrabold text-slate-900">
-                  {program.maxAmount > 0
-                    ? (program.minAmount > 0
-                      ? `${program.minAmount.toLocaleString('fr-FR')} à ${program.maxAmount.toLocaleString('fr-FR')} DT`
-                      : `Montant minimum non établi — plafond ${program.maxAmount.toLocaleString('fr-FR')} DT`)
-                    : 'Plafond de financement non établi'}
+                  {formatFinancingAmountRange(program.minAmount, program.maxAmount, language)}
                 </span>
               </div>
 
