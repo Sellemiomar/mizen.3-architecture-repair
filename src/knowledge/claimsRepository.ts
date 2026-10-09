@@ -951,39 +951,39 @@ export const INITIAL_COMPATIBILITY_CLAIMS: CompatibilityClaim[] = [
     id: 'compat_grant_debt',
     sourceEntityId: 'aneti_cheque_entreprendre',
     targetEntityId: 'bts_diplomes',
-    compatibilityStatus: 'VERIFIED_COMPATIBLE',
-    confidence: 'HIGH',
-    evidence: [CANONICAL_SOURCES.bfpme_guide_current],
-    ruleStatus: 'VERIFIED_CURRENT',
+    compatibilityStatus: 'UNKNOWN',
+    confidence: 'LOW',
+    evidence: [],
+    ruleStatus: 'UNKNOWN',
     notes: {
-      fr: "Cumul autorisé entre prime d'accompagnement (ex. ANETI) et crédit d'investissement (ex. BTS).",
-      ar: "الجمع مسموح قانوناً بين منحة المرافقة (ANETI) وقرض الاستثمار (BTS)."
+      fr: "La compatibilité de cumul ANETI + BTS n'est pas établie par une source officielle directe dans le registre. Ne pas présenter comme cumul autorisé avant vérification.",
+      ar: "لم يتم إثبات إمكانية الجمع بين ANETI وBTS بمصدر رسمي مباشر في السجل. لا تعرض كجمع مسموح قبل التثبت."
     }
   },
   {
     id: 'compat_grant_leasing',
     sourceEntityId: 'foprodi_dotation',
     targetEntityId: 'leasing_vehicule_pro',
-    compatibilityStatus: 'VERIFIED_COMPATIBLE',
-    confidence: 'HIGH',
-    evidence: [CANONICAL_SOURCES.bfpme_guide_current],
-    ruleStatus: 'VERIFIED_CURRENT',
+    compatibilityStatus: 'UNKNOWN',
+    confidence: 'LOW',
+    evidence: [],
+    ruleStatus: 'UNKNOWN',
     notes: {
-      fr: "Primes FOPRODI et leasing d'équipement compatibles dans le schéma d'investissement.",
-      ar: "منح فوسبرودي والإيجار المالي للمعدات متوافقة ضمن هيكل الاستثمار."
+      fr: "Le guide BFPME enregistré ne prouve pas la compatibilité entre FOPRODI et leasing. Confirmation spécifique auprès de l'APII et de la société de leasing requise.",
+      ar: "دليل BFPME المسجل لا يثبت التوافق بين FOPRODI والإيجار المالي. يلزم التأكيد لدى APII وشركة الإيجار المالي."
     }
   },
   {
     id: 'compat_grant_equity',
     sourceEntityId: 'foprodi_dotation',
     targetEntityId: 'sicar_equity',
-    compatibilityStatus: 'VERIFIED_COMPATIBLE',
-    confidence: 'HIGH',
-    evidence: [CANONICAL_SOURCES.bfpme_guide_current],
-    ruleStatus: 'VERIFIED_CURRENT',
+    compatibilityStatus: 'UNKNOWN',
+    confidence: 'LOW',
+    evidence: [],
+    ruleStatus: 'UNKNOWN',
     notes: {
-      fr: "Dotations remboursables et participations en capital SICAR/FCPR parfaitement compatibles.",
-      ar: "المنح القابلة للاسترجاع والمساهمات في رأس المال متطابقة ومتكاملة."
+      fr: "La compatibilité entre la dotation FOPRODI et une participation SICAR n'est pas établie par la source actuellement enregistrée. Ne pas présenter comme cumul confirmé avant vérification.",
+      ar: "لم يتم إثبات التوافق بين دوتاسيون FOPRODI ومساهمة SICAR بالمصدر المسجل حالياً. لا تعرض كجمع مؤكد قبل التثبت."
     }
   }
 ];
@@ -1088,24 +1088,18 @@ export class FinancingClaimsRepository {
     return historical.filter(c => c.entityId === entityId);
   }
 
-  public getCompatibility(sourceEntityId: string, targetEntityId: string): CompatibilityClaim {
+  public getDirectCompatibility(sourceEntityId: string, targetEntityId: string): CompatibilityClaim | undefined {
     const key = `${sourceEntityId}__${targetEntityId}`;
-    const direct = this.compatibilityMap.get(key);
-    if (direct) return direct;
+    return this.compatibilityMap.get(key);
+  }
 
-    // Default when no empirical claim exists: UNKNOWN with LOW confidence
+  public getCompatibility(sourceEntityId: string, targetEntityId: string): CompatibilityClaim {
+    const direct = this.getDirectCompatibility(sourceEntityId, targetEntityId);
+    if (direct) return direct;
     return {
       id: `compat_unknown_${sourceEntityId}_${targetEntityId}`,
-      sourceEntityId,
-      targetEntityId,
-      compatibilityStatus: 'UNKNOWN',
-      confidence: 'LOW',
-      evidence: [],
-      ruleStatus: 'UNKNOWN',
-      notes: {
-        fr: "Compatibilité non documentée par des sources officielles ou empiriques.",
-        ar: "إمكانية الجمع غير موثقة استناداً إلى مصادر رسمية."
-      }
+      sourceEntityId, targetEntityId, compatibilityStatus: 'UNKNOWN', confidence: 'LOW', evidence: [], ruleStatus: 'UNKNOWN',
+      notes: { fr: 'Compatibilité non documentée par des sources officielles ou empiriques.', ar: 'إمكانية الجمع غير موثقة استناداً إلى مصادر رسمية.' }
     };
   }
 

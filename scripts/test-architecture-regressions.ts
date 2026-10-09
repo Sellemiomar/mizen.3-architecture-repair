@@ -160,6 +160,16 @@ assert(unknownCashGap.verifiedCashFunding === 0 && unknownCashGap.remainingFundi
 // 7. UNKNOWN compatibility cannot become a viable stack.
 const unknownCompat = getStackCompatibility('foprodi_dotation', 'banque_zitouna_mourabaha');
 assert(unknownCompat.compatibilityStatus === 'UNKNOWN', 'Undocumented FOPRODI + Mourabaha compatibility remains UNKNOWN');
+
+// Compatibility registry must distinguish "no claim" from an explicit UNKNOWN claim,
+// so the documented fallback matrix is reachable for pairs absent from the claim registry.
+const matrixFallback = getStackCompatibility('bfpme_creation', 'banque_credit_auto');
+assert(matrixFallback.compatibilityStatus === 'POTENTIALLY_COMPATIBLE', 'Local compatibility matrix is consulted when no direct claim exists');
+
+// Unsupported combinations must not remain marked as verified using an unrelated BFPME source.
+assert(getStackCompatibility('aneti_cheque_entreprendre', 'bts_diplomes').compatibilityStatus === 'UNKNOWN', 'ANETI + BTS stays unconfirmed without direct compatibility evidence');
+assert(getStackCompatibility('foprodi_dotation', 'leasing_vehicule_pro').compatibilityStatus === 'UNKNOWN', 'FOPRODI + leasing stays unconfirmed without direct compatibility evidence');
+assert(getStackCompatibility('foprodi_dotation', 'sicar_equity').compatibilityStatus === 'UNKNOWN', 'FOPRODI + SICAR stays unconfirmed without direct compatibility evidence');
 const stackResult = generateFinancingStacks({
   profile: {
     journey: 'startup',
