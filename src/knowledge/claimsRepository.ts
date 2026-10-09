@@ -1089,7 +1089,7 @@ export class FinancingClaimsRepository {
   }
 
   public getCompatibility(sourceEntityId: string, targetEntityId: string): CompatibilityClaim | undefined {
-    const key = `${sourceEntityId}__`${targetEntityId}`;
+    const key = `${sourceEntityId}__${targetEntityId}`;
     return this.compatibilityMap.get(key);
   }
 
