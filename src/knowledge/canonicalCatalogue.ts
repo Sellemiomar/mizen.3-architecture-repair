@@ -1188,7 +1188,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     financialTerms: {
       projectCost: { max: 500000, currency: 'TND' },
       durationMonths: { max: 144, currency: 'MONTHS' },
-      gracePeriodMonths: { max: 60, currency: 'MONTHS' },
+      gracePeriodMonths: { min: 60, max: 60, currency: 'MONTHS' },
       rate: {
         type: 'FIXED',
         value: 3,
