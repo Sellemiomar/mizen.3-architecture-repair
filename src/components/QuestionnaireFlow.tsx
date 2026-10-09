@@ -74,6 +74,17 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
 
   const selectedJourney = profile.journey;
 
+  // Keep the diagnostic permissive, but make incomplete inputs visible before
+  // users advance. Missing data must never be mistaken for a negative answer.
+  const businessJourneys: FinancingJourney[] = ['startup', 'business_expansion', 'equipment', 'agriculture', 'other_professional'];
+  const stepTwoMissing = Boolean(selectedJourney && businessJourneys.includes(selectedJourney) &&
+    (!profile.sector || !profile.businessStage || !profile.legalStructure));
+  const stepThreeMissing = profile.totalProjectCost === undefined ||
+    profile.userContribution === undefined ||
+    !profile.location;
+  const showIncompleteNotice = (currentStep === 2 && stepTwoMissing) ||
+    (currentStep === 3 && stepThreeMissing);
+
   // Auto-sync Financing Requested when Total Project Cost or User Contribution changes
   const handleCostChange = (total: number | undefined, contribution: number | undefined) => {
     const validTotal = total !== undefined ? Math.max(0, total) : undefined;
@@ -1205,6 +1216,14 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
             >
               {language === 'ar' ? 'إلغاء والعودة للرئيسية' : 'Annuler'}
             </button>
+          )}
+
+          {showIncompleteNotice && (
+            <p role="status" className="w-full order-first rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+              {language === 'ar'
+                ? 'بعض المعلومات الأساسية غير مكتملة. يمكنك المتابعة، لكن قد تكون نتائج المطابقة أقل دقة وستُعرض البيانات الناقصة على أنها غير محددة.'
+                : 'Certaines informations essentielles manquent. Vous pouvez continuer, mais le rapprochement sera moins précis et les données absentes resteront « non renseignées ». '}
+            </p>
           )}
 
           {currentStep < 4 ? (
