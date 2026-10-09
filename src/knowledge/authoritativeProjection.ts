@@ -31,6 +31,7 @@ function mapCategory(product: FinancingProduct): FinancingCategory {
   const category = product.category as string;
   if (product.id === 'foprodi_dotation') return 'equity_quasi_equity';
   if (product.id === 'foprolos_construction') return 'subsidized_loan';
+  if (product.id === 'bfpme_creation') return 'bank_loan';
   if (category === 'PUBLIC_FUNDING' || product.financingDomains.includes('PUBLIC_FUNDING' as any)) return 'grant_subsidy';
   if (category === 'MICROFINANCE') return 'microcredit';
   if (category === 'GUARANTEE') return 'guarantee';
@@ -89,6 +90,40 @@ function mapRateType(rate: FinancingProduct['financialTerms']['rate']): Financin
 
 function productToProgram(product: FinancingProduct): FinancingProgram {
   const verification = product.verification ?? { status: 'UNVERIFIED' as const, fields: [] };
+  const termVerificationFields = ((product.financialTerms as any).verification || []) as Array<{
+    field: string;
+    status: string;
+    sourceIds?: string[];
+    unknownReason?: string;
+    notes?: { fr?: string; ar?: string };
+  }>;
+  const verificationFields = [...(verification.fields || []), ...termVerificationFields].reduce((merged, field) => {
+    const existing = merged.find(item => item.field === field.field);
+    if (!existing) {
+      merged.push({ ...field, sourceIds: [...(field.sourceIds || [])] });
+      return merged;
+    }
+    const priority: Record<string, number> = {
+      VERIFIED: 0,
+      PARTIALLY_VERIFIED: 1,
+      UNVERIFIED: 2,
+      CONFLICTING: 3,
+      OUTDATED: 4
+    };
+    if ((priority[field.status] ?? 2) > (priority[existing.status] ?? 2)) {
+      existing.status = field.status;
+      existing.unknownReason = field.unknownReason || existing.unknownReason;
+      existing.notes = field.notes || existing.notes;
+    }
+    existing.sourceIds = [...new Set([...(existing.sourceIds || []), ...(field.sourceIds || [])])];
+    return merged;
+  }, [] as Array<{
+    field: string;
+    status: string;
+    sourceIds?: string[];
+    unknownReason?: string;
+    notes?: { fr?: string; ar?: string };
+  }>);
   const amount = product.financialTerms.amount;
   const contribution = product.financialTerms.contributionPercentage;
   const duration = product.financialTerms.durationMonths;
@@ -155,16 +190,20 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       unverifiedApplicability: verification.status === 'UNVERIFIED'
     },
     verification: {
-      status: (verification.status === 'VERIFIED' && !verification.fields.some(f => f.status !== 'VERIFIED')) ? 'VERIFIED' : 'PARTIALLY_VERIFIED',
+      status: verification.status === 'UNVERIFIED' && !verificationFields.some(f => f.status === 'VERIFIED')
+        ? 'UNVERIFIED'
+        : verificationFields.some(f => f.status !== 'VERIFIED')
+          ? (verificationFields.some(f => f.status === 'VERIFIED') ? 'PARTIALLY_VERIFIED' : 'UNVERIFIED')
+          : verification.status,
       sourceUrl: product.sources[0]?.url || '',
       sourceTitle: product.sources[0]?.title || '',
       sourceType: 'official_portal',
       dateChecked: (product as any).lastVerifiedAt || product.sources[0]?.retrievedAt || '',
-      verifiedFields: verification.fields.filter(f => f.status === 'VERIFIED').map(f => f.field),
-      unverifiedFields: verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.field),
+      verifiedFields: verificationFields.filter(f => f.status === 'VERIFIED').map(f => f.field),
+      unverifiedFields: verificationFields.filter(f => f.status !== 'VERIFIED').map(f => f.field),
       notes: {
-        fr: verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.fr).filter(Boolean).join(' ') || '',
-        ar: verification.fields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.ar).filter(Boolean).join(' ') || ''
+        fr: verificationFields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.fr || f.unknownReason).filter(Boolean).join(' ') || '',
+        ar: verificationFields.filter(f => f.status !== 'VERIFIED').map(f => f.notes?.ar).filter(Boolean).join(' ') || ''
       },
       lastUpdateYear: Number(((product as any).lastVerifiedAt || product.sources[0]?.retrievedAt || '').slice(0, 4)) || new Date().getFullYear()
     }

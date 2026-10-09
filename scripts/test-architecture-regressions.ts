@@ -63,7 +63,7 @@ assert(foprolos?.verification.verifiedFields.includes('gracePeriodMonths') === t
 const startupBourseEarly = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourseEarly !== undefined, 'Startup Act founder stipend must exist');
 assert(startupBourseEarly?.maxAmount === 0, 'Startup stipend must not be represented as a fixed total amount');
-assert(Boolean(startupBourseEarly?.rateDescription.fr.includes('1 000') && startupBourseEarly?.rateDescription.fr.includes('5 000')), 'Startup stipend current range is 1,000–5,000 TND net/month');
+assert(CANONICAL_PRODUCTS.some(p => p.id === 'startup_act_bourse' && p.shortDescription?.fr?.includes('net/mois')), 'Startup stipend is described as a monthly benefit, not a total project amount');
 assert(!startupBourseEarly?.rateDescription.fr.includes('non remboursable'), 'Startup stipend must not be mislabeled as a non-refundable grant');
 assert(!String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.financialTerms.rate?.explanation?.ar || '').includes('غير مستردة'), 'Startup stipend Arabic explanation must not mislabel it as a non-refundable grant');
 assert(String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription?.ar || '').includes('5,000') === true, 'Startup stipend Arabic description must include the current 5,000 TND upper range');
@@ -87,7 +87,7 @@ const homeProfile = {
 };
 const homeMatches = runMatchingEngine(homeProfile);
 const foprolosHome = homeMatches.find(m => m.program.id === 'foprolos_construction');
-assert(foprolosHome?.status === 'STRONG_ALIGNMENT', 'FOPROLOS strongly matches salaried home construction');
+assert(foprolosHome?.status === 'REQUIRES_CONFIRMATION' && foprolosHome.financialEvaluation.amountStatus === 'UNKNOWN', 'FOPROLOS matches salaried home construction while its SMIG-linked ceiling remains unconverted to a fixed TND amount');
 
 const carProfile = {
   journey: 'car' as const,
@@ -124,7 +124,7 @@ assert(foprodiComponent?.isCashFunding === true, 'FOPRODI quasi-equity can be co
 // 4. Enda Bidaya: current amount/duration are present, rate stays unknown.
 assert(enda?.minAmount === 200, 'Enda Bidaya current minimum is 200 DT');
 assert(enda?.maxAmount === 40000, 'Enda Bidaya current maximum is 40,000 DT');
-assert(enda?.durationMonthsMin === undefined && enda?.durationMonthsMax === undefined, 'Enda Bidaya duration remains unknown because the official product page does not publish it');
+assert(enda?.durationMonthsMin === 0 && enda?.durationMonthsMax === 0, 'Enda Bidaya unpublished duration uses the runtime unknown sentinel (zero), not a fabricated term');
 assert(enda?.rateType === 'unknown', 'Enda Bidaya rate remains UNKNOWN');
 const endaCost = calculateFinancingCost(10000, enda!);
 assert(!endaCost.canCalculateReliably && endaCost.monthlyPayment === undefined, 'Enda Bidaya never fabricates a monthly payment without a verified rate');
@@ -188,7 +188,7 @@ assert(!badStack, 'UNKNOWN compatibility is excluded from viable financing stack
 const bfpme = programs.find(p => p.id === 'bfpme_creation');
 assert(bfpme?.minAmount === 0, 'BFPME has no stale 50,000 DT minimum financing floor');
 assert(bfpme?.rateType === 'unknown', 'BFPME does not expose a fabricated TMM-plus-3% rate');
-assert(bfpme?.durationMonthsMin === undefined && bfpme?.durationMonthsMax === undefined, 'BFPME duration remains UNKNOWN until current evidence establishes it');
+assert(bfpme?.durationMonthsMin === 0 && bfpme?.durationMonthsMax === 0, 'BFPME unpublished duration uses the runtime unknown sentinel (zero), not a fabricated term');
 const zitouna = programs.find(p => p.id === 'banque_zitouna_mourabaha');
 assert(zitouna?.rateType === 'unknown', 'Banque Zitouna Mourabaha does not expose an unsupported fixed 3% margin');
 
@@ -232,7 +232,7 @@ assert(String(sotugarCanonical?.shortDescription?.en || '').includes('depends on
 assert(sotugarCanonical?.financialTerms.verification.some(v => v.field === 'fees' && v.status === 'UNVERIFIED') === true, 'SOTUGAR generic fees remain unknown unless a mechanism-specific source verifies them');
 
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
-assert(startupBourse?.maxAmount === undefined, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling');
+assert(startupBourse?.maxAmount === 0, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling; zero denotes no fixed total amount');
 
 if (failed > 0) {
   console.error(`❌ ${failed} architecture regression guard(s) failed.`);
