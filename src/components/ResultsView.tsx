@@ -27,6 +27,7 @@ import { getFieldLabel } from '../utils/verificationLabels';
 import { LenderHandoffModal } from './LenderHandoffModal';
 import { getJourneyResultHeader } from '../engine/journeyEngine';
 import { generateFinancingStacks } from '../engine/financingStackEngine';
+import { formatFinancingAmountRange } from '../utils/financingAmountLabels';
 
 interface ResultsViewProps {
   results: MatchResult[];
@@ -571,9 +572,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   <div>
                     <span className="text-slate-500 font-medium block text-[11px]">Plafond d’intervention</span>
                     <strong className="text-slate-900 font-bold sm:text-sm">
-                      {program.minAmount > 0
-                        ? `${program.minAmount.toLocaleString('fr-FR')} – ${program.maxAmount.toLocaleString('fr-FR')} DT`
-                        : `Minimum non établi — plafond ${program.maxAmount.toLocaleString('fr-FR')} DT`}
+                      {formatFinancingAmountRange(program.minAmount, program.maxAmount, language)}
                     </strong>
                   </div>
 
