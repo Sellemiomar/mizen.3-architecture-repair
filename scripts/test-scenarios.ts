@@ -1126,7 +1126,7 @@ assert(gapWithDup.verifiedCashFunding === 650000, 'AA.6. Duplicate component ID 
 // profile whose journey metadata can exclude every candidate.
 const testApplicant: ApplicantProfile = profileB;
 
-const matchResultsForStack = runMatchingEngine(testApplicant);
+const matchResultsForStack = resultsB.filter(r => r.program.id === 'bfpme_creation' || r.program.id === 'sotugar_guarantee');
 const stacksResult = generateFinancingStacks({
   applicantProfile: testApplicant,
   matchResults: matchResultsForStack
