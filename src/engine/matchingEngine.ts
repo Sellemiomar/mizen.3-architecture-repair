@@ -814,10 +814,22 @@ export function evaluateProgramCompatibility(
       financialDetails.push(detail);
       potentialIssues.push(detail);
     }
+  } else if (program.category === 'guarantee' || program.id === 'startup_act_bourse') {
+    // These mechanisms do not provide a project-loan amount: SOTUGAR guarantees a lender's credit,
+    // while the Startup Act benefit is a founder stipend rather than a lump-sum project facility.
+    amountStatus = 'UNKNOWN';
+    needsVerification.push({
+      fr: program.id === 'startup_act_bourse'
+        ? "Cette bourse est une allocation au fondateur, pas un prêt de projet : ne pas l'imputer au montant de financement demandé."
+        : "La SOTUGAR garantit un financement accordé par un prêteur; son plafond de garantie ne constitue pas un montant prêté directement.",
+      ar: program.id === 'startup_act_bourse'
+        ? "هذه المنحة إعانة للمؤسس وليست قرض مشروع؛ لا تُحتسب ضمن مبلغ التمويل المطلوب."
+        : "سوتوغار تضمن تمويلاً يقدمه ممول آخر؛ ولا يمثل سقف الضمان مبلغ قرض مباشر."
+    });
   } else {
-    // General amount checks for other programs
+    // A zero amount is the projection's sentinel for "not published", not a real zero-TND ceiling.
     if (applicant.financingRequested !== undefined && applicant.financingRequested > 0) {
-      if (applicant.financingRequested > program.maxAmount) {
+      if (program.maxAmount > 0 && applicant.financingRequested > program.maxAmount) {
         amountStatus = 'FAIL';
         const detail = {
           fr: `Montant demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) dépasse le plafond publié (${program.maxAmount.toLocaleString('fr-TN')} TND).`,
@@ -825,18 +837,24 @@ export function evaluateProgramCompatibility(
         };
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else if (applicant.financingRequested < program.minAmount) {
+      } else if (program.minAmount > 0 && applicant.financingRequested < program.minAmount) {
         amountStatus = 'FAIL';
         const detail = {
-          fr: `Montant demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) inférieur au seuil minimal (${program.minAmount.toLocaleString('fr-TN')} TND).`,
-          ar: `المبلغ المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) أقل من الحد الأدنى (${program.minAmount.toLocaleString('fr-TN')} د).`
+          fr: `Montant demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) inférieur au seuil minimal publié (${program.minAmount.toLocaleString('fr-TN')} TND).`,
+          ar: `المبلغ المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) أقل من الحد الأدنى المنشور (${program.minAmount.toLocaleString('fr-TN')} د).`
         };
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else {
+      } else if (program.maxAmount > 0) {
         matchedBecause.push({
-          fr: `Montant demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) dans la fourchette d'intervention (${program.minAmount.toLocaleString('fr-TN')} - ${program.maxAmount.toLocaleString('fr-TN')} TND).`,
-          ar: `المبلغ المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) يقع ضمن السقف المتاح للبرنامج.`
+          fr: `Montant demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) inférieur au plafond publié de ${program.maxAmount.toLocaleString('fr-TN')} TND.`,
+          ar: `المبلغ المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) لا يتجاوز السقف المنشور ${program.maxAmount.toLocaleString('fr-TN')} د.`
+        });
+      } else {
+        amountStatus = 'UNKNOWN';
+        needsVerification.push({
+          fr: "Aucun plafond de financement en montant fixe n'est établi dans les données vérifiées; confirmer la capacité du prêteur.",
+          ar: "لم يتم إثبات سقف تمويل ثابت في البيانات المتحقق منها؛ يجب تأكيد قدرة الممول."
         });
       }
     } else {
@@ -958,7 +976,7 @@ export function evaluateProgramCompatibility(
       fr: "Mention 'Financement intégral' non assimilable à 100% sans apport sans confirmation directe de l'agence bancaire.",
       ar: "عبارة 'تمويل شامل' لا تعني 100% قرضاً بدون تمويل ذاتي دون تأكيد مباشر من الفرع البنكي."
     });
-  } else if (criticalUnknowns.length > 0 || isOutdated || isUnverifiedEvidence) {
+  } else if (criticalUnknowns.length > 0 || amountStatus === 'UNKNOWN' || isOutdated || isUnverifiedEvidence) {
     // 3. Critical information unknown or evidence outdated
     status = 'REQUIRES_CONFIRMATION';
     alignmentLevel = 'partial_alignment';
