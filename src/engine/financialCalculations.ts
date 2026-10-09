@@ -335,19 +335,34 @@ export function calculateFinancingCost(
     financingStructure: structure,
     evidenceStatus,
     rateOrigin: 'unavailable',
-    rateOriginLabel: {
-      fr: 'Taux non disponible',
-      ar: 'النسبة غير متوفرة'
-    },
+    rateOriginLabel: program.id === 'foprodi_dotation' && program.estimatedRateAnnual !== undefined
+      ? {
+          fr: `Taux annuel documenté : ${program.estimatedRateAnnual}% — échéancier à confirmer`,
+          ar: `النسبة السنوية الموثقة: ${program.estimatedRateAnnual}% — جدول السداد بحاجة إلى تأكيد`
+        }
+      : {
+          fr: 'Taux non disponible',
+          ar: 'النسبة غير متوفرة'
+        },
     durationMonths: preferredDurationMonths ?? (program.durationMonthsMin || 12),
     gracePeriodMonths: program.gracePeriodMonthsMin,
-    calculationExplanation: {
-      fr: 'Taux non disponible — simulation de remboursement impossible avec les informations vérifiées.',
-      ar: 'النسبة غير متوفرة — يتعذر إجراء محاكاة سداد بالمعلومات الموثقة.'
-    },
-    unreliableReason: {
-      fr: 'Taux non disponible — simulation de remboursement impossible avec les informations vérifiées. Un devis officiel émis par l’établissement est requis.',
-      ar: 'النسبة غير متوفرة — يتعذر إجراء محاكاة سداد بالمعلومات الموثقة. يتطلب الأمر جدولاً رسمياً صادراً عن المؤسسة المعنية.'
-    }
+    calculationExplanation: program.id === 'foprodi_dotation' && program.estimatedRateAnnual !== undefined
+      ? {
+          fr: `Le taux annuel de ${program.estimatedRateAnnual}% est documenté, mais le calendrier de remboursement dépend des conditions applicables à la dotation. Mizen ne calcule pas de mensualité sans échéancier confirmé.`,
+          ar: `النسبة السنوية ${program.estimatedRateAnnual}% موثقة، لكن جدول سداد المساهمة يخضع للشروط المعمول بها. لا يحتسب ميزان قسطاً شهرياً دون تأكيد الجدول.`
+        }
+      : {
+          fr: 'Taux non disponible — simulation de remboursement impossible avec les informations vérifiées.',
+          ar: 'النسبة غير متوفرة — يتعذر إجراء محاكاة سداد بالمعلومات الموثقة.'
+        },
+    unreliableReason: program.id === 'foprodi_dotation' && program.estimatedRateAnnual !== undefined
+      ? {
+          fr: 'Le taux de 3% est documenté ; confirmez auprès de l’APII ou de l’organisme instructeur le calendrier et les modalités exactes avant toute simulation.',
+          ar: 'نسبة 3% موثقة؛ يرجى تأكيد جدول السداد والشروط الدقيقة لدى وكالة النهوض بالصناعة أو الجهة المعنية قبل أي محاكاة.'
+        }
+      : {
+          fr: 'Taux non disponible — simulation de remboursement impossible avec les informations vérifiées. Un devis officiel émis par l’établissement est requis.',
+          ar: 'النسبة غير متوفرة — يتعذر إجراء محاكاة سداد بالمعلومات الموثقة. يتطلب الأمر جدولاً رسمياً صادراً عن المؤسسة المعنية.'
+        }
   };
 }
