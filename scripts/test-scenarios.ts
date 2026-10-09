@@ -72,6 +72,7 @@ const bfpmeB = resultsB.find(r => r.program.id === 'bfpme_creation');
 const sotugarB = resultsB.find(r => r.program.id === 'sotugar_guarantee');
 assert(bfpmeB !== undefined && bfpmeB.reasons.alignmentLevel === 'strong_alignment', 'BFPME matches 250k DT PME expansion with strong alignment');
 assert(sotugarB !== undefined && sotugarB.reasons.alignmentLevel === 'strong_alignment', 'SOTUGAR matches investment guarantee with strong alignment');
+const stackSeedMatchesB = resultsB.filter(r => r.program.id === 'bfpme_creation' || r.program.id === 'sotugar_guarantee').map(r => JSON.parse(JSON.stringify(r)));
 // BTS cap is 150k DT and doesn't cover expansion
 const btsB = resultsB.find(r => r.program.id === 'bts_diplomes');
 assert(Boolean(btsB?.reasons.potentialIssues.some(p => p.fr.includes('dépasse le plafond') || p.fr.includes('Non applicable'))), 'BTS flags non-applicability or amount exceeding cap');
@@ -1126,7 +1127,7 @@ assert(gapWithDup.verifiedCashFunding === 650000, 'AA.6. Duplicate component ID 
 // profile whose journey metadata can exclude every candidate.
 const testApplicant: ApplicantProfile = profileB;
 
-const matchResultsForStack = resultsB.filter(r => r.program.id === 'bfpme_creation' || r.program.id === 'sotugar_guarantee');
+const matchResultsForStack = stackSeedMatchesB;
 const stacksResult = generateFinancingStacks({
   applicantProfile: testApplicant,
   matchResults: matchResultsForStack
