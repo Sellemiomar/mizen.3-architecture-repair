@@ -119,7 +119,7 @@ assert(foprodi?.projectCostMax === 500000, 'FOPRODI project-cost threshold is 50
 // 3b. FOPRODI dotation is repayable/quasi-equity, not a grant.
 const foprodiCost = calculateFinancingCost(240000, foprodi!);
 assert(!foprodiCost.canCalculateReliably && foprodiCost.monthlyPayment === undefined, 'FOPRODI does not fabricate a monthly repayment schedule');
-assert(foprodiCost.rateOriginLabel.fr.includes('3%') && !foprodiCost.rateOriginLabel.fr.includes('Taux non disponible'), 'FOPRODI shows its documented 3% rate while clearly withholding an unverified repayment schedule');
+assert(foprodiCost.rateOriginLabel?.fr.includes('3%') === true && !foprodiCost.rateOriginLabel?.fr.includes('Taux non disponible'), 'FOPRODI shows its documented 3% rate while clearly withholding an unverified repayment schedule');
 
 assert(formatFinancingAmountRange(0, 0, 'fr') === 'Plafond non publié — à confirmer auprès de l’organisme', 'Unknown financing ceiling never renders as 0 DT');
 assert(formatFinancingAmountRange(0, 0, 'ar').includes('غير منشور'), 'Arabic unknown ceiling is also rendered as unpublished, not zero');
