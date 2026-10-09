@@ -31,6 +31,7 @@ function mapCategory(product: FinancingProduct): FinancingCategory {
   const category = product.category as string;
   if (product.id === 'foprodi_dotation') return 'equity_quasi_equity';
   if (product.id === 'foprolos_construction') return 'subsidized_loan';
+  if (product.id === 'bfpme_creation') return 'bank_loan';
   if (category === 'PUBLIC_FUNDING' || product.financingDomains.includes('PUBLIC_FUNDING' as any)) return 'grant_subsidy';
   if (category === 'MICROFINANCE') return 'microcredit';
   if (category === 'GUARANTEE') return 'guarantee';
