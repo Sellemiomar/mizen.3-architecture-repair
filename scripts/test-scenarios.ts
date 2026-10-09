@@ -1132,7 +1132,10 @@ const stacksResult = generateFinancingStacks({
   matchResults: matchResultsForStack
 });
 
-assert(stacksResult.stacks.length > 0 || (stacksResult.unverifiedCombinations?.length ?? 0) > 0, 'AA.7. Generates viable or explicitly unverified financing stack candidates');
+assert(
+  stacksResult.stacks.length > 0 || (stacksResult.unverifiedCombinations?.length ?? 0) > 0,
+  `AA.7. Generates viable or explicitly unverified financing stack candidates (matches=${matchResultsForStack.length}, aligned=${matchResultsForStack.filter(m => ['STRONG_ALIGNMENT', 'POTENTIAL_ALIGNMENT', 'REQUIRES_CONFIRMATION'].includes(m.status) || ['strong_alignment', 'partial_alignment'].includes(m.reasons?.alignmentLevel)).map(m => `${m.program.id}:${m.status}:${m.reasons?.alignmentLevel}`).join(',')}, viable=${stacksResult.stacks.length}, unverified=${stacksResult.unverifiedCombinations?.length ?? 0})`
+);
 
 // AA.8: UNKNOWN compatibility is excluded from viable stacks
 const unknownFoprodiMourabaha = stacksResult.stacks.find(s => 
