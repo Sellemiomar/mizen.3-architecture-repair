@@ -15,6 +15,8 @@ import {
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
 import { CANONICAL_PRODUCTS } from '../src/knowledge/canonicalCatalogue';
 import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
+import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProviders } from '../src/knowledge/authoritativeCatalogueProjection';
+import { validateKnowledgeCatalogue } from '../src/knowledge/knowledgeValidator';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -274,6 +276,26 @@ assert(matrixFallback.compatibilityStatus === 'POTENTIALLY_COMPATIBLE', 'Local c
 assert(getStackCompatibility('aneti_cheque_entreprendre', 'bts_diplomes').compatibilityStatus === 'UNKNOWN', 'ANETI + BTS stays unconfirmed without direct compatibility evidence');
 assert(getStackCompatibility('foprodi_dotation', 'leasing_vehicule_pro').compatibilityStatus === 'UNKNOWN', 'FOPRODI + leasing stays unconfirmed without direct compatibility evidence');
 assert(getStackCompatibility('foprodi_dotation', 'sicar_equity').compatibilityStatus === 'UNKNOWN', 'FOPRODI + SICAR stays unconfirmed without direct compatibility evidence');
+assert(getStackCompatibility('bts_diplomes', 'bh_bank_loan').compatibilityStatus === 'UNKNOWN', 'BTS + commercial bank remains UNKNOWN without direct prohibition evidence');
+assert(getStackCompatibility('bts_diplomes', 'bfpme_creation').compatibilityStatus === 'UNKNOWN', 'BTS + BFPME is not falsely excluded based on overlapping project-cost ranges');
+assert(getStackCompatibility('sotugar_guarantee', 'leasing_vehicule_pro').compatibilityStatus === 'POTENTIALLY_COMPATIBLE', 'SOTUGAR + leasing is conditional on the eligible mechanism and asset');
+
+// A general product page is not evidence that applications are currently open.
+const validationProducts = getAuthoritativeCatalogueProducts();
+const validationProviders = getAuthoritativeCatalogueProviders();
+const syntheticActiveProduct = structuredClone(validationProducts[0]);
+syntheticActiveProduct.id = 'synthetic_active_without_intake_claim';
+syntheticActiveProduct.operationalStatus = 'ACTIVE_CONFIRMED';
+const syntheticActiveValidation = validateKnowledgeCatalogue(
+  [...validationProducts, syntheticActiveProduct],
+  validationProviders
+);
+assert(
+  syntheticActiveValidation.errors.some(e =>
+    e.programId === syntheticActiveProduct.id && e.code === 'UNSUPPORTED_OPERATIONAL_STATUS'
+  ),
+  'ACTIVE_CONFIRMED is rejected without fresh direct-primary intake evidence'
+);
 const stackResult = generateFinancingStacks({
   profile: {
     journey: 'startup',
