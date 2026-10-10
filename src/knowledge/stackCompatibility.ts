@@ -138,15 +138,15 @@ const DOCUMENTED_COMPATIBILITY_RULES: StackCompatibilityEvaluation[] = [
     isHistoricalOnly: false
   },
 
-  // 9. BTS Diplômés + ANETI Chèque Entreprendre (Compatible Subsidy + Microcredit)
+  // 9. BTS Diplômés + ANETI Chèque Entreprendre (Compatibility unconfirmed)
   {
     programAId: 'bts_diplomes',
     programBId: 'aneti_cheque_entreprendre',
-    compatibilityStatus: 'VERIFIED_COMPATIBLE',
-    confidence: 'HIGH',
+    compatibilityStatus: 'UNKNOWN',
+    confidence: 'LOW',
     rationale: {
-      fr: "Cumul expressément encouragé : la prime d'étude ANETI ou bourse d'accompagnement complète le micro-crédit d'investissement BTS.",
-      ar: "جمع مشجع عليه قانوناً : منحة المرافقة أو دراسة المشروع من ANETI تكمل قرض الاستثمار من BTS."
+      fr: "Les sources disponibles ne prouvent pas explicitement le cumul de ces deux mécanismes pour un même projet. Confirmer auprès des organismes avant de les présenter comme un montage combinable.",
+      ar: "المصادر المتاحة لا تثبت صراحة إمكانية الجمع بين الآليتين لنفس المشروع. يجب التأكد من الهياكل المعنية قبل عرضهما كتركيبة تمويلية قابلة للجمع."
     },
     isHistoricalOnly: false
   }
