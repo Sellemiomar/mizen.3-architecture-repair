@@ -27,7 +27,12 @@ export interface StackComponent {
   providerName: LocalizedText;
   role: StackFundingRole;
   isCashFunding: boolean;
+  /** Amount proposed for this candidate stack; not proof that the applicant has secured it. */
   allocatedAmount?: number;
+  /** Explicit applicant-specific commitment, backed by an approval/offer/contract record. */
+  confirmedCommitmentAmount?: number;
+  /** Applicant-specific status; product operational status is not a funding commitment. */
+  fundingCommitmentStatus?: 'NOT_REQUESTED' | 'APPLIED' | 'OFFERED' | 'COMMITTED' | 'UNKNOWN';
   maxPotentialAmount?: number;
   coveragePercentage?: number;
   rateType?: string;
