@@ -69,11 +69,25 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
  * - guarantees are tracked separately and never reduce the cash gap.
  */
 export function calculateFundingGap(requiredFunding: number, components: StackComponent[]): FundingGapResult {
+  const warnings: string[] = [];
+  if (!Number.isFinite(requiredFunding) || requiredFunding < 0) {
+    return {
+      inputValid: false,
+      requiredFunding: 0,
+      verifiedCashFunding: 0,
+      remainingFundingGap: 0,
+      fundingSurplus: 0,
+      cashCoverageRatio: 0,
+      guaranteeCoverageAmount: 0,
+      hasDoubleCounting: false,
+      warnings: ['Montant de financement requis invalide : veuillez vérifier le coût du projet et la contribution du promoteur.']
+    };
+  }
+
   const seenIds = new Set<string>();
   let hasDoubleCounting = false;
   let verifiedCashFunding = 0;
   let guaranteeCoverageAmount = 0;
-  const warnings: string[] = [];
 
   for (const comp of components) {
     if (seenIds.has(comp.programId)) {
@@ -87,17 +101,15 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
       if (comp.role === 'GUARANTEE') {
         const coverage = comp.coveragePercentage;
         const maxCover = comp.maxPotentialAmount;
-        if (typeof maxCover === 'number' && maxCover > 0) guaranteeCoverageAmount += maxCover;
-        else if (typeof coverage === 'number' && coverage > 0) guaranteeCoverageAmount += requiredFunding * coverage;
+        if (typeof maxCover === 'number' && Number.isFinite(maxCover) && maxCover > 0) guaranteeCoverageAmount += maxCover;
+        else if (typeof coverage === 'number' && Number.isFinite(coverage) && coverage > 0) guaranteeCoverageAmount += requiredFunding * coverage;
       }
       continue;
     }
 
-    // Only current, fully verified evidence AND explicitly confirmed live
-    // operations may contribute to the "verified cash" total. A known product
-    // ceiling or a partial verification is not evidence that funds are currently
-    // available to this applicant.
-    if (typeof comp.allocatedAmount !== 'number' || comp.allocatedAmount <= 0) continue;
+    // A positive amount is necessary but not sufficient: only current, fully
+    // verified evidence and explicitly confirmed live operations count as cash.
+    if (typeof comp.allocatedAmount !== 'number' || !Number.isFinite(comp.allocatedAmount) || comp.allocatedAmount <= 0) continue;
     if (!['VERIFIED', 'VERIFIED_CURRENT'].includes(String(comp.evidenceStatus))) {
       warnings.push(`Financement exclu du total confirmé : preuve actuelle complète non établie pour ${comp.programName.fr}.`);
       continue;
@@ -110,10 +122,23 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
     verifiedCashFunding += comp.allocatedAmount;
   }
 
-  verifiedCashFunding = Math.min(requiredFunding, verifiedCashFunding);
+  // Keep the actual confirmed sum. Capping it at the requirement concealed
+  // overfunding and made a surplus impossible to distinguish from exact coverage.
   const remainingFundingGap = Math.max(0, requiredFunding - verifiedCashFunding);
-  const cashCoverageRatio = requiredFunding > 0 ? Math.min(1, verifiedCashFunding / requiredFunding) : 1;
-  return { requiredFunding, verifiedCashFunding, remainingFundingGap, cashCoverageRatio, guaranteeCoverageAmount, hasDoubleCounting, warnings };
+  const fundingSurplus = Math.max(0, verifiedCashFunding - requiredFunding);
+  const cashCoverageRatio = requiredFunding > 0 ? Math.min(1, verifiedCashFunding / requiredFunding) : 0;
+  if (fundingSurplus > 0) warnings.push(`Les financements confirmés dépassent le besoin de ${fundingSurplus} DT : vérifier les affectations et les coûts éligibles.`);
+  return {
+    inputValid: true,
+    requiredFunding,
+    verifiedCashFunding,
+    remainingFundingGap,
+    fundingSurplus,
+    cashCoverageRatio,
+    guaranteeCoverageAmount,
+    hasDoubleCounting,
+    warnings
+  };
 }
 
 export function createStackComponent(match: MatchResult, allocatedAmount?: number): StackComponent {
@@ -225,6 +250,7 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
     requiredFunding,
     verifiedCashFunding: gap.verifiedCashFunding,
     remainingFundingGap: gap.remainingFundingGap,
+    fundingSurplus: gap.fundingSurplus,
     cashCoverageRatio: gap.cashCoverageRatio,
     promoterContribution: userContribution,
     components: cashComponents,
