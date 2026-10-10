@@ -276,7 +276,7 @@ const firstHomeAtCap = runMatchingEngine({
   location: 'Sfax'
 }).find(m => m.program.id === 'premier_logement');
 assert(firstHomeAtCap?.financialEvaluation.amountStatus === 'PASS', 'Premier Logement accepts the documented 220,000 TND property-price ceiling');
-assert(JSON.stringify(firstHomeAtCap?.matchedBecause || []).includes('220 000'), 'Premier Logement eligibility explanation reflects the authoritative 220,000 TND ceiling');
+assert(JSON.stringify(firstHomeAtCap?.matchedBecause || []).replace(/\\s/g, '').includes('220000'), 'Premier Logement eligibility explanation reflects the authoritative 220,000 TND ceiling');
 
 const firstHomeAboveCap = runMatchingEngine({
   journey: 'home_purchase' as const,
@@ -291,7 +291,7 @@ const firstHomeAboveCap = runMatchingEngine({
   location: 'Sfax'
 }).find(m => m.program.id === 'premier_logement');
 assert(firstHomeAboveCap?.financialEvaluation.amountStatus === 'FAIL', 'Premier Logement rejects property prices above 220,000 TND');
-assert(JSON.stringify(firstHomeAboveCap?.potentialIssues || []).includes('220 000'), 'Premier Logement rejection explanation uses the same authoritative 220,000 TND ceiling');
+assert(JSON.stringify(firstHomeAboveCap?.potentialIssues || []).replace(/\\s/g, '').includes('220000'), 'Premier Logement rejection explanation uses the same authoritative 220,000 TND ceiling');
 
 const leasing = programs.find(p => p.id === 'leasing_vehicule_pro');
 assert(leasing?.durationMonthsMin === 36 && leasing?.durationMonthsMax === 60, 'TLF professional vehicle leasing duration is 3-5 years');
