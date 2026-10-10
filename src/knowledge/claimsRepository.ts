@@ -140,6 +140,19 @@ export const CANONICAL_SOURCES: Record<string, SourceReference> = {
     lastVerifiedAt: '2026-10-08',
     evidenceStatus: 'VERIFIED'
   },
+  bts_credit_sur_honneur_2026: {
+    id: 'src_bts_credit_sur_honneur_2026',
+    url: 'https://www.bts.com.tn/actualites/la-bts-lance-le-dispositif-du-credit-sur-lhonneur-MTA',
+    title: 'BTS — Lancement du Crédit sur l’honneur (30 septembre 2026)',
+    publisher: 'Banque Tunisienne de Solidarité',
+    sourceType: 'OFFICIAL_NOTICE',
+    language: 'fr',
+    publishedAt: '2026-09-30',
+    retrievedAt: '2026-10-10',
+    lastVerifiedAt: '2026-10-10',
+    relevantSection: 'Décret n° 2026-148 du 23 juillet 2026; circulaire BCT n° 08 de 2026 du 1er septembre 2026',
+    evidenceStatus: 'VERIFIED'
+  },
   enda_bidaya_current: {
     id: 'src_enda_bidaya',
     url: 'https://www.endatamweel.tn/nos-services/micro-credits/pack-creation/',
@@ -786,6 +799,87 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
     notes: {
       fr: 'Le guide indique un taux d’intérêt annuel de 3% pour le remboursement des dotations.',
       ar: 'الدليل يذكر نسبة فائدة سنوية قدرها 3% لسداد الدوتاسيونات.'
+    }
+  },
+
+  {
+    claimId: 'claim_foprodi_dotation_grace_period_current',
+    entityId: 'foprodi_dotation',
+    field: 'gracePeriodMonths',
+    value: 60,
+    source: CANONICAL_SOURCES.apii_foprodi_financing_guide,
+    sourceType: 'OFFICIAL_PDF',
+    sourceDate: '2026-10-08',
+    retrievalDate: '2026-10-10',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Le guide de financement APII indique 12 ans de remboursement dont 5 ans de délai de grâce pour la dotation remboursable. Confirmer l’application au montage et à la convention en vigueur.',
+      ar: 'يشير دليل التمويل إلى مدة سداد 12 سنة منها 5 سنوات إمهال للدوتاسيون القابلة للسداد. يجب تأكيد التطبيق وفق التركيبة والاتفاقية السارية.'
+    }
+  },
+  {
+    claimId: 'claim_bts_honneur_microproject_cap_2026',
+    entityId: 'bts_credit_sur_honneur',
+    field: 'maxFinancingAmountMicroProject',
+    value: 10000,
+    source: CANONICAL_SOURCES.bts_credit_sur_honneur_2026,
+    sourceType: 'OFFICIAL_NOTICE',
+    sourceDate: '2026-09-30',
+    retrievalDate: '2026-10-10',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Montant annoncé pouvant atteindre 10 000 TND pour les porteurs de micro-projets. Il s’agit d’un plafond conditionnel, pas d’un montant garanti.',
+      ar: 'تم الإعلان عن تمويل يصل إلى 10 آلاف دينار لحاملي المشاريع الصغرى. هذا سقف مشروط وليس مبلغاً مضموناً.'
+    }
+  },
+  {
+    claimId: 'claim_bts_honneur_sme_community_cap_2026',
+    entityId: 'bts_credit_sur_honneur',
+    field: 'maxFinancingAmountSmeCommunity',
+    value: 25000,
+    source: CANONICAL_SOURCES.bts_credit_sur_honneur_2026,
+    sourceType: 'OFFICIAL_NOTICE',
+    sourceDate: '2026-09-30',
+    retrievalDate: '2026-10-10',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'Montant annoncé pouvant atteindre 25 000 TND pour les PME et entreprises communautaires. Les critères détaillés doivent être contrôlés dans le décret et la circulaire BCT.',
+      ar: 'تم الإعلان عن تمويل يصل إلى 25 ألف دينار للمؤسسات الصغرى والمتوسطة والمؤسسات الأهلية. يجب التحقق من الشروط التفصيلية في المرسوم ومنشور البنك المركزي.'
+    }
+  },
+  {
+    claimId: 'claim_bts_honneur_interest_free_2026',
+    entityId: 'bts_credit_sur_honneur',
+    field: 'interestFree',
+    value: true,
+    source: CANONICAL_SOURCES.bts_credit_sur_honneur_2026,
+    sourceType: 'OFFICIAL_NOTICE',
+    sourceDate: '2026-09-30',
+    retrievalDate: '2026-10-10',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'La BTS annonce un financement sans intérêts et sans garanties, sous réserve des conditions réglementaires applicables.',
+      ar: 'تعلن BTS عن تمويل دون فوائد ودون ضمانات، مع الخضوع للشروط التنظيمية المعمول بها.'
     }
   },
 
