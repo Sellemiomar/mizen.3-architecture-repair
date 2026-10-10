@@ -47,9 +47,8 @@ The pages above establish what the providers publicly state; they do not indepen
 
 ### ANETI — Chèque Entreprendre
 
-- The catalogue currently describes ANETI as granting “bourses de démarrage et primes d'étude” and references an official Chèque Entreprendre page at https://www.aneti.tn/fr/services/cheque-entreprendre.
-- That exact URL was inaccessible during this review and targeted searches did not return a readable official page. This is **source unavailable**, not evidence that the scheme is inactive or nonexistent.
-- The compatibility matrix references `aneti_cheque_entreprendre`, but the canonical product catalogue does not define a product with that ID. Treat it as an orphan compatibility reference until a canonical product record and source-backed role are added.
+- The official Chèque Entreprendre URL at https://www.aneti.tn/fr/services/cheque-entreprendre was inaccessible during this review and targeted searches did not return a readable official page. This is **source unavailable**, not evidence that the scheme is inactive or nonexistent.
+- Follow-up implementation adds `aneti_cheque_entreprendre` as a canonical UNKNOWN/source-unavailable placeholder so the compatibility reference is no longer orphaned. Its support type, amount, eligibility and operational status remain unverified; it must not be displayed as available financing.
 - Do not assert an amount, payment type, current intake, or compatibility with BTS/FOPRODI until an accessible ANETI primary source or written agency confirmation is captured. In particular, do not label it a cash grant or a loan from the name alone.
 
 ### SICAR / FCPR — equity and quasi-equity, not a standard loan
@@ -70,8 +69,8 @@ The pages above establish what the providers publicly state; they do not indepen
 ### FOPROLOS — eligibility and purpose completeness
 
 - The Ministry's current FOPROLOS page says eligible salaried categories are those in covered non-agricultural sectors subject to the Labour Code; neither the applicant nor their spouse may own a home, except for home-extension operations; and gross monthly income including the spouse's income, where applicable, must not exceed six times SMIG. The page lists construction, extension, land for a primary home, and purchase of a new primary home from a ministry-approved property developer. Source: https://www.mehat.gov.tn/fr/principaux-secteurs/habitat/programmes-projets/foprolos/
-- The current catalogue entry `foprolos_construction` captures salaried status and the six-times-SMIG cap but does not encode the no-home-owned-by-applicant/spouse condition. Its stated purposes currently emphasize construction/first home and omit the page's extension, qualifying land acquisition, and new-home purchase routes.
-- Do not silently classify the existing entry as fully eligibility-complete. Next implementation should add the household ownership condition as a critical missing-input/eligibility rule and represent the additional purposes as distinct, source-backed products or explicitly supported purpose variants. The extension exception must not be blocked by a blanket “first property only” rule.
+- Follow-up implementation adds a critical household ownership review gate, removes the blanket first-property-only flag that could block the extension exception, encodes the six-times-SMIG household-income threshold, and adds extension, qualifying land acquisition and new-primary-home purchase purpose variants.
+- This is not full eligibility automation: the ownership and employment conditions remain critical review/missing-input gates, and programme availability must be confirmed. Do not classify an applicant as eligible until those facts are resolved.
 - The ministry page links the 2016 implementing decree and 2023 amendment. The general page establishes the programme and high-level eligibility, but detailed financial figures should continue to cite the specific official flyer/legal text from which each term was extracted. A published scheme is not confirmation that every application is currently being accepted.
 
 ## Audit disposition
