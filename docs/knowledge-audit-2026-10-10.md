@@ -91,3 +91,10 @@ The pages above establish what the providers publicly state; they do not indepen
 - `foprolos_construction` no longer applies `isFirstPropertyOnly: true`, which could incorrectly exclude the Ministry's documented extension exception. It includes `HOME_RENOVATION` as a purpose variant and a critical custom review criterion for the applicant/spouse ownership rule.
 - The FOPROLOS custom criterion is deliberately a review gate, not an automatically resolved eligibility fact. The matching flow must collect/resolve the required facts or leave the result conditional; a user should not be labelled eligible based on this criterion alone.
 - Regression tests assert these boundaries. CI is required before merge; this PR does not imply production deployment.
+
+
+## FOPROLOS rule completeness follow-up
+
+- The canonical catalogue now encodes the official household gross-income threshold as `monthlyGrossHouseholdIncomeSmigMultiple <= 6` rather than the string `UNKNOWN`. The amount still depends on the applicable SMIG value and household income calculation; no fixed TND threshold is inferred here.
+- Added purpose variants for land acquisition and purchase of a new primary home from an approved developer, alongside construction and extension.
+- These purpose variants do not independently establish eligibility: employment category, applicant/spouse ownership exception, purpose evidence and current programme availability still require evaluation/confirmation.
