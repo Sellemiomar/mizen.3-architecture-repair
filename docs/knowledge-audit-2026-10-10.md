@@ -97,3 +97,11 @@ The pages above establish what the providers publicly state; they do not indepen
 - The canonical catalogue now encodes the official household gross-income threshold as `monthlyGrossHouseholdIncomeSmigMultiple <= 6` rather than the string `UNKNOWN`. The amount still depends on the applicable SMIG value and household income calculation; no fixed TND threshold is inferred here.
 - Added purpose variants for land acquisition and purchase of a new primary home from an approved developer, alongside construction and extension.
 - These purpose variants do not independently establish eligibility: employment category, applicant/spouse ownership exception, purpose evidence and current programme availability still require evaluation/confirmation.
+
+
+## Follow-up audit — operational evidence and stack compatibility
+
+- Tightened the catalogue validator: `ACTIVE_CONFIRMED` now requires a fresh, direct-primary claim explicitly confirming current intake. A product page or merely non-empty source list is not sufficient evidence that applications are being accepted.
+- Removed unsupported hard incompatibility claims for BTS Crédit Professionnel / Diplômés with commercial bank credit and BFPME. No direct primary prohibition is registered, and the published project-cost thresholds overlap; both combinations remain `UNKNOWN` until the applicable conventions are confirmed.
+- Downgraded SOTUGAR + leasing from universally verified compatibility to conditional compatibility. Coverage depends on the specific guarantee mechanism, asset, leasing provider and partner approval.
+- Regression guards cover these boundaries. These changes do not establish current intake, applicant eligibility, or approval for any individual funding arrangement.
