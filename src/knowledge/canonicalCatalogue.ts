@@ -1057,7 +1057,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     },
     category: 'PUBLIC_FUNDING',
     financingDomains: ['HOME', 'PUBLIC_FUNDING'],
-    financingPurposes: ['HOME_CONSTRUCTION', 'FIRST_HOME'],
+    financingPurposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION'],
     applicantTypes: ['INDIVIDUAL'],
     assetTypes: ['REAL_ESTATE'],
     applicability: {
