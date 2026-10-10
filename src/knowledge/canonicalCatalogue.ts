@@ -1057,12 +1057,12 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     },
     category: 'PUBLIC_FUNDING',
     financingDomains: ['HOME', 'PUBLIC_FUNDING'],
-    financingPurposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION'],
+    financingPurposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION', 'LAND_ACQUISITION', 'HOME_PURCHASE'],
     applicantTypes: ['INDIVIDUAL'],
     assetTypes: ['REAL_ESTATE'],
     applicability: {
       domains: ['HOME', 'PUBLIC_FUNDING'],
-      purposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION'],
+      purposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION', 'LAND_ACQUISITION', 'HOME_PURCHASE'],
       applicantTypes: ['INDIVIDUAL'],
       unverifiedApplicability: true
     },
@@ -1093,10 +1093,10 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         id: 'crit_foprolos_income',
         field: 'monthlyGrossHouseholdIncomeSmigMultiple',
         operator: 'LTE',
-        expectedValue: 'UNKNOWN',
+        expectedValue: 6,
         critical: true,
         description: {
-          fr: 'Revenu mensuel brut du ménage ne dépassant pas six fois le SMIG selon la page officielle actuelle.',
+          fr: 'Revenu mensuel brut du ménage, conjoint inclus le cas échéant, ne dépassant pas six fois le SMIG selon la page officielle actuelle.',
           ar: 'الدخل الشهري الخام للأسرة لا يتجاوز ست مرات الأجر الأدنى المهني المضمون وفق الصفحة الرسمية الحالية.'
         }
       }
