@@ -13,7 +13,7 @@ import {
 } from '../src/engine/financingStackEngine';
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
 import { CANONICAL_PRODUCTS } from '../src/knowledge/canonicalCatalogue';
-import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
+import { getStackCompatibility, getAllCompatibilityRules } from '../src/knowledge/stackCompatibility';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -168,6 +168,11 @@ assert(matrixFallback.compatibilityStatus === 'POTENTIALLY_COMPATIBLE', 'Local c
 
 // Unsupported combinations must not remain marked as verified using an unrelated BFPME source.
 assert(getStackCompatibility('aneti_cheque_entreprendre', 'bts_diplomes').compatibilityStatus === 'UNKNOWN', 'ANETI + BTS stays unconfirmed without direct compatibility evidence');
+const anetiBtsMatrixRule = getAllCompatibilityRules().find(r =>
+  (r.programAId === 'aneti_cheque_entreprendre' && r.programBId === 'bts_diplomes') ||
+  (r.programAId === 'bts_diplomes' && r.programBId === 'aneti_cheque_entreprendre')
+);
+assert(anetiBtsMatrixRule?.compatibilityStatus === 'UNKNOWN', 'Raw compatibility matrix cannot expose ANETI + BTS as verified when evidence is unconfirmed');
 assert(getStackCompatibility('foprodi_dotation', 'leasing_vehicule_pro').compatibilityStatus === 'UNKNOWN', 'FOPRODI + leasing stays unconfirmed without direct compatibility evidence');
 assert(getStackCompatibility('foprodi_dotation', 'sicar_equity').compatibilityStatus === 'UNKNOWN', 'FOPRODI + SICAR stays unconfirmed without direct compatibility evidence');
 const stackResult = generateFinancingStacks({
