@@ -117,9 +117,9 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     active: true,
     status: 'VERIFIED',
     description: {
-      fr: 'Agence publique d\'accompagnement et d\'incitation à l\'auto-emploi accordant des bourses de démarrage et primes d\'étude (Chèque Entreprendre).',
-      ar: 'وكالة عمومية تعنى بمرافقة وتأطير الباعثين الشبان وإسناد صكوك المرافقة ومنح دراسة الجدوى.',
-      en: 'Public national agency for employment and self-employment promotion.'
+      fr: 'Agence publique chargée de l’emploi et de l’accompagnement vers l’auto-emploi. Les modalités financières précises du Chèque Entreprendre restent à vérifier sur une source primaire accessible.',
+      ar: 'وكالة عمومية تُعنى بالتشغيل والمرافقة نحو العمل المستقل. ولا تزال الشروط المالية الدقيقة لصك المبادرة بحاجة إلى التثبت من مصدر أولي متاح.',
+      en: 'Public employment and self-employment support agency. Specific financial terms for Chèque Entreprendre remain unverified against an accessible primary source.'
     },
     sources: [
       {
@@ -1062,11 +1062,22 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     assetTypes: ['REAL_ESTATE'],
     applicability: {
       domains: ['HOME', 'PUBLIC_FUNDING'],
-      purposes: ['HOME_CONSTRUCTION', 'FIRST_HOME'],
+      purposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION'],
       applicantTypes: ['INDIVIDUAL'],
-      isFirstPropertyOnly: true
+      unverifiedApplicability: true
     },
     criteria: [
+      {
+        id: 'crit_foprolos_household_ownership',
+        field: 'foprolosHouseholdOwnershipEligibility',
+        operator: 'CUSTOM',
+        expectedValue: 'APPLICANT_AND_SPOUSE_OWN_NO_HOME_EXCEPT_EXTENSION',
+        critical: true,
+        description: {
+          fr: 'Vérifier la condition de non-propriété du logement pour le salarié et son conjoint, avec l’exception applicable aux opérations d’extension; ne pas exclure automatiquement l’extension.',
+          ar: 'يجب التثبت من شرط عدم امتلاك مسكن للأجير وزوجه مع مراعاة استثناء التوسعة؛ ولا ينبغي استبعاد التوسعة تلقائياً.'
+        }
+      },
       {
         id: 'crit_foprolos_salaried',
         field: 'employmentStatus',
@@ -1407,6 +1418,83 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     lastReviewedAt: '2026-10-10',
     ruleStatus: 'PARTIALLY_VERIFIED',
     operationalStatus: 'ACTIVE_NOT_CONFIRMED'
+  },
+  {
+    id: 'aneti_cheque_entreprendre',
+    providerId: 'aneti',
+    name: {
+      fr: 'ANETI — Chèque Entreprendre (modalités à confirmer)',
+      ar: 'الوكالة الوطنية للتشغيل — صك المبادرة (الشروط قيد التثبت)',
+      en: 'ANETI — Chèque Entreprendre (terms to be confirmed)'
+    },
+    shortDescription: {
+      fr: 'Référence de programme conservée pour audit. La nature exacte de l’aide, ses montants, bénéficiaires et conditions d’octroi ne sont pas suffisamment vérifiés par une source primaire accessible; ne pas l’afficher comme financement disponible.',
+      ar: 'تم الاحتفاظ بمرجع البرنامج لأغراض التدقيق. لم يتم التثبت بما يكفي من طبيعة المساعدة ومبالغها والمستفيدين وشروطها من مصدر أولي متاح؛ لذلك لا ينبغي عرضه كتمويل متاح.',
+      en: 'Programme reference retained for audit. The exact support type, amounts, beneficiaries and award conditions are not sufficiently verified from an accessible primary source; do not present it as available funding.'
+    },
+    category: 'PUBLIC_FUNDING',
+    financingDomains: ['PUBLIC_FUNDING', 'BUSINESS'],
+    financingPurposes: ['BUSINESS_CREATION'],
+    applicantTypes: [],
+    applicability: {
+      domains: ['PUBLIC_FUNDING', 'BUSINESS'],
+      purposes: ['BUSINESS_CREATION'],
+      applicantTypes: [],
+      unverifiedApplicability: true
+    },
+    criteria: [
+      {
+        id: 'crit_aneti_cheeque_terms_unverified',
+        field: 'anetiChèqueEntreprendreEligibility',
+        operator: 'CUSTOM',
+        expectedValue: 'UNVERIFIED',
+        critical: true,
+        description: {
+          fr: 'Éligibilité, nature de l’aide, montant et disponibilité à confirmer auprès de l’ANETI avant toute mise en correspondance.',
+          ar: 'يجب تأكيد الأهلية وطبيعة المساعدة والمبلغ والتوفر لدى الوكالة قبل أي مطابقة.',
+          en: 'Confirm eligibility, support type, amount and availability with ANETI before matching.'
+        }
+      }
+    ],
+    financialTerms: {
+      verification: [
+        { field: 'programExistence', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'amount', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'Referenced official page was not readable during this audit; no amount is asserted.' },
+        { field: 'supportType', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'Do not infer grant, loan or subsidy type from the programme name.' },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'operationalStatus', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] }
+      ]
+    },
+    verification: {
+      status: 'SOURCE_UNAVAILABLE',
+      fields: [
+        { field: 'programReference', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'amount', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'No amount published in an accessible source during this audit.' },
+        { field: 'supportType', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'Support mechanism not confirmed from a readable primary source.' },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'operationalStatus', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] }
+      ],
+      lastVerifiedAt: '2026-10-10'
+    },
+    sources: [
+      {
+        id: 'src_aneti_cheque_entreprendre_unavailable',
+        url: 'https://www.aneti.tn/fr/services/cheque-entreprendre',
+        title: 'ANETI — Chèque Entreprendre (source unavailable during audit)',
+        publisher: 'ANETI',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        language: 'fr',
+        retrievedAt: '2026-10-10',
+        lastVerifiedAt: '2026-10-10',
+        relevantSection: 'Reference URL retained; page content could not be verified during this audit.',
+        evidenceStatus: 'SOURCE_UNAVAILABLE'
+      }
+    ],
+    status: 'UNKNOWN',
+    lastCheckedAt: '2026-10-10',
+    lastReviewedAt: '2026-10-10',
+    ruleStatus: 'UNKNOWN',
+    operationalStatus: 'UNKNOWN'
   },
 ];
 
