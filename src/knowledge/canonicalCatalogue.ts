@@ -117,9 +117,9 @@ export const CANONICAL_PROVIDERS: FinancingProvider[] = [
     active: true,
     status: 'VERIFIED',
     description: {
-      fr: 'Agence publique d\'accompagnement et d\'incitation à l\'auto-emploi accordant des bourses de démarrage et primes d\'étude (Chèque Entreprendre).',
-      ar: 'وكالة عمومية تعنى بمرافقة وتأطير الباعثين الشبان وإسناد صكوك المرافقة ومنح دراسة الجدوى.',
-      en: 'Public national agency for employment and self-employment promotion.'
+      fr: 'Agence publique chargée de l’emploi et de l’accompagnement vers l’auto-emploi. Les modalités financières précises du Chèque Entreprendre restent à vérifier sur une source primaire accessible.',
+      ar: 'وكالة عمومية تُعنى بالتشغيل والمرافقة نحو العمل المستقل. ولا تزال الشروط المالية الدقيقة لصك المبادرة بحاجة إلى التثبت من مصدر أولي متاح.',
+      en: 'Public employment and self-employment support agency. Specific financial terms for Chèque Entreprendre remain unverified against an accessible primary source.'
     },
     sources: [
       {
@@ -1057,16 +1057,27 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     },
     category: 'PUBLIC_FUNDING',
     financingDomains: ['HOME', 'PUBLIC_FUNDING'],
-    financingPurposes: ['HOME_CONSTRUCTION', 'FIRST_HOME'],
+    financingPurposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION', 'LAND_ACQUISITION', 'HOME_PURCHASE'],
     applicantTypes: ['INDIVIDUAL'],
     assetTypes: ['REAL_ESTATE'],
     applicability: {
       domains: ['HOME', 'PUBLIC_FUNDING'],
-      purposes: ['HOME_CONSTRUCTION', 'FIRST_HOME'],
+      purposes: ['HOME_CONSTRUCTION', 'FIRST_HOME', 'HOME_RENOVATION', 'LAND_ACQUISITION', 'HOME_PURCHASE'],
       applicantTypes: ['INDIVIDUAL'],
-      isFirstPropertyOnly: true
+      unverifiedApplicability: true
     },
     criteria: [
+      {
+        id: 'crit_foprolos_household_ownership',
+        field: 'foprolosHouseholdOwnershipEligibility',
+        operator: 'CUSTOM',
+        expectedValue: 'APPLICANT_AND_SPOUSE_OWN_NO_HOME_EXCEPT_EXTENSION',
+        critical: true,
+        description: {
+          fr: 'Vérifier la condition de non-propriété du logement pour le salarié et son conjoint, avec l’exception applicable aux opérations d’extension; ne pas exclure automatiquement l’extension.',
+          ar: 'يجب التثبت من شرط عدم امتلاك مسكن للأجير وزوجه مع مراعاة استثناء التوسعة؛ ولا ينبغي استبعاد التوسعة تلقائياً.'
+        }
+      },
       {
         id: 'crit_foprolos_salaried',
         field: 'employmentStatus',
@@ -1082,10 +1093,10 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         id: 'crit_foprolos_income',
         field: 'monthlyGrossHouseholdIncomeSmigMultiple',
         operator: 'LTE',
-        expectedValue: 'UNKNOWN',
+        expectedValue: 6,
         critical: true,
         description: {
-          fr: 'Revenu mensuel brut du ménage ne dépassant pas six fois le SMIG selon la page officielle actuelle.',
+          fr: 'Revenu mensuel brut du ménage, conjoint inclus le cas échéant, ne dépassant pas six fois le SMIG selon la page officielle actuelle.',
           ar: 'الدخل الشهري الخام للأسرة لا يتجاوز ست مرات الأجر الأدنى المهني المضمون وفق الصفحة الرسمية الحالية.'
         }
       }
@@ -1319,8 +1330,172 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     ],
     status: 'ACTIVE',
     lastCheckedAt: '2026-10-08'
-  }
+  },
 
+  // Crédit sur l’honneur: official launch notice confirms existence and tiered maxima,
+  // but detailed eligibility/application rules remain to be reconciled to the decree and BCT circular.
+  {
+    id: 'bts_credit_sur_honneur',
+    providerId: 'bts',
+    name: {
+      fr: 'BTS — Crédit sur l’honneur',
+      ar: 'البنك التونسي للتضامن — قرض على الشرف',
+      en: 'BTS Honour Loan'
+    },
+    shortDescription: {
+      fr: 'Financement annoncé sans intérêts et sans garanties. Plafond annoncé jusqu’à 10 000 TND pour les micro-projets et 25 000 TND pour les PME et entreprises communautaires; conditions détaillées à confirmer.',
+      ar: 'تمويل معلن دون فوائد ودون ضمانات. سقف معلن يصل إلى 10 آلاف دينار للمشاريع الصغرى و25 ألف دينار للمؤسسات الصغرى والمتوسطة والمؤسسات الأهلية؛ الشروط التفصيلية قيد التحقق.',
+      en: 'Announced interest-free, unsecured financing with tiered maxima; detailed eligibility remains to be verified.'
+    },
+    category: 'BUSINESS',
+    financingDomains: ['BUSINESS', 'MICROFINANCE'],
+    financingPurposes: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION', 'WORKING_CAPITAL', 'EQUIPMENT_PURCHASE'],
+    applicantTypes: ['INDIVIDUAL', 'BUSINESS', 'MICRO_ENTERPRISE', 'COOPERATIVE'],
+    applicability: {
+      domains: ['BUSINESS', 'MICROFINANCE'],
+      purposes: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION', 'WORKING_CAPITAL', 'EQUIPMENT_PURCHASE'],
+      applicantTypes: ['INDIVIDUAL', 'BUSINESS', 'MICRO_ENTERPRISE', 'COOPERATIVE'],
+      unverifiedApplicability: true
+    },
+    criteria: [],
+    financialTerms: {
+      rate: {
+        type: 'INTEREST_FREE_SUBSIDIZED',
+        value: 0,
+        currency: 'PERCENT',
+        explanation: {
+          fr: 'La BTS annonce un financement sans intérêts. Conditions réglementaires et frais éventuels à vérifier; ne pas déduire l’absence de frais annexes.',
+          ar: 'تعلن BTS عن تمويل دون فوائد. يجب التحقق من الشروط التنظيمية وأي مصاريف محتملة؛ لا يعني ذلك بالضرورة غياب المصاريف الملحقة.'
+        }
+      },
+      verification: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'amountTiers', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'], notes: { fr: 'Plafonds annoncés par catégorie; les règles détaillées de calcul et d’éligibilité doivent être vérifiées.', ar: 'السقوف معلنة حسب الفئة؛ يجب التثبت من قواعد الحساب والأهلية التفصيلية.' } },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'durationMonths', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'fees', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] }
+      ]
+    },
+    guarantees: [
+      {
+        id: 'guar_none_honneur',
+        type: 'NONE',
+        description: {
+          fr: 'La BTS annonce le dispositif comme sans garanties, sous réserve des conditions réglementaires applicables.',
+          ar: 'تعلن BTS أن الآلية دون ضمانات، مع مراعاة الشروط التنظيمية المعمول بها.'
+        },
+        mandatory: false
+      }
+    ],
+    verification: {
+      status: 'PARTIALLY_VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'amountTiers', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'rate', status: 'VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'durationMonths', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] }
+      ],
+      lastVerifiedAt: '2026-10-10'
+    },
+    sources: [
+      {
+        id: 'src_bts_credit_sur_honneur_2026',
+        url: 'https://www.bts.com.tn/actualites/la-bts-lance-le-dispositif-du-credit-sur-lhonneur-MTA',
+        title: 'BTS — Lancement du Crédit sur l’honneur',
+        publisher: 'Banque Tunisienne de Solidarité',
+        sourceType: 'OFFICIAL_NOTICE',
+        language: 'fr',
+        publishedAt: '2026-09-30',
+        retrievedAt: '2026-10-10',
+        lastVerifiedAt: '2026-10-10',
+        relevantSection: 'Décret n° 2026-148 du 23 juillet 2026 et circulaire BCT n° 08 de 2026 du 1er septembre 2026',
+        evidenceStatus: 'VERIFIED'
+      }
+    ],
+    status: 'ACTIVE',
+    lastCheckedAt: '2026-10-10',
+    lastReviewedAt: '2026-10-10',
+    ruleStatus: 'PARTIALLY_VERIFIED',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED'
+  },
+  {
+    id: 'aneti_cheque_entreprendre',
+    providerId: 'aneti',
+    name: {
+      fr: 'ANETI — Chèque Entreprendre (modalités à confirmer)',
+      ar: 'الوكالة الوطنية للتشغيل — صك المبادرة (الشروط قيد التثبت)',
+      en: 'ANETI — Chèque Entreprendre (terms to be confirmed)'
+    },
+    shortDescription: {
+      fr: 'Référence de programme conservée pour audit. La nature exacte de l’aide, ses montants, bénéficiaires et conditions d’octroi ne sont pas suffisamment vérifiés par une source primaire accessible; ne pas l’afficher comme financement disponible.',
+      ar: 'تم الاحتفاظ بمرجع البرنامج لأغراض التدقيق. لم يتم التثبت بما يكفي من طبيعة المساعدة ومبالغها والمستفيدين وشروطها من مصدر أولي متاح؛ لذلك لا ينبغي عرضه كتمويل متاح.',
+      en: 'Programme reference retained for audit. The exact support type, amounts, beneficiaries and award conditions are not sufficiently verified from an accessible primary source; do not present it as available funding.'
+    },
+    category: 'PUBLIC_FUNDING',
+    financingDomains: ['PUBLIC_FUNDING', 'BUSINESS'],
+    financingPurposes: ['BUSINESS_CREATION'],
+    applicantTypes: ['BUSINESS'],
+    applicability: {
+      domains: ['PUBLIC_FUNDING', 'BUSINESS'],
+      purposes: ['BUSINESS_CREATION'],
+      applicantTypes: ['BUSINESS'],
+      unverifiedApplicability: true
+    },
+    criteria: [
+      {
+        id: 'crit_aneti_cheeque_terms_unverified',
+        field: 'anetiChèqueEntreprendreEligibility',
+        operator: 'CUSTOM',
+        expectedValue: 'UNVERIFIED',
+        critical: true,
+        description: {
+          fr: 'Éligibilité, nature de l’aide, montant et disponibilité à confirmer auprès de l’ANETI avant toute mise en correspondance.',
+          ar: 'يجب تأكيد الأهلية وطبيعة المساعدة والمبلغ والتوفر لدى الوكالة قبل أي مطابقة.',
+          en: 'Confirm eligibility, support type, amount and availability with ANETI before matching.'
+        }
+      }
+    ],
+    financialTerms: {
+      verification: [
+        { field: 'programExistence', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'amount', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'Referenced official page was not readable during this audit; no amount is asserted.' },
+        { field: 'supportType', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'Do not infer grant, loan or subsidy type from the programme name.' },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'operationalStatus', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] }
+      ]
+    },
+    verification: {
+      status: 'SOURCE_UNAVAILABLE',
+      fields: [
+        { field: 'programReference', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'amount', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'No amount published in an accessible source during this audit.' },
+        { field: 'supportType', status: 'SOURCE_UNAVAILABLE', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'], unknownReason: 'Support mechanism not confirmed from a readable primary source.' },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] },
+        { field: 'operationalStatus', status: 'UNVERIFIED', sourceIds: ['src_aneti_cheque_entreprendre_unavailable'] }
+      ],
+      lastVerifiedAt: '2026-10-10'
+    },
+    sources: [
+      {
+        id: 'src_aneti_cheque_entreprendre_unavailable',
+        url: 'https://www.aneti.tn/fr/services/cheque-entreprendre',
+        title: 'ANETI — Chèque Entreprendre (source unavailable during audit)',
+        publisher: 'ANETI',
+        sourceType: 'OFFICIAL_PRODUCT_PAGE',
+        language: 'fr',
+        retrievedAt: '2026-10-10',
+        lastVerifiedAt: '2026-10-10',
+        relevantSection: 'Reference URL retained; page content could not be verified during this audit.',
+        evidenceStatus: 'SOURCE_UNAVAILABLE'
+      }
+    ],
+    status: 'UNKNOWN',
+    lastCheckedAt: '2026-10-10',
+    lastReviewedAt: '2026-10-10',
+    ruleStatus: 'UNKNOWN',
+    operationalStatus: 'UNKNOWN'
+  },
 ];
 
 export const CANONICAL_METADATA: CatalogueMetadata = {

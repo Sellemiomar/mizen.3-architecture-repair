@@ -142,11 +142,11 @@ const DOCUMENTED_COMPATIBILITY_RULES: StackCompatibilityEvaluation[] = [
   {
     programAId: 'bts_diplomes',
     programBId: 'aneti_cheque_entreprendre',
-    compatibilityStatus: 'VERIFIED_COMPATIBLE',
-    confidence: 'HIGH',
+    compatibilityStatus: 'UNKNOWN',
+    confidence: 'LOW',
     rationale: {
-      fr: "Cumul expressément encouragé : la prime d'étude ANETI ou bourse d'accompagnement complète le micro-crédit d'investissement BTS.",
-      ar: "جمع مشجع عليه قانوناً : منحة المرافقة أو دراسة المشروع من ANETI تكمل قرض الاستثمار من BTS."
+      fr: "Aucune source primaire actuellement enregistrée ne prouve explicitement le cumul sur un même projet. Confirmer auprès de l’ANETI et de la BTS avant de présenter un montage combiné.",
+      ar: "لا يثبت أي مصدر أولي مسجل حالياً الجمع صراحةً في المشروع نفسه. يجب التأكيد لدى ANETI وBTS قبل عرض تركيبة تمويل مشتركة."
     },
     isHistoricalOnly: false
   }

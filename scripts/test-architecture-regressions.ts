@@ -218,6 +218,14 @@ assert(bts?.maxFinancingPercentage === 90, 'BTS current Crédit Professionnel fi
 assert(bts?.durationMonthsMax === 84, 'BTS current Crédit Professionnel duration is capped at 7 years');
 assert(bts?.gracePeriodMonthsMin === 3 && bts?.gracePeriodMonthsMax === 12, 'BTS current grace period is 3-12 months');
 assert(bts?.estimatedRateAnnual === undefined, 'BTS does not expose an unsupported numeric fixed rate');
+const honour = programs.find(p => p.id === 'bts_credit_sur_honneur');
+assert(honour !== undefined, 'BTS Crédit sur l’honneur exists as a distinct product');
+assert(honour?.maxAmount === 0, 'Tiered Crédit sur l’honneur maxima are not collapsed into one misleading universal ceiling');
+assert(honour?.rateType === 'interest_free' && honour?.estimatedRateAnnual === 0, 'Crédit sur l’honneur is represented as interest-free without inventing a payment schedule');
+assert(honour?.verification.status === 'PARTIALLY_VERIFIED', 'Crédit sur l’honneur keeps detailed eligibility partially verified');
+assert(CLAIMS_REPOSITORY.getAllClaims('bts_credit_sur_honneur').some(c => c.field === 'maxFinancingAmountMicroProject' && c.value === 10000), 'Micro-project tiered ceiling is source-tracked at 10,000 DT');
+assert(CLAIMS_REPOSITORY.getAllClaims('bts_credit_sur_honneur').some(c => c.field === 'maxFinancingAmountSmeCommunity' && c.value === 25000), 'SME/community tiered ceiling is source-tracked at 25,000 DT');
+assert(CLAIMS_REPOSITORY.getAllClaims('foprodi_dotation').some(c => c.field === 'gracePeriodMonths' && c.value === 60), 'FOPRODI five-year grace period is source-tracked');
 
 const bhAuto = programs.find(p => p.id === 'banque_credit_auto');
 assert(bhAuto?.maxAmount === 0, 'BH AUTO unknown financing ceiling is represented as UNKNOWN, not a fake number');
@@ -226,6 +234,20 @@ assert(bhAuto?.gracePeriodMonthsMin === 0 && bhAuto?.gracePeriodMonthsMax === 0,
 assert(bhAuto?.rateType === 'unknown', 'BH AUTO does not expose a fabricated TMM or margin');
 assert(!String(bhAuto?.rateDescription.fr || '').includes('7,99'), 'BH AUTO has no stale 7.99% TMM literal');
 assert(!String(bhAuto?.rateDescription.fr || '').includes('3,0%'), 'BH AUTO has no stale 3.0% margin literal');
+
+const foprolosCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'foprolos_construction');
+assert(foprolosCanonical?.applicability.unverifiedApplicability === true, 'FOPROLOS applicability remains explicitly review-gated while its full purpose/ownership rules are reconciled');
+assert(foprolosCanonical?.applicability.isFirstPropertyOnly !== true, 'FOPROLOS does not blanket-exclude the documented home-extension exception');
+assert(foprolosCanonical?.financingPurposes.includes('HOME_RENOVATION') === true, 'FOPROLOS catalogue includes the extension/renovation purpose variant');
+assert(foprolosCanonical?.criteria.some(c => c.id === 'crit_foprolos_household_ownership' && c.critical) === true, 'FOPROLOS household ownership condition is a critical review gate');
+assert(foprolosCanonical?.financingPurposes.includes('LAND_ACQUISITION') === true && foprolosCanonical?.financingPurposes.includes('HOME_PURCHASE') === true, 'FOPROLOS includes land acquisition and new-home purchase purposes');
+assert(foprolosCanonical?.criteria.some(c => c.id === 'crit_foprolos_income' && c.operator === 'LTE' && c.expectedValue === 6) === true, 'FOPROLOS household gross income cap is encoded as six times SMIG, not UNKNOWN');
+
+const anetiCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'aneti_cheque_entreprendre');
+assert(anetiCanonical?.status === 'UNKNOWN' && anetiCanonical?.operationalStatus === 'UNKNOWN', 'ANETI Chèque Entreprendre is not presented as operational without verified source evidence');
+assert(anetiCanonical?.applicantTypes.includes('BUSINESS') === true && anetiCanonical?.applicability.unverifiedApplicability === true && anetiCanonical?.status === 'UNKNOWN', 'ANETI audit placeholder remains structurally valid but eligibility/operational status are unverified');
+assert(anetiCanonical?.financialTerms.amount === undefined, 'ANETI unknown amount is omitted rather than fabricated');
+assert(anetiCanonical?.verification.status === 'SOURCE_UNAVAILABLE', 'ANETI source availability is explicitly recorded');
 
 const firstHome = programs.find(p => p.id === 'premier_logement');
 assert(firstHome?.maxAmount === 40000, 'BH Al Masken Al Awal own-financing loan ceiling is 40,000 DT');
@@ -249,6 +271,7 @@ assert(sotugar?.maxAmount === 0, 'SOTUGAR has no fabricated borrower financing a
 const sotugarCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'sotugar_guarantee');
 assert(String(sotugarCanonical?.shortDescription?.en || '').includes('depends on the specific fund') === true, 'SOTUGAR coverage is explicitly mechanism-specific, not a universal percentage');
 assert(sotugarCanonical?.financialTerms.verification.some(v => v.field === 'fees' && v.status === 'UNVERIFIED') === true, 'SOTUGAR generic fees remain unknown unless a mechanism-specific source verifies them');
+assert(CLAIMS_REPOSITORY.getAllClaims('sotugar_guarantee').some(c => c.field === 'smeGuaranteeCoverageRangeMechanismSpecific' && c.ruleStatus === 'PARTIALLY_VERIFIED'), 'SOTUGAR SME coverage range is source-tracked as mechanism-specific, not a universal current rate');
 
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourse?.maxAmount === 0, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling; zero denotes no fixed total amount');
