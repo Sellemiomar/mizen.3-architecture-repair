@@ -82,3 +82,12 @@ The pages above establish what the providers publicly state; they do not indepen
 | SICAR/FCPR | Legal mechanism verified; individual fund offer/availability not verified | Model as fund-specific equity/quasi-equity; no universal amount/rate |
 | Leasing | Provider pages available; terms vary by provider and asset | Keep UBCI/BTK terms out of TLF record; do not count lease amount as unrestricted cash |
 | FOPROLOS | Current high-level eligibility and purposes verified by Ministry | Add spouse/household ownership gate and complete purpose coverage before calling eligibility comprehensive |
+
+
+## Runtime guardrails added in follow-up
+
+- `aneti_cheque_entreprendre` now exists as a canonical audit placeholder so compatibility references no longer point to a nonexistent product. It has no asserted amount or support type, empty applicant types, `unverifiedApplicability: true`, `status: UNKNOWN`, `operationalStatus: UNKNOWN`, and a `SOURCE_UNAVAILABLE` evidence record. It must not be surfaced as available funding until primary evidence is verified.
+- ANETI's provider description no longer asserts that the programme necessarily awards startup grants or study premiums.
+- `foprolos_construction` no longer applies `isFirstPropertyOnly: true`, which could incorrectly exclude the Ministry's documented extension exception. It includes `HOME_RENOVATION` as a purpose variant and a critical custom review criterion for the applicant/spouse ownership rule.
+- The FOPROLOS custom criterion is deliberately a review gate, not an automatically resolved eligibility fact. The matching flow must collect/resolve the required facts or leave the result conditional; a user should not be labelled eligible based on this criterion alone.
+- Regression tests assert these boundaries. CI is required before merge; this PR does not imply production deployment.
