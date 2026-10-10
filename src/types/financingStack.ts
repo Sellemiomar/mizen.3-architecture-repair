@@ -48,9 +48,14 @@ export interface StackCompatibilityEvaluation {
 }
 
 export interface FundingGapResult {
+  /** False when the requested funding amount is missing, negative, or non-finite. */
+  inputValid: boolean;
   requiredFunding: number;
+  /** Sum of explicitly confirmed sources before comparing it with the requirement. */
   verifiedCashFunding: number;
   remainingFundingGap: number;
+  /** Confirmed funding in excess of the requirement; never silently discarded. */
+  fundingSurplus: number;
   cashCoverageRatio: number;
   guaranteeCoverageAmount: number;
   hasDoubleCounting: boolean;
@@ -66,6 +71,7 @@ export interface FinancingStackCandidate {
   requiredFunding: number;
   verifiedCashFunding: number;
   remainingFundingGap: number;
+  fundingSurplus: number;
   cashCoverageRatio: number;
   promoterContribution?: number;
   components: StackComponent[];
