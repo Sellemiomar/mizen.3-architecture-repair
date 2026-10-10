@@ -247,6 +247,23 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
   const validation = validateKnowledgeCatalogue(CANONICAL_PRODUCTS, CANONICAL_PROVIDERS);
   assert(validation.valid, 'validateKnowledgeCatalogue passes with 0 critical errors');
 
+  // A generic product-page source must not be enough to claim that applications
+  // are currently open. The validator requires a fresh, direct-primary intake claim.
+  const unsupportedActiveProduct = structuredClone(CANONICAL_PRODUCTS[0]);
+  unsupportedActiveProduct.id = 'synthetic_active_without_intake_claim';
+  unsupportedActiveProduct.operationalStatus = 'ACTIVE_CONFIRMED';
+  const unsupportedActiveValidation = validateKnowledgeCatalogue(
+    [...CANONICAL_PRODUCTS, unsupportedActiveProduct],
+    CANONICAL_PROVIDERS
+  );
+  assert(
+    unsupportedActiveValidation.errors.some(e =>
+      e.programId === unsupportedActiveProduct.id &&
+      e.code === 'UNSUPPORTED_OPERATIONAL_STATUS'
+    ),
+    'Operational status: ACTIVE_CONFIRMED is rejected without fresh direct-primary intake evidence'
+  );
+
   const pipeline = new ResearchImportPipeline();
   const importResult = pipeline.processResearchBatch([
     {
