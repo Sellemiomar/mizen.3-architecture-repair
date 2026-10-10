@@ -1105,7 +1105,11 @@ const compatStartupBank = getStackCompatibility('startup_guarantee_fund', 'bh_ba
 assert(compatStartupBank.compatibilityStatus === 'UNKNOWN', 'AA.4. Startup Guarantee + Bank is UNKNOWN');
 
 // 2. Guarantee Cash Gap Invariant (Guarantee is NOT cash)
-const compBfpmeDebt = mapProgramToStackComponent(authoritativeBfpme, { financingRequested: 650000, totalProjectCost: 1000000 });
+const compBfpmeDebt = {
+  ...mapProgramToStackComponent(authoritativeBfpme, { financingRequested: 650000, totalProjectCost: 1000000 }),
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED'
+};
 const sotugarProgramObj = FINANCING_PROGRAMS.find(p => p.id === 'sotugar_guarantee')!;
 const compSotugar = mapProgramToStackComponent(sotugarProgramObj, { financingRequested: 650000, totalProjectCost: 1000000 });
 
