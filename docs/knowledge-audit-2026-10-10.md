@@ -41,3 +41,44 @@ Scope: source-by-source review of selected Tunisian financing mechanisms. This i
 ## Evidence status note
 
 The pages above establish what the providers publicly state; they do not independently establish current acceptance of every application, all fee variations, or every compatibility combination. Detailed legal eligibility for Crédit sur l’honneur remains open until the decree and BCT circular are read directly and reconciled to BTS's implementation process.
+
+
+## Follow-up audit: ANETI, SICAR/FCPR, leasing and housing
+
+### ANETI — Chèque Entreprendre
+
+- The catalogue currently describes ANETI as granting “bourses de démarrage et primes d'étude” and references an official Chèque Entreprendre page at https://www.aneti.tn/fr/services/cheque-entreprendre.
+- That exact URL was inaccessible during this review and targeted searches did not return a readable official page. This is **source unavailable**, not evidence that the scheme is inactive or nonexistent.
+- The compatibility matrix references `aneti_cheque_entreprendre`, but the canonical product catalogue does not define a product with that ID. Treat it as an orphan compatibility reference until a canonical product record and source-backed role are added.
+- Do not assert an amount, payment type, current intake, or compatibility with BTS/FOPRODI until an accessible ANETI primary source or written agency confirmation is captured. In particular, do not label it a cash grant or a loan from the name alone.
+
+### SICAR / FCPR — equity and quasi-equity, not a standard loan
+
+- The Ministry of Finance's published consolidated Investment Companies Law (Law 88-92 as amended) describes SICAR participation through subscription/acquisition of equity-like instruments and permits certain shareholder-current-account advances to companies in which the SICAR holds a participation. It also describes participation agreements and retrocession terms.
+- Official reference: https://www.finances.gov.tn/sites/default/files/5.pdf (especially Articles 21–22). Ministry overview of SICAR/FCPR distinctions: https://www.finances.gov.tn/ar/altqdym-alam
+- Safe model: represent a SICAR/FCPR offer as potential equity/quasi-equity with fund-specific investment mandate, due diligence, negotiation and exit/retrocession terms. Do not publish a universal ceiling, interest rate, approval rule or generic eligibility threshold without a named fund's current investment policy.
+- A law permitting an instrument is not evidence that a particular fund is investing now, that a given applicant qualifies, or that the investment can be stacked with a named public scheme. Keep any such pair UNKNOWN unless the actual scheme rules or written confirmation establish otherwise.
+
+### Leasing — provider-specific terms and asset-basis controls
+
+- UBCI's current professional leasing page advertises financing up to 100% of the asset amount excluding VAT, with terms depending on asset type (vehicles 3–5 years, professional equipment 3–7 years, professional real estate 5–10 years). Eligibility includes resident businesses/professionals with stable regular income domiciled at UBCI and legal capacity to borrow. Source: https://www.ubci.tn/professionnels/financement/financer-mon-investissement/credit-bail/
+- BTK Leasing's equipment page describes equipment finance up to 100%, with contract duration up to five years depending on asset and operating cycle. Source: https://www.btkleasing.tn/nos-produits/leasing-equipement/
+- These are **provider- and asset-specific marketing terms**, not a universal Tunisian leasing rule and not necessarily the terms of the catalogue's TLF product `leasing_vehicule_pro`. Do not transfer UBCI/BTK caps, tenors or eligibility to TLF.
+- Leasing finances an identified asset under a lease/purchase-option contract; it is not unrestricted cash available to cover general project expenses. Record asset type, VAT basis, down payment, fees, rate/TEG and residual purchase value separately where verified.
+- SOTUGAR's eligibility for certain leasing transactions only supports a possible guarantee on an eligible lease under the applicable mechanism. It does not prove that a lease can be stacked with every loan, grant or equity source.
+
+### FOPROLOS — eligibility and purpose completeness
+
+- The Ministry's current FOPROLOS page says eligible salaried categories are those in covered non-agricultural sectors subject to the Labour Code; neither the applicant nor their spouse may own a home, except for home-extension operations; and gross monthly income including the spouse's income, where applicable, must not exceed six times SMIG. The page lists construction, extension, land for a primary home, and purchase of a new primary home from a ministry-approved property developer. Source: https://www.mehat.gov.tn/fr/principaux-secteurs/habitat/programmes-projets/foprolos/
+- The current catalogue entry `foprolos_construction` captures salaried status and the six-times-SMIG cap but does not encode the no-home-owned-by-applicant/spouse condition. Its stated purposes currently emphasize construction/first home and omit the page's extension, qualifying land acquisition, and new-home purchase routes.
+- Do not silently classify the existing entry as fully eligibility-complete. Next implementation should add the household ownership condition as a critical missing-input/eligibility rule and represent the additional purposes as distinct, source-backed products or explicitly supported purpose variants. The extension exception must not be blocked by a blanket “first property only” rule.
+- The ministry page links the 2016 implementing decree and 2023 amendment. The general page establishes the programme and high-level eligibility, but detailed financial figures should continue to cite the specific official flyer/legal text from which each term was extracted. A published scheme is not confirmation that every application is currently being accepted.
+
+## Audit disposition
+
+| Area | Disposition | Immediate product/data action |
+|---|---|---|
+| ANETI Chèque Entreprendre | SOURCE_UNAVAILABLE for exact page; current operational terms unconfirmed | Do not assert amounts or stacking; resolve the orphan `aneti_cheque_entreprendre` reference before surfacing it as a real product |
+| SICAR/FCPR | Legal mechanism verified; individual fund offer/availability not verified | Model as fund-specific equity/quasi-equity; no universal amount/rate |
+| Leasing | Provider pages available; terms vary by provider and asset | Keep UBCI/BTK terms out of TLF record; do not count lease amount as unrestricted cash |
+| FOPROLOS | Current high-level eligibility and purposes verified by Ministry | Add spouse/household ownership gate and complete purpose coverage before calling eligibility comprehensive |
