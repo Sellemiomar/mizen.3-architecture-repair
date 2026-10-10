@@ -392,7 +392,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       </h3>
                     </div>
                     <span className="text-[11px] font-semibold text-slate-500 shrink-0">
-                      {language === 'ar' ? 'فجوة نقدية نظرية' : 'Écart cash théorique'} : {stack.remainingFundingGap.toLocaleString('fr-FR')} DT
+                      {language === 'ar' ? 'يجب التحقق قبل تقدير الفجوة النقدية' : 'Écart cash à déterminer après vérification de compatibilité'}
                     </span>
                   </div>
 
