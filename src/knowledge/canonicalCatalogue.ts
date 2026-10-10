@@ -1435,11 +1435,11 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     category: 'PUBLIC_FUNDING',
     financingDomains: ['PUBLIC_FUNDING', 'BUSINESS'],
     financingPurposes: ['BUSINESS_CREATION'],
-    applicantTypes: [],
+    applicantTypes: ['BUSINESS'],
     applicability: {
       domains: ['PUBLIC_FUNDING', 'BUSINESS'],
       purposes: ['BUSINESS_CREATION'],
-      applicantTypes: [],
+      applicantTypes: ['BUSINESS'],
       unverifiedApplicability: true
     },
     criteria: [
