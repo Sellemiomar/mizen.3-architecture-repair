@@ -799,17 +799,26 @@ export function evaluateProgramCompatibility(
     const cost = applicant.totalProjectCost || 0;
     const isProjectCostOk = (!program.projectCostMin || cost >= program.projectCostMin) &&
                             (!program.projectCostMax || cost <= program.projectCostMax);
+    const minimum = program.projectCostMin?.toLocaleString('fr-TN');
+    const maximum = program.projectCostMax?.toLocaleString('fr-TN');
+    const publishedRange = minimum && maximum
+      ? `entre ${minimum} et ${maximum} TND`
+      : maximum
+        ? `plafonné à ${maximum} TND`
+        : minimum
+          ? `à partir de ${minimum} TND`
+          : 'selon les conditions publiées par la banque';
     if (isProjectCostOk) {
       amountStatus = 'PASS';
       matchedBecause.push({
-        fr: `Coût du logement (${cost.toLocaleString('fr-TN')} TND) dans la fourchette d'éligibilité Premier Logement (80k - 250k TND).`,
-        ar: `كلفة المسكن (${cost.toLocaleString('fr-TN')} د) ضمن النطاق المؤهل لبرنامج المسكن الأول.`
+        fr: `Coût du logement (${cost.toLocaleString('fr-TN')} TND) conforme au plafond Premier Logement (${publishedRange}).`,
+        ar: `كلفة المسكن (${cost.toLocaleString('fr-TN')} د) ضمن السقف المنشور لبرنامج المسكن الأول.`
       });
     } else {
       amountStatus = 'FAIL';
       const detail = {
-        fr: `Coût du logement (${cost.toLocaleString('fr-TN')} TND) hors barème Premier Logement (80k - 250k TND).`,
-        ar: `كلفة المسكن (${cost.toLocaleString('fr-TN')} د) خارج النطاق المؤهل للمسكن الأول.`
+        fr: `Coût du logement (${cost.toLocaleString('fr-TN')} TND) hors barème Premier Logement (${publishedRange}).`,
+        ar: `كلفة المسكن (${cost.toLocaleString('fr-TN')} د) خارج السقف المنشور لبرنامج المسكن الأول.`
       };
       financialDetails.push(detail);
       potentialIssues.push(detail);
