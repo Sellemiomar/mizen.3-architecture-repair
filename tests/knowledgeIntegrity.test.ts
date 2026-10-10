@@ -21,6 +21,7 @@ import { ApplicantProfile, FinancingProgram, Provider } from '../src/types/finan
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
 import { generateFinancingStacks } from '../src/engine/financingStackEngine';
+import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 const PROVIDERS = getAuthoritativeProviders();
 const FINANCING_PROGRAMS = getAuthoritativeFinancingPrograms();
 
@@ -262,6 +263,23 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
       e.code === 'UNSUPPORTED_OPERATIONAL_STATUS'
     ),
     'Operational status: ACTIVE_CONFIRMED is rejected without fresh direct-primary intake evidence'
+  );
+
+  // Do not convert an absence of stacking evidence into a hard incompatibility.
+  const btsBankCompatibility = getStackCompatibility('bts_diplomes', 'bh_bank_loan');
+  const btsBfpmeCompatibility = getStackCompatibility('bts_diplomes', 'bfpme_creation');
+  const sotugarLeasingCompatibility = getStackCompatibility('sotugar_guarantee', 'leasing_vehicule_pro');
+  assert(
+    btsBankCompatibility.compatibilityStatus === 'UNKNOWN',
+    'Stacking: BTS diplômés + commercial bank stays UNKNOWN without direct prohibition evidence'
+  );
+  assert(
+    btsBfpmeCompatibility.compatibilityStatus === 'UNKNOWN',
+    'Stacking: BTS + BFPME is not declared incompatible based on non-exclusive project-cost thresholds'
+  );
+  assert(
+    sotugarLeasingCompatibility.compatibilityStatus === 'POTENTIALLY_COMPATIBLE',
+    'Stacking: SOTUGAR + leasing remains conditional on eligible mechanism and asset'
   );
 
   const pipeline = new ResearchImportPipeline();
