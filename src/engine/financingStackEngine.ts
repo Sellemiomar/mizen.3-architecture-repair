@@ -93,11 +93,19 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
       continue;
     }
 
-    // An unknown/unresolved amount is not zero-valued financing and is not
-    // allowed to inherit the program ceiling merely because it exists.
+    // Only current, fully verified evidence AND explicitly confirmed live
+    // operations may contribute to the "verified cash" total. A known product
+    // ceiling or a partial verification is not evidence that funds are currently
+    // available to this applicant.
     if (typeof comp.allocatedAmount !== 'number' || comp.allocatedAmount <= 0) continue;
-    if (UNKNOWN_EVIDENCE.has(String(comp.evidenceStatus)) || comp.evidenceStatus === 'VERIFIED_HISTORICAL') continue;
-    if (comp.operationalStatus === 'HISTORICAL_ONLY' || comp.operationalStatus === 'INACTIVE_CONFIRMED') continue;
+    if (!['VERIFIED', 'VERIFIED_CURRENT'].includes(String(comp.evidenceStatus))) {
+      warnings.push(`Financement exclu du total confirmé : preuve actuelle complète non établie pour ${comp.programName.fr}.`);
+      continue;
+    }
+    if (comp.operationalStatus !== 'ACTIVE_CONFIRMED') {
+      warnings.push(`Financement exclu du total confirmé : disponibilité opérationnelle non confirmée pour ${comp.programName.fr}.`);
+      continue;
+    }
 
     verifiedCashFunding += comp.allocatedAmount;
   }

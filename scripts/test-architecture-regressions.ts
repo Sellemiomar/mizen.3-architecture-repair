@@ -158,6 +158,43 @@ const unknownCashGap = calculateFundingGap(100000, [{
 }]);
 assert(unknownCashGap.verifiedCashFunding === 0 && unknownCashGap.remainingFundingGap === 100000, 'UNKNOWN cash evidence never becomes verified funding');
 
+const operationallyUnconfirmedGap = calculateFundingGap(100000, [{
+  ...sotugarComponent,
+  programId: 'operationally-unconfirmed-cash',
+  role: 'DEBT',
+  isCashFunding: true,
+  allocatedAmount: 100000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+  evidenceConfidence: 'HIGH'
+}]);
+assert(operationallyUnconfirmedGap.verifiedCashFunding === 0 && operationallyUnconfirmedGap.remainingFundingGap === 100000, 'ACTIVE_NOT_CONFIRMED source is excluded from confirmed cash totals');
+assert(operationallyUnconfirmedGap.warnings.some(w => w.includes('disponibilité opérationnelle non confirmée')), 'Unconfirmed operational status explains why cash was excluded');
+
+const partiallyVerifiedGap = calculateFundingGap(100000, [{
+  ...sotugarComponent,
+  programId: 'partially-verified-cash',
+  role: 'DEBT',
+  isCashFunding: true,
+  allocatedAmount: 100000,
+  evidenceStatus: 'PARTIALLY_VERIFIED',
+  operationalStatus: 'ACTIVE_CONFIRMED',
+  evidenceConfidence: 'MEDIUM'
+}]);
+assert(partiallyVerifiedGap.verifiedCashFunding === 0 && partiallyVerifiedGap.remainingFundingGap === 100000, 'PARTIALLY_VERIFIED source is excluded from confirmed cash totals');
+
+const fullyConfirmedGap = calculateFundingGap(100000, [{
+  ...sotugarComponent,
+  programId: 'fully-confirmed-cash',
+  role: 'DEBT',
+  isCashFunding: true,
+  allocatedAmount: 100000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED',
+  evidenceConfidence: 'HIGH'
+}]);
+assert(fullyConfirmedGap.verifiedCashFunding === 100000 && fullyConfirmedGap.remainingFundingGap === 0, 'Only current verified evidence with ACTIVE_CONFIRMED status counts as confirmed cash');
+
 // 7. UNKNOWN compatibility cannot become a viable stack.
 const unknownCompat = getStackCompatibility('foprodi_dotation', 'banque_zitouna_mourabaha');
 assert(unknownCompat.compatibilityStatus === 'UNKNOWN', 'Undocumented FOPRODI + Mourabaha compatibility remains UNKNOWN');
