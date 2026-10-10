@@ -107,9 +107,16 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
       continue;
     }
 
-    // A positive amount is necessary but not sufficient: only current, fully
-    // verified evidence and explicitly confirmed live operations count as cash.
-    if (typeof comp.allocatedAmount !== 'number' || !Number.isFinite(comp.allocatedAmount) || comp.allocatedAmount <= 0) continue;
+    // Candidate allocation and an active program are not proof that this
+    // applicant has secured funding. Require an explicit applicant-specific
+    // commitment amount and COMMITTED status before counting any cash.
+    const commitment = comp.confirmedCommitmentAmount;
+    if (comp.fundingCommitmentStatus !== 'COMMITTED' || typeof commitment !== 'number' || !Number.isFinite(commitment) || commitment <= 0) {
+      if (typeof comp.allocatedAmount === 'number' && Number.isFinite(comp.allocatedAmount) && comp.allocatedAmount > 0) {
+        warnings.push(`Financement potentiel exclu du total confirmé : aucun engagement individuel documenté pour ${comp.programName.fr}.`);
+      }
+      continue;
+    }
     if (!['VERIFIED', 'VERIFIED_CURRENT'].includes(String(comp.evidenceStatus))) {
       warnings.push(`Financement exclu du total confirmé : preuve actuelle complète non établie pour ${comp.programName.fr}.`);
       continue;
@@ -119,7 +126,7 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
       continue;
     }
 
-    verifiedCashFunding += comp.allocatedAmount;
+    verifiedCashFunding += commitment;
   }
 
   // Keep the actual confirmed sum. Capping it at the requirement concealed
