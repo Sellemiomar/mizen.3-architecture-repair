@@ -218,6 +218,14 @@ assert(bts?.maxFinancingPercentage === 90, 'BTS current Crédit Professionnel fi
 assert(bts?.durationMonthsMax === 84, 'BTS current Crédit Professionnel duration is capped at 7 years');
 assert(bts?.gracePeriodMonthsMin === 3 && bts?.gracePeriodMonthsMax === 12, 'BTS current grace period is 3-12 months');
 assert(bts?.estimatedRateAnnual === undefined, 'BTS does not expose an unsupported numeric fixed rate');
+const honour = programs.find(p => p.id === 'bts_credit_sur_honneur');
+assert(honour !== undefined, 'BTS Crédit sur l’honneur exists as a distinct product');
+assert(honour?.maxAmount === 0, 'Tiered Crédit sur l’honneur maxima are not collapsed into one misleading universal ceiling');
+assert(honour?.rateType === 'fixed' && honour?.estimatedRateAnnual === 0, 'Crédit sur l’honneur is represented as interest-free without inventing a payment schedule');
+assert(honour?.verification.status === 'PARTIALLY_VERIFIED', 'Crédit sur l’honneur keeps detailed eligibility partially verified');
+assert(CLAIMS_REPOSITORY.getAllClaims('bts_credit_sur_honneur').some(c => c.field === 'maxFinancingAmountMicroProject' && c.value === 10000), 'Micro-project tiered ceiling is source-tracked at 10,000 DT');
+assert(CLAIMS_REPOSITORY.getAllClaims('bts_credit_sur_honneur').some(c => c.field === 'maxFinancingAmountSmeCommunity' && c.value === 25000), 'SME/community tiered ceiling is source-tracked at 25,000 DT');
+assert(CLAIMS_REPOSITORY.getAllClaims('foprodi_dotation').some(c => c.field === 'gracePeriodMonths' && c.value === 60), 'FOPRODI five-year grace period is source-tracked');
 
 const bhAuto = programs.find(p => p.id === 'banque_credit_auto');
 assert(bhAuto?.maxAmount === 0, 'BH AUTO unknown financing ceiling is represented as UNKNOWN, not a fake number');
