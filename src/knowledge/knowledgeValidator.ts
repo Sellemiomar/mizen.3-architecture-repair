@@ -100,15 +100,35 @@ export function validateKnowledgeCatalogue(
       }
     }
 
-    // 4. Current operational status inferred without evidence
-    if (prod.operationalStatus === 'ACTIVE_CONFIRMED' && prod.sources.length === 0) {
-      errors.push({
-        severity: 'ERROR',
-        programId: prod.id,
-        field: 'operationalStatus',
-        message: `Operational status ACTIVE_CONFIRMED requires explicit current intake evidence`,
-        code: 'UNSUPPORTED_OPERATIONAL_STATUS'
-      });
+    // 4. Operational status must be established by a current, direct primary claim.
+    // A product page proves that a product exists; it does not by itself prove that
+    // applications are currently being accepted. A non-empty sources array is not
+    // sufficient evidence for ACTIVE_CONFIRMED.
+    if (prod.operationalStatus === 'ACTIVE_CONFIRMED') {
+      const operationalClaim = getAuthoritativeClaim(prod.id, 'operationalStatus');
+      const verifiedAt = operationalClaim?.source.lastVerifiedAt || operationalClaim?.source.retrievedAt;
+      const verifiedAtMs = verifiedAt ? Date.parse(verifiedAt) : Number.NaN;
+      const isFresh = Number.isFinite(verifiedAtMs) &&
+        verifiedAtMs <= Date.now() &&
+        Date.now() - verifiedAtMs <= 180 * 24 * 60 * 60 * 1000;
+      const hasDirectCurrentIntakeEvidence =
+        operationalClaim?.value === 'ACTIVE_CONFIRMED' &&
+        operationalClaim.ruleStatus === 'VERIFIED_CURRENT' &&
+        operationalClaim.operationalStatus === 'ACTIVE_CONFIRMED' &&
+        operationalClaim.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' &&
+        operationalClaim.source.evidenceStatus === 'VERIFIED' &&
+        isFresh &&
+        (!operationalClaim.expiryDate || Date.parse(operationalClaim.expiryDate) >= Date.now());
+
+      if (!hasDirectCurrentIntakeEvidence) {
+        errors.push({
+          severity: 'ERROR',
+          programId: prod.id,
+          field: 'operationalStatus',
+          message: 'ACTIVE_CONFIRMED requires a fresh, direct-primary operational-status claim confirming current intake; a general product page is not enough.',
+          code: 'UNSUPPORTED_OPERATIONAL_STATUS'
+        });
+      }
     }
 
     // 5. Payment-calculation-enabled rate without current evidence
