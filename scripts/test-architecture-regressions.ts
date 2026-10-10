@@ -257,6 +257,7 @@ assert(sotugar?.maxAmount === 0, 'SOTUGAR has no fabricated borrower financing a
 const sotugarCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'sotugar_guarantee');
 assert(String(sotugarCanonical?.shortDescription?.en || '').includes('depends on the specific fund') === true, 'SOTUGAR coverage is explicitly mechanism-specific, not a universal percentage');
 assert(sotugarCanonical?.financialTerms.verification.some(v => v.field === 'fees' && v.status === 'UNVERIFIED') === true, 'SOTUGAR generic fees remain unknown unless a mechanism-specific source verifies them');
+assert(CLAIMS_REPOSITORY.getAllClaims('sotugar_guarantee').some(c => c.field === 'smeGuaranteeCoverageRangeMechanismSpecific' && c.ruleStatus === 'PARTIALLY_VERIFIED'), 'SOTUGAR SME coverage range is source-tracked as mechanism-specific, not a universal current rate');
 
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourse?.maxAmount === 0, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling; zero denotes no fixed total amount');
