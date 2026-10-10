@@ -9,7 +9,8 @@ import { calculateFinancingCost } from '../src/engine/financialCalculations';
 import {
   calculateFundingGap,
   generateFinancingStacks,
-  mapProgramToStackComponent
+  mapProgramToStackComponent,
+  determineStackFundingRole
 } from '../src/engine/financingStackEngine';
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
 import { CANONICAL_PRODUCTS } from '../src/knowledge/canonicalCatalogue';
@@ -248,6 +249,14 @@ assert(anetiCanonical?.status === 'UNKNOWN' && anetiCanonical?.operationalStatus
 assert(anetiCanonical?.applicantTypes.includes('BUSINESS') === true && anetiCanonical?.applicability.unverifiedApplicability === true && anetiCanonical?.status === 'UNKNOWN', 'ANETI audit placeholder remains structurally valid but eligibility/operational status are unverified');
 assert(anetiCanonical?.financialTerms.amount === undefined, 'ANETI unknown amount is omitted rather than fabricated');
 assert(anetiCanonical?.verification.status === 'SOURCE_UNAVAILABLE', 'ANETI source availability is explicitly recorded');
+
+const anetiStackComponent = mapProgramToStackComponent(programs.find(p => p.id === 'aneti_cheque_entreprendre')!);
+assert(determineStackFundingRole(programs.find(p => p.id === 'aneti_cheque_entreprendre')!) === 'OTHER_SUPPORT', 'ANETI Chèque Entreprendre is not inferred to be a grant from its name');
+assert(anetiStackComponent.role === 'OTHER_SUPPORT' && anetiStackComponent.isCashFunding === false, 'Unverified ANETI support type is excluded from cash funding calculations');
+const foprodiStackComponent = mapProgramToStackComponent(foprodi!);
+assert(foprodiStackComponent.operationalStatus === 'ACTIVE_NOT_CONFIRMED', 'Published FOPRODI terms do not imply current operational availability');
+assert(mapProgramToStackComponent(programs.find(p => p.id === 'bts_credit_sur_honneur')!).operationalStatus !== 'ACTIVE_CONFIRMED', 'BTS Crédit sur l’honneur keeps its explicit unconfirmed operational status');
+
 
 const firstHome = programs.find(p => p.id === 'premier_logement');
 assert(firstHome?.maxAmount === 40000, 'BH Al Masken Al Awal own-financing loan ceiling is 40,000 DT');
