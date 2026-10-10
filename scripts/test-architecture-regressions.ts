@@ -235,6 +235,17 @@ assert(bhAuto?.rateType === 'unknown', 'BH AUTO does not expose a fabricated TMM
 assert(!String(bhAuto?.rateDescription.fr || '').includes('7,99'), 'BH AUTO has no stale 7.99% TMM literal');
 assert(!String(bhAuto?.rateDescription.fr || '').includes('3,0%'), 'BH AUTO has no stale 3.0% margin literal');
 
+const foprolosCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'foprolos_construction');
+assert(foprolosCanonical?.applicability.unverifiedApplicability === true, 'FOPROLOS applicability remains explicitly review-gated while its full purpose/ownership rules are reconciled');
+assert(foprolosCanonical?.applicability.isFirstPropertyOnly !== true, 'FOPROLOS does not blanket-exclude the documented home-extension exception');
+assert(foprolosCanonical?.financingPurposes.includes('HOME_RENOVATION') === true, 'FOPROLOS catalogue includes the extension/renovation purpose variant');
+assert(foprolosCanonical?.criteria.some(c => c.id === 'crit_foprolos_household_ownership' && c.critical) === true, 'FOPROLOS household ownership condition is a critical review gate');
+const anetiCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'aneti_cheque_entreprendre');
+assert(anetiCanonical?.status === 'UNKNOWN' && anetiCanonical?.operationalStatus === 'UNKNOWN', 'ANETI Chèque Entreprendre is not presented as operational without verified source evidence');
+assert(anetiCanonical?.applicantTypes.length === 0 && anetiCanonical?.applicability.unverifiedApplicability === true, 'ANETI unknown eligibility prevents a positive match');
+assert(anetiCanonical?.financialTerms.amount === undefined, 'ANETI unknown amount is omitted rather than fabricated');
+assert(anetiCanonical?.verification.status === 'SOURCE_UNAVAILABLE', 'ANETI source availability is explicitly recorded');
+
 const firstHome = programs.find(p => p.id === 'premier_logement');
 assert(firstHome?.maxAmount === 40000, 'BH Al Masken Al Awal own-financing loan ceiling is 40,000 DT');
 assert(firstHome?.projectCostMax === 220000, 'BH Al Masken Al Awal property price ceiling is 220,000 DT');
