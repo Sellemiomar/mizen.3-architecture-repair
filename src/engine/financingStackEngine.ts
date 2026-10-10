@@ -26,7 +26,9 @@ export function determineStackFundingRole(program: FinancingProgram): StackFundi
 
   if (category === 'guarantee' || type === 'guarantee' || id.includes('sotugar') || id.includes('guarantee')) return 'GUARANTEE';
   if (id === 'startup_act_bourse') return 'OTHER_SUPPORT';
-  if (category === 'grant_subsidy' || category === 'grant' || category === 'subsidy' || type === 'grant' || type === 'subsidy' || id.includes('prime') || id.includes('subvention') || id.includes('grant') || id.includes('cheque')) return 'GRANT';
+  if (category === 'grant_subsidy' || category === 'grant' || category === 'subsidy' || type === 'grant' || type === 'subsidy' || id.includes('prime') || id.includes('subvention') || id.includes('grant')) return 'GRANT';
+  // ANETI's Chèque Entreprendre support type is not verified; its name is not evidence of a grant.
+  if (id === 'aneti_cheque_entreprendre') return 'OTHER_SUPPORT';
   if (id === 'foprodi_dotation' || category === 'quasi_equity' || category === 'equity_quasi_equity' || category === 'equity' || type === 'quasi_equity' || type === 'equity' || id.includes('capital') || id.includes('fond') || id.includes('equity') || id.includes('venture')) return id === 'foprodi_dotation' || category === 'quasi_equity' || type === 'quasi_equity' ? 'QUASI_EQUITY' : 'EQUITY';
   if (category === 'leasing' || type === 'leasing' || id.includes('leasing') || id.includes('ijara')) return 'LEASING';
   if (category === 'bank_loan' || category === 'subsidized_loan' || category === 'credit' || category === 'debt' || type === 'debt' || id.includes('cmlt') || id.includes('bank') || id.includes('credit') || id.includes('mourabaha')) return 'DEBT';
@@ -56,7 +58,7 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
     rateType: program.rateType,
     evidenceStatus: ruleStatus,
     evidenceConfidence,
-    operationalStatus: (program as any).operationalStatus || ((program.id === 'bfpme_creation' || program.id === 'sotugar_guarantee') ? 'ACTIVE_NOT_CONFIRMED' : 'ACTIVE_CONFIRMED'),
+    operationalStatus: (program as any).operationalStatus || 'ACTIVE_NOT_CONFIRMED',
     caveats: program.importantCaveats
   };
 }
@@ -126,7 +128,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
     rateType: prog.rateType,
     evidenceStatus: ruleStatus,
     evidenceConfidence: match.evidenceEvaluation?.confidenceScore || (ruleStatus === 'VERIFIED_HISTORICAL' || UNKNOWN_EVIDENCE.has(ruleStatus) ? 'LOW' : 'MEDIUM'),
-    operationalStatus: (match.evidenceEvaluation as any)?.operationalStatus || (prog.id === 'bfpme_creation' || prog.id === 'sotugar_guarantee' ? 'ACTIVE_NOT_CONFIRMED' : 'ACTIVE_CONFIRMED'),
+    operationalStatus: (match.evidenceEvaluation as any)?.operationalStatus || (prog as any).operationalStatus || 'ACTIVE_NOT_CONFIRMED',
     caveats: prog.importantCaveats
   };
 }
