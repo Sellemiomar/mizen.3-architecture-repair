@@ -1108,7 +1108,10 @@ assert(compatStartupBank.compatibilityStatus === 'UNKNOWN', 'AA.4. Startup Guara
 const compBfpmeDebt = {
   ...mapProgramToStackComponent(authoritativeBfpme, { financingRequested: 650000, totalProjectCost: 1000000 }),
   evidenceStatus: 'VERIFIED_CURRENT' as const,
-  operationalStatus: 'ACTIVE_CONFIRMED' as const
+  operationalStatus: 'ACTIVE_CONFIRMED' as const,
+  // This test models an actual applicant-level commitment, not merely an active program.
+  fundingCommitmentStatus: 'COMMITTED' as const,
+  confirmedCommitmentAmount: 650000
 };
 const sotugarProgramObj = FINANCING_PROGRAMS.find(p => p.id === 'sotugar_guarantee')!;
 const compSotugar = mapProgramToStackComponent(sotugarProgramObj, { financingRequested: 650000, totalProjectCost: 1000000 });
