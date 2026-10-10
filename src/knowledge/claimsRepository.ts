@@ -490,6 +490,27 @@ export const INITIAL_CANONICAL_CLAIMS: FinancingClaim[] = [
     }
   },
 
+  {
+    claimId: 'claim_sotugar_sme_coverage_range_current',
+    entityId: 'sotugar_guarantee',
+    field: 'smeGuaranteeCoverageRangeMechanismSpecific',
+    value: { min: 50, max: 75, unit: 'percent', scope: 'specific SME guarantee mechanisms only' },
+    source: CANONICAL_SOURCES.sotugar_official_bareme,
+    sourceType: 'OFFICIAL_PRODUCT_PAGE',
+    sourceDate: '2023-11-01',
+    retrievalDate: '2026-10-10',
+    evidenceStrength: 'DIRECT_PRIMARY_CURRENT',
+    ruleStatus: 'PARTIALLY_VERIFIED',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED',
+    applicabilityStatus: 'CONDITIONAL',
+    confidence: 'HIGH',
+    conflictStatus: 'NONE',
+    notes: {
+      fr: 'La page officielle SOTUGAR présente une fourchette de couverture de 50 à 75% selon le mécanisme. Cette fourchette ne remplace pas les barèmes propres à chaque fonds et ne doit pas écraser les règles distinctes du FGPME 75/90.',
+      ar: 'تعرض صفحة سوتوغار الرسمية نطاق تغطية من 50 إلى 75% حسب الآلية. لا يحل هذا النطاق محل جداول كل صندوق ولا يجب أن يلغي القواعد الخاصة بصندوق FGPME 75/90.'
+    }
+  },
+
   // -------------------------------------------------------------
   // FGJC (Fonds de Garantie Jeunes Promoteurs / Diplômés)
   // -------------------------------------------------------------
