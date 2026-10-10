@@ -240,6 +240,9 @@ assert(foprolosCanonical?.applicability.unverifiedApplicability === true, 'FOPRO
 assert(foprolosCanonical?.applicability.isFirstPropertyOnly !== true, 'FOPROLOS does not blanket-exclude the documented home-extension exception');
 assert(foprolosCanonical?.financingPurposes.includes('HOME_RENOVATION') === true, 'FOPROLOS catalogue includes the extension/renovation purpose variant');
 assert(foprolosCanonical?.criteria.some(c => c.id === 'crit_foprolos_household_ownership' && c.critical) === true, 'FOPROLOS household ownership condition is a critical review gate');
+assert(foprolosCanonical?.financingPurposes.includes('LAND_ACQUISITION') === true && foprolosCanonical?.financingPurposes.includes('HOME_PURCHASE') === true, 'FOPROLOS includes land acquisition and new-home purchase purposes');
+assert(foprolosCanonical?.criteria.some(c => c.id === 'crit_foprolos_income' && c.operator === 'LTE' && c.expectedValue === 6) === true, 'FOPROLOS household gross income cap is encoded as six times SMIG, not UNKNOWN');
+
 const anetiCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'aneti_cheque_entreprendre');
 assert(anetiCanonical?.status === 'UNKNOWN' && anetiCanonical?.operationalStatus === 'UNKNOWN', 'ANETI Chèque Entreprendre is not presented as operational without verified source evidence');
 assert(anetiCanonical?.applicantTypes.includes('BUSINESS') === true && anetiCanonical?.applicability.unverifiedApplicability === true && anetiCanonical?.status === 'UNKNOWN', 'ANETI audit placeholder remains structurally valid but eligibility/operational status are unverified');
