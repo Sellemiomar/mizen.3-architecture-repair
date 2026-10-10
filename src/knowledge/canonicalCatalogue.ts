@@ -1319,7 +1319,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     ],
     status: 'ACTIVE',
     lastCheckedAt: '2026-10-08'
-  }
+  },
 
   // Crédit sur l’honneur: official launch notice confirms existence and tiered maxima,
   // but detailed eligibility/application rules remain to be reconciled to the decree and BCT circular.
