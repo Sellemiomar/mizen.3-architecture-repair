@@ -191,9 +191,25 @@ const fullyConfirmedGap = calculateFundingGap(100000, [{
   allocatedAmount: 100000,
   evidenceStatus: 'VERIFIED_CURRENT',
   operationalStatus: 'ACTIVE_CONFIRMED',
+  fundingCommitmentStatus: 'COMMITTED',
+  confirmedCommitmentAmount: 100000,
   evidenceConfidence: 'HIGH'
 }]);
-assert(fullyConfirmedGap.verifiedCashFunding === 100000 && fullyConfirmedGap.remainingFundingGap === 0, 'Only current verified evidence with ACTIVE_CONFIRMED status counts as confirmed cash');
+assert(fullyConfirmedGap.verifiedCashFunding === 100000 && fullyConfirmedGap.remainingFundingGap === 0, 'Only current evidence, active program, and explicit applicant-specific commitment count as confirmed cash');
+
+const activeProductWithoutApplicantCommitment = calculateFundingGap(100000, [{
+  ...sotugarComponent,
+  programId: 'active-but-not-approved-for-applicant',
+  role: 'DEBT',
+  isCashFunding: true,
+  allocatedAmount: 100000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED',
+  evidenceConfidence: 'HIGH'
+}]);
+assert(activeProductWithoutApplicantCommitment.verifiedCashFunding === 0 && activeProductWithoutApplicantCommitment.remainingFundingGap === 100000, 'An active, verified program is not treated as applicant-secured financing');
+assert(activeProductWithoutApplicantCommitment.warnings.some(w => w.includes('engagement individuel')), 'Missing applicant-specific commitment is explained');
+
 
 // Funding-gap accounting must preserve overfunding instead of clamping the confirmed sum.
 const overfundedGap = calculateFundingGap(100000, [
@@ -205,6 +221,8 @@ const overfundedGap = calculateFundingGap(100000, [
     allocatedAmount: 80000,
     evidenceStatus: 'VERIFIED_CURRENT',
     operationalStatus: 'ACTIVE_CONFIRMED',
+    fundingCommitmentStatus: 'COMMITTED',
+    confirmedCommitmentAmount: 80000,
     evidenceConfidence: 'HIGH'
   },
   {
@@ -215,6 +233,8 @@ const overfundedGap = calculateFundingGap(100000, [
     allocatedAmount: 50000,
     evidenceStatus: 'VERIFIED_CURRENT',
     operationalStatus: 'ACTIVE_CONFIRMED',
+    fundingCommitmentStatus: 'COMMITTED',
+    confirmedCommitmentAmount: 50000,
     evidenceConfidence: 'HIGH'
   }
 ]);
