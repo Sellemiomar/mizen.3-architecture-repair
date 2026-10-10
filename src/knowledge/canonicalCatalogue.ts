@@ -1321,6 +1321,93 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
     lastCheckedAt: '2026-10-08'
   }
 
+  // Crédit sur l’honneur: official launch notice confirms existence and tiered maxima,
+  // but detailed eligibility/application rules remain to be reconciled to the decree and BCT circular.
+  {
+    id: 'bts_credit_sur_honneur',
+    providerId: 'bts',
+    name: {
+      fr: 'BTS — Crédit sur l’honneur',
+      ar: 'البنك التونسي للتضامن — قرض على الشرف',
+      en: 'BTS Honour Loan'
+    },
+    shortDescription: {
+      fr: 'Financement annoncé sans intérêts et sans garanties. Plafond annoncé jusqu’à 10 000 TND pour les micro-projets et 25 000 TND pour les PME et entreprises communautaires; conditions détaillées à confirmer.',
+      ar: 'تمويل معلن دون فوائد ودون ضمانات. سقف معلن يصل إلى 10 آلاف دينار للمشاريع الصغرى و25 ألف دينار للمؤسسات الصغرى والمتوسطة والمؤسسات الأهلية؛ الشروط التفصيلية قيد التحقق.',
+      en: 'Announced interest-free, unsecured financing with tiered maxima; detailed eligibility remains to be verified.'
+    },
+    category: 'BUSINESS',
+    financingDomains: ['BUSINESS', 'MICROFINANCE'],
+    financingPurposes: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION', 'WORKING_CAPITAL', 'EQUIPMENT_PURCHASE'],
+    applicantTypes: ['INDIVIDUAL', 'BUSINESS', 'MICRO_ENTERPRISE', 'COOPERATIVE'],
+    applicability: {
+      domains: ['BUSINESS', 'MICROFINANCE'],
+      purposes: ['BUSINESS_CREATION', 'BUSINESS_EXPANSION', 'WORKING_CAPITAL', 'EQUIPMENT_PURCHASE'],
+      applicantTypes: ['INDIVIDUAL', 'BUSINESS', 'MICRO_ENTERPRISE', 'COOPERATIVE'],
+      unverifiedApplicability: true
+    },
+    criteria: [],
+    financialTerms: {
+      rate: {
+        type: 'INTEREST_FREE_SUBSIDIZED',
+        value: 0,
+        currency: 'PERCENT',
+        explanation: {
+          fr: 'La BTS annonce un financement sans intérêts. Conditions réglementaires et frais éventuels à vérifier; ne pas déduire l’absence de frais annexes.',
+          ar: 'تعلن BTS عن تمويل دون فوائد. يجب التحقق من الشروط التنظيمية وأي مصاريف محتملة؛ لا يعني ذلك بالضرورة غياب المصاريف الملحقة.'
+        }
+      },
+      verification: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'amountTiers', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'], notes: { fr: 'Plafonds annoncés par catégorie; les règles détaillées de calcul et d’éligibilité doivent être vérifiées.', ar: 'السقوف معلنة حسب الفئة؛ يجب التثبت من قواعد الحساب والأهلية التفصيلية.' } },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'durationMonths', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'fees', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] }
+      ]
+    },
+    guarantees: [
+      {
+        id: 'guar_none_honneur',
+        type: 'NONE',
+        description: {
+          fr: 'La BTS annonce le dispositif comme sans garanties, sous réserve des conditions réglementaires applicables.',
+          ar: 'تعلن BTS أن الآلية دون ضمانات، مع مراعاة الشروط التنظيمية المعمول بها.'
+        },
+        mandatory: false
+      }
+    ],
+    verification: {
+      status: 'PARTIALLY_VERIFIED',
+      fields: [
+        { field: 'programExistence', status: 'VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'amountTiers', status: 'PARTIALLY_VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'rate', status: 'VERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'eligibility', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] },
+        { field: 'durationMonths', status: 'UNVERIFIED', sourceIds: ['src_bts_credit_sur_honneur_2026'] }
+      ],
+      lastVerifiedAt: '2026-10-10'
+    },
+    sources: [
+      {
+        id: 'src_bts_credit_sur_honneur_2026',
+        url: 'https://www.bts.com.tn/actualites/la-bts-lance-le-dispositif-du-credit-sur-lhonneur-MTA',
+        title: 'BTS — Lancement du Crédit sur l’honneur',
+        publisher: 'Banque Tunisienne de Solidarité',
+        sourceType: 'OFFICIAL_NOTICE',
+        language: 'fr',
+        publishedAt: '2026-09-30',
+        retrievedAt: '2026-10-10',
+        lastVerifiedAt: '2026-10-10',
+        relevantSection: 'Décret n° 2026-148 du 23 juillet 2026 et circulaire BCT n° 08 de 2026 du 1er septembre 2026',
+        evidenceStatus: 'VERIFIED'
+      }
+    ],
+    status: 'ACTIVE',
+    lastCheckedAt: '2026-10-10',
+    lastReviewedAt: '2026-10-10',
+    ruleStatus: 'PARTIALLY_VERIFIED',
+    operationalStatus: 'ACTIVE_NOT_CONFIRMED'
+  },
 ];
 
 export const CANONICAL_METADATA: CatalogueMetadata = {
