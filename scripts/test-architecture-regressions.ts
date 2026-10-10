@@ -195,6 +195,52 @@ const fullyConfirmedGap = calculateFundingGap(100000, [{
 }]);
 assert(fullyConfirmedGap.verifiedCashFunding === 100000 && fullyConfirmedGap.remainingFundingGap === 0, 'Only current verified evidence with ACTIVE_CONFIRMED status counts as confirmed cash');
 
+// Funding-gap accounting must preserve overfunding instead of clamping the confirmed sum.
+const overfundedGap = calculateFundingGap(100000, [
+  {
+    ...sotugarComponent,
+    programId: 'confirmed-cash-a',
+    role: 'DEBT',
+    isCashFunding: true,
+    allocatedAmount: 80000,
+    evidenceStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_CONFIRMED',
+    evidenceConfidence: 'HIGH'
+  },
+  {
+    ...sotugarComponent,
+    programId: 'confirmed-cash-b',
+    role: 'GRANT',
+    isCashFunding: true,
+    allocatedAmount: 50000,
+    evidenceStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_CONFIRMED',
+    evidenceConfidence: 'HIGH'
+  }
+]);
+assert(overfundedGap.inputValid, 'A finite non-negative funding requirement is valid');
+assert(overfundedGap.verifiedCashFunding === 130000, 'Confirmed funding total is not silently capped at the requirement');
+assert(overfundedGap.remainingFundingGap === 0 && overfundedGap.fundingSurplus === 30000, 'Overfunding is reported separately from the residual gap');
+assert(overfundedGap.cashCoverageRatio === 1, 'Coverage ratio remains bounded at 100% while surplus is exposed separately');
+assert(overfundedGap.warnings.some(w => w.includes('dépassent le besoin')), 'Overfunding emits an explicit diagnostic');
+
+const negativeRequirementGap = calculateFundingGap(-1, [{
+  ...sotugarComponent,
+  programId: 'invalid-negative-input',
+  role: 'DEBT',
+  isCashFunding: true,
+  allocatedAmount: 50000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED',
+  evidenceConfidence: 'HIGH'
+}]);
+assert(!negativeRequirementGap.inputValid && negativeRequirementGap.verifiedCashFunding === 0, 'Negative required funding is rejected without counting cash');
+assert(negativeRequirementGap.warnings.some(w => w.includes('invalide')), 'Invalid funding requirement explains why calculation was withheld');
+
+const nanRequirementGap = calculateFundingGap(Number.NaN, []);
+assert(!nanRequirementGap.inputValid && nanRequirementGap.remainingFundingGap === 0, 'Non-finite required funding is rejected without propagating NaN');
+
+
 // 7. UNKNOWN compatibility cannot become a viable stack.
 const unknownCompat = getStackCompatibility('foprodi_dotation', 'banque_zitouna_mourabaha');
 assert(unknownCompat.compatibilityStatus === 'UNKNOWN', 'Undocumented FOPRODI + Mourabaha compatibility remains UNKNOWN');
