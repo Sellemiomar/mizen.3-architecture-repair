@@ -20,10 +20,52 @@ function rank(c: FinancingClaim): number {
   return 0;
 }
 
+const CLAIM_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
+
+/**
+ * A high-confidence label is not enough to make a claim safe to project.
+ * Exclude claims with unresolved conflicts, explicit stale/unavailable source
+ * status, invalid/future timestamps, expired validity, or no recent verification.
+ */
+function isClaimCurrentAndUsable(claim: FinancingClaim, now = Date.now()): boolean {
+  if (
+    claim.conflictStatus === 'SUPERSEDED' ||
+    claim.conflictStatus === 'CONFLICT_DETECTED' ||
+    claim.ruleStatus === 'VERIFIED_HISTORICAL' ||
+    claim.ruleStatus === 'CONFLICTING' ||
+    claim.ruleStatus === 'OUTDATED' ||
+    claim.operationalStatus === 'HISTORICAL_ONLY' ||
+    claim.source.evidenceStatus === 'OUTDATED' ||
+    claim.source.evidenceStatus === 'SOURCE_UNAVAILABLE'
+  ) return false;
+
+  const retrievedAt = Date.parse(claim.retrievalDate);
+  if (!Number.isFinite(retrievedAt) || retrievedAt > now || now - retrievedAt > CLAIM_MAX_AGE_MS) return false;
+
+  const verifiedAt = claim.source.lastVerifiedAt
+    ? Date.parse(claim.source.lastVerifiedAt)
+    : retrievedAt;
+  if (!Number.isFinite(verifiedAt) || verifiedAt > now || now - verifiedAt > CLAIM_MAX_AGE_MS) return false;
+
+  if (claim.effectiveDate) {
+    const effectiveAt = Date.parse(claim.effectiveDate);
+    if (!Number.isFinite(effectiveAt) || effectiveAt > now) return false;
+  }
+  if (claim.expiryDate) {
+    const expiresAt = Date.parse(claim.expiryDate);
+    if (!Number.isFinite(expiresAt) || expiresAt < now) return false;
+  }
+
+  return true;
+}
+
 export function getAuthoritativeClaim(entityId: string, field: string): FinancingClaim | undefined {
-  return CLAIMS_REPOSITORY.getAllClaims(entityId)
-    .filter(c => c.field === field && c.conflictStatus !== 'SUPERSEDED')
-    .filter(c => c.ruleStatus !== 'VERIFIED_HISTORICAL' && c.operationalStatus !== 'HISTORICAL_ONLY')
+  const candidates = CLAIMS_REPOSITORY.getAllClaims(entityId)
+    .filter(c => c.field === field && isClaimCurrentAndUsable(c));
+
+  // An explicit current UNKNOWN can block an unsupported legacy projection,
+  // but it must not outrank a fresh, verified current primary claim.
+  return candidates
     .sort((a, b) => rank(b) - rank(a) || String(b.retrievalDate).localeCompare(String(a.retrievalDate)))[0];
 }
 
