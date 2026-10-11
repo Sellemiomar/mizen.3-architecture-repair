@@ -144,6 +144,10 @@ function mapRateType(rate: FinancingProduct['financialTerms']['rate']): Financin
 
 function productToProgram(product: FinancingProduct): FinancingProgram {
   const verification = product.verification ?? { status: 'UNVERIFIED' as const, fields: [] };
+  const registeredSourceIds = new Set([
+    ...product.sources,
+    ...(CANONICAL_PROVIDERS.find(provider => provider.id === product.providerId)?.sources || [])
+  ].map(source => source.id));
   const termVerificationFields = ((product.financialTerms as any).verification || []) as Array<{
     field: string;
     status: string;
@@ -202,8 +206,11 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       description: { fr: criterion.description?.fr || criterion.field, ar: criterion.description?.ar || criterion.field },
       evidenceStatus: criterion.evidence?.status ||
         product.verification.fields.find(field => field.field === criterion.field)?.status,
-      evidenceSourceIds: criterion.evidence?.sourceIds ||
-        product.verification.fields.find(field => field.field === criterion.field)?.sourceIds || [],
+      evidenceSourceIds: (
+        criterion.evidence?.sourceIds ||
+        product.verification.fields.find(field => field.field === criterion.field)?.sourceIds ||
+        []
+      ).filter(sourceId => registeredSourceIds.has(sourceId)),
       unknownReason: criterion.evidence?.unknownReason ||
         (criterion.evidence?.status && criterion.evidence.status !== 'VERIFIED'
           ? criterion.evidence.unknownReason || `Criterion evidence status is ${criterion.evidence.status}`
