@@ -78,33 +78,32 @@ assert(foprolos?.maxAmount === 0, 'FOPROLOS does not invent a fixed DT ceiling f
 assert(foprodi !== undefined, 'FOPRODI must exist in authoritative runtime');
 assert(enda !== undefined, 'Enda Bidaya must exist in authoritative runtime');
 
-// Catalogue-level critical criteria must reach the matcher. A known age value
-// cannot produce a pass if the criterion itself has no field-level evidence.
-const btsCriteriaProgram = structuredClone(programs.find(p => p.id === 'bts_diplomes')!);
-const btsCriteriaProvider = providers.find(p => p.id === btsCriteriaProgram.providerId)!;
-const btsCriteriaApplicant = {
+// Catalogue-level critical criteria must reach the matcher. A missing partner-bank
+// filing cannot disappear just because the catalogue's narrative mentions it.
+const sotugarCriteriaProgram = structuredClone(programs.find(p => p.id === 'sotugar_guarantee')!);
+const sotugarCriteriaProvider = providers.find(p => p.id === sotugarCriteriaProgram.providerId)!;
+const sotugarCriteriaApplicant = {
   journey: 'startup' as const,
   purpose: 'creation' as const,
   totalProjectCost: 100000,
-  userContribution: 40000,
-  financingRequested: 60000,
-  applicantAge: 30,
+  userContribution: 20000,
+  financingRequested: 80000,
   sector: 'industry' as const,
   location: 'Sousse',
   businessStage: 'idea_project' as const,
   legalStructure: 'suarl' as const,
   generalApplicantType: 'business' as const
 };
-const btsCriteriaResult = evaluateProgramCompatibility(
-  btsCriteriaApplicant,
-  btsCriteriaProgram,
-  btsCriteriaProvider
+const sotugarCriteriaResult = evaluateProgramCompatibility(
+  sotugarCriteriaApplicant,
+  sotugarCriteriaProgram,
+  sotugarCriteriaProvider
 );
 assert(
-  btsCriteriaResult.ruleEvaluations.some(rule =>
-    rule.ruleId === 'catalogue_crit_bts_age' && rule.status === 'UNKNOWN'
-  ) && btsCriteriaResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY',
-  'A critical catalogue criterion without field-level evidence cannot silently disappear from matching'
+  sotugarCriteriaResult.ruleEvaluations.some(rule =>
+    rule.ruleId === 'catalogue_crit_sotugar_bank_coop' && rule.status === 'UNKNOWN'
+  ) && sotugarCriteriaResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY',
+  'A critical catalogue condition requiring partner-bank filing cannot silently disappear from matching'
 );
 
 // 2. FOPROLOS: construction works, unrelated car journey is blocked.
