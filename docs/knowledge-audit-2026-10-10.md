@@ -105,3 +105,16 @@ The pages above establish what the providers publicly state; they do not indepen
 - Removed unsupported hard incompatibility claims for BTS Crédit Professionnel / Diplômés with commercial bank credit and BFPME. No direct primary prohibition is registered, and the published project-cost thresholds overlap; both combinations remain `UNKNOWN` until the applicable conventions are confirmed.
 - Downgraded SOTUGAR + leasing from universally verified compatibility to conditional compatibility. Coverage depends on the specific guarantee mechanism, asset, leasing provider and partner approval.
 - Regression guards cover these boundaries. These changes do not establish current intake, applicant eligibility, or approval for any individual funding arrangement.
+
+
+## Follow-up audit — claim freshness, eligibility evaluation and funding semantics
+
+- The authoritative claim selector now rejects superseded/conflict-detected claims, explicit OUTDATED/CONFLICTING claims, expired claims, future-effective claims, future retrieval dates, unavailable sources and claims not verified within 180 days. Fresh verified-current claims rank above explicit UNKNOWN claims.
+- Both runtime projections use the same selector. When a field has claim history but no safe current claim, the runtime no longer falls back silently to its old catalogue literal for financing ceilings, project-cost bounds, financing percentages or pricing. The catalogue projection also marks the field unverified.
+- A claim must be safe to project before its value can affect matching. Partially verified numeric ceilings cannot become hard pass/fail limits.
+- The matching projection now carries catalogue criteria into the runtime evaluator. A critical criterion only passes with a verified field-level status and at least one source identifier. Missing applicant data, unverified criterion evidence, and CUSTOM rules without an implemented evaluator remain UNKNOWN.
+- Explicitly unverified programme applicability is preserved in runtime data. Definite purpose/journey exclusions are evaluated first; otherwise unresolved applicability requires confirmation. The returned match now preserves the evaluated applicability status rather than hardcoding APPLICABLE.
+- BFPME's project-cost range, fixed financing ceiling and maximum financing percentage each require their own known value. Missing bounds no longer become a passing range/ratio check.
+- Programme operational status is projected conservatively: ACTIVE_CONFIRMED is downgraded unless a fresh, verified, direct-primary claim explicitly confirms current intake.
+- Guarantee coverage is separate from cash financing. A generic programme ceiling or coverage percentage is not reported as applicant-confirmed coverage; only an explicit applicant-specific confirmed guarantee amount is counted in that separate field.
+- Regression tests cover stale/conflicted/partially verified claims, legacy ceiling fallback, unknown applicability, missing BFPME limits, critical catalogue criteria, and applicant-specific guarantee commitments.
