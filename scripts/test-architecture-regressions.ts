@@ -96,8 +96,8 @@ const homeMatches = runMatchingEngine(homeProfile);
 // all synthetic numeric criteria are deliberately satisfied.
 const syntheticApplicabilityProgram = structuredClone(foprolos!);
 syntheticApplicabilityProgram.id = 'audit_unknown_applicability';
-syntheticApplicabilityProgram.applicability.unverifiedApplicability = true;
-syntheticApplicabilityProgram.applicability.isFirstPropertyOnly = false;
+syntheticApplicabilityProgram.applicability!.unverifiedApplicability = true;
+syntheticApplicabilityProgram.applicability!.isFirstPropertyOnly = false;
 syntheticApplicabilityProgram.eligibilityCriteria.requiresDegree = false;
 syntheticApplicabilityProgram.eligibilityCriteria.requiresStartupLabel = false;
 syntheticApplicabilityProgram.minAmount = 0;
