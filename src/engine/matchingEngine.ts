@@ -1038,7 +1038,7 @@ export function evaluateProgramCompatibility(
     provider,
     status,
     eligibilityOutcome,
-    applicabilityStatus: 'APPLICABLE',
+    applicabilityStatus: applicability.status,
     applicabilityReason: applicability.reason,
     ruleEvaluations,
     financialEvaluation,
