@@ -985,7 +985,13 @@ export function evaluateProgramCompatibility(
       fr: "Mention 'Financement intégral' non assimilable à 100% sans apport sans confirmation directe de l'agence bancaire.",
       ar: "عبارة 'تمويل شامل' لا تعني 100% قرضاً بدون تمويل ذاتي دون تأكيد مباشر من الفرع البنكي."
     });
-  } else if (criticalUnknowns.length > 0 || amountStatus === 'UNKNOWN' || isOutdated || isUnverifiedEvidence) {
+  } else if (
+    applicability.status === 'UNKNOWN' ||
+    criticalUnknowns.length > 0 ||
+    amountStatus === 'UNKNOWN' ||
+    isOutdated ||
+    isUnverifiedEvidence
+  ) {
     // 3. Critical information unknown or evidence outdated
     status = 'REQUIRES_CONFIRMATION';
     alignmentLevel = 'partial_alignment';
