@@ -336,9 +336,21 @@ function project(base: FinancingProduct): FinancingProgram {
   const claims = CLAIMS_REPOSITORY.getAllClaims(base.id);
   const claimedFields = new Set(claims.map(c => c.field));
 
+  // If a field has entered the claims layer, never fall back silently to
+  // its older catalogue literal when every claim is stale, expired or conflicted.
   if (claimedFields.has('minProjectCost')) program.projectCostMin = undefined;
   if (claimedFields.has('maxProjectCost')) program.projectCostMax = undefined;
+  if (claimedFields.has('maxFinancingAmount')) program.maxAmount = 0;
+  if (claimedFields.has('minFinancingAmount')) program.minAmount = 0;
   if (claimedFields.has('maxFinancingPercentage')) program.maxFinancingPercentage = undefined;
+  if (claimedFields.has('publishedMarginRange') || claimedFields.has('pricingRelationship')) {
+    program.rateType = 'unknown';
+    program.estimatedRateAnnual = undefined;
+    program.rateDescription = {
+      fr: 'Conditions tarifaires non confirmées par une revendication actuelle exploitable.',
+      ar: 'شروط التسعير غير مؤكدة بمعلومة حالية صالحة.'
+    };
+  }
 
   for (const field of claimedFields) {
     const claim = getAuthoritativeClaim(base.id, field);
