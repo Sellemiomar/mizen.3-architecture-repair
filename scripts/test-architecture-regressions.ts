@@ -4,7 +4,7 @@
  * allowing "missing product" to become a passing test.
  */
 
-import { runMatchingEngine } from '../src/engine/matchingEngine';
+import { runMatchingEngine, evaluateProgramCompatibility } from '../src/engine/matchingEngine';
 import { calculateFinancingCost } from '../src/engine/financialCalculations';
 import {
   calculateFundingGap,
@@ -18,6 +18,7 @@ import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProviders } from '../src/knowledge/authoritativeCatalogueProjection';
 import { validateKnowledgeCatalogue } from '../src/knowledge/knowledgeValidator';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
+import { getAuthoritativeClaim } from '../src/knowledge/authoritativeProjection';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { formatFinancingAmountRange } from '../src/utils/financingAmountLabels';
@@ -90,6 +91,87 @@ const homeProfile = {
   location: 'Nabeul'
 };
 const homeMatches = runMatchingEngine(homeProfile);
+
+// Unknown applicability must block a definitive eligibility result even when
+// all synthetic numeric criteria are deliberately satisfied.
+const syntheticApplicabilityProgram = structuredClone(foprolos!);
+syntheticApplicabilityProgram.id = 'audit_unknown_applicability';
+syntheticApplicabilityProgram.applicability.unverifiedApplicability = true;
+syntheticApplicabilityProgram.applicability.isFirstPropertyOnly = false;
+syntheticApplicabilityProgram.eligibilityCriteria.requiresDegree = false;
+syntheticApplicabilityProgram.eligibilityCriteria.requiresStartupLabel = false;
+syntheticApplicabilityProgram.minAmount = 0;
+syntheticApplicabilityProgram.maxAmount = 200000;
+syntheticApplicabilityProgram.projectCostMin = 0;
+syntheticApplicabilityProgram.projectCostMax = 200000;
+syntheticApplicabilityProgram.minContributionPercent = 0;
+syntheticApplicabilityProgram.maxFinancingPercentage = 100;
+syntheticApplicabilityProgram.verification.status = 'VERIFIED';
+syntheticApplicabilityProgram.verification.unverifiedFields = [];
+syntheticApplicabilityProgram.verification.verifiedFields = [];
+const syntheticProvider = providers.find(p => p.id === syntheticApplicabilityProgram.providerId)!;
+const unknownApplicabilityResult = evaluateProgramCompatibility(
+  homeProfile,
+  syntheticApplicabilityProgram,
+  syntheticProvider
+);
+assert(
+  unknownApplicabilityResult.applicabilityStatus === 'UNKNOWN' &&
+  unknownApplicabilityResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY' &&
+  unknownApplicabilityResult.status === 'REQUIRES_CONFIRMATION',
+  'Unknown programme applicability cannot produce a definitive documented-eligibility result'
+);
+
+// Authoritative claims must not let expired/stale primary evidence or unresolved
+// conflicts override a current, non-conflicting claim.
+const claimTemplate = CLAIMS_REPOSITORY.getAllClaims().find(c => c.source.evidenceStatus === 'VERIFIED')!;
+const nowMs = Date.now();
+const recentIso = new Date(nowMs - 1000).toISOString();
+const stalePrimaryClaim = structuredClone(claimTemplate);
+stalePrimaryClaim.claimId = 'audit_stale_primary_claim';
+stalePrimaryClaim.entityId = 'audit_claim_selection';
+stalePrimaryClaim.field = 'syntheticTerm';
+stalePrimaryClaim.ruleStatus = 'VERIFIED_CURRENT';
+stalePrimaryClaim.operationalStatus = 'ACTIVE_CONFIRMED';
+stalePrimaryClaim.evidenceStrength = 'DIRECT_PRIMARY_CURRENT';
+stalePrimaryClaim.conflictStatus = 'NONE';
+stalePrimaryClaim.retrievalDate = recentIso;
+stalePrimaryClaim.source.lastVerifiedAt = new Date(nowMs - 200 * 24 * 60 * 60 * 1000).toISOString();
+const currentSecondaryClaim = structuredClone(claimTemplate);
+currentSecondaryClaim.claimId = 'audit_current_secondary_claim';
+currentSecondaryClaim.entityId = 'audit_claim_selection';
+currentSecondaryClaim.field = 'syntheticTerm';
+currentSecondaryClaim.ruleStatus = 'VERIFIED_CURRENT';
+currentSecondaryClaim.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
+currentSecondaryClaim.evidenceStrength = 'OFFICIAL_SECONDARY';
+currentSecondaryClaim.conflictStatus = 'NONE';
+currentSecondaryClaim.retrievalDate = recentIso;
+currentSecondaryClaim.source.lastVerifiedAt = recentIso;
+currentSecondaryClaim.value = 'current-safe-value';
+stalePrimaryClaim.value = 'stale-value';
+CLAIMS_REPOSITORY.ingestClaims([stalePrimaryClaim, currentSecondaryClaim]);
+assert(
+  getAuthoritativeClaim('audit_claim_selection', 'syntheticTerm')?.value === 'current-safe-value',
+  'Stale high-strength claim cannot override a current usable claim'
+);
+
+const conflictingPrimaryClaim = structuredClone(stalePrimaryClaim);
+conflictingPrimaryClaim.claimId = 'audit_conflicting_primary_claim';
+conflictingPrimaryClaim.entityId = 'audit_conflict_selection';
+conflictingPrimaryClaim.field = 'syntheticTerm';
+conflictingPrimaryClaim.source.lastVerifiedAt = recentIso;
+conflictingPrimaryClaim.retrievalDate = recentIso;
+conflictingPrimaryClaim.conflictStatus = 'CONFLICT_DETECTED';
+const nonConflictingClaim = structuredClone(currentSecondaryClaim);
+nonConflictingClaim.claimId = 'audit_nonconflicting_claim';
+nonConflictingClaim.entityId = 'audit_conflict_selection';
+nonConflictingClaim.field = 'syntheticTerm';
+nonConflictingClaim.value = 'non-conflicting-value';
+CLAIMS_REPOSITORY.ingestClaims([conflictingPrimaryClaim, nonConflictingClaim]);
+assert(
+  getAuthoritativeClaim('audit_conflict_selection', 'syntheticTerm')?.value === 'non-conflicting-value',
+  'A conflict-detected claim cannot override a usable non-conflicting claim'
+);
 const foprolosHome = homeMatches.find(m => m.program.id === 'foprolos_construction');
 assert(foprolosHome?.status === 'REQUIRES_CONFIRMATION' && foprolosHome.financialEvaluation.amountStatus === 'UNKNOWN', 'FOPROLOS matches salaried home construction while its SMIG-linked ceiling remains unconverted to a fixed TND amount');
 
