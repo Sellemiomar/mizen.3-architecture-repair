@@ -489,7 +489,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       operator: 'BETWEEN',
       expectedValue: [20, 60],
       critical: true,
-      description: { fr: 'Âge de 20 à 60 ans selon la page officielle du Crédit Professionnel BTS.', ar: 'العمر من 20 إلى 60 سنة وفق الصفحة الرسمية للقرض المهني.' }
+      description: { fr: 'Âge de 20 à 60 ans selon la page officielle du Crédit Professionnel BTS.', ar: 'العمر من 20 إلى 60 سنة وفق الصفحة الرسمية للقرض المهني.' },
+      evidence: { field: 'applicantAge', status: 'VERIFIED', sourceIds: ['src_bts_official'] }
     }],
     financialTerms: {
       amount: { max: 200000, currency: 'TND' },
