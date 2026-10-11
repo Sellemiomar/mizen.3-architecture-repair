@@ -31,17 +31,6 @@ export function evaluateApplicability(
   applicant: ApplicantProfile,
   program: FinancingProgram
 ): { status: ApplicabilityStatus; reason: { fr: string; ar: string } } {
-  // Check if program applicability is explicitly marked unverified
-  if (program.applicability?.unverifiedApplicability) {
-    return {
-      status: 'UNKNOWN',
-      reason: {
-        fr: "Applicabilité du mécanisme non vérifiée auprès des sources officielles.",
-        ar: "مجال تطبيق هذه الآلية غير مؤكد استناداً للمصادر الرسمية."
-      }
-    };
-  }
-
   const journey = applicant.journey;
   const purpose = applicant.purpose;
 
@@ -160,6 +149,19 @@ export function evaluateApplicability(
         }
       };
     }
+  }
+
+  // Only after checking clear purpose/journey exclusions do we apply the
+  // unresolved-applicability gate. Known mismatches remain NOT_APPLICABLE;
+  // an otherwise plausible case stays UNKNOWN until its rules are verified.
+  if (program.applicability?.unverifiedApplicability) {
+    return {
+      status: 'UNKNOWN',
+      reason: {
+        fr: "Applicabilité du mécanisme non vérifiée auprès des sources officielles.",
+        ar: "مجال تطبيق هذه الآلية غير مؤكد استناداً للمصادر الرسمية."
+      }
+    };
   }
 
   return {
