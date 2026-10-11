@@ -330,6 +330,7 @@ export interface FinancingProgramCriterion {
   critical: boolean;
   description: { fr: string; ar: string };
   evidenceStatus?: 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'UNVERIFIED' | 'OUTDATED' | 'SOURCE_UNAVAILABLE';
+  evidenceSourceIds?: string[];
   unknownReason?: string;
 }
 
