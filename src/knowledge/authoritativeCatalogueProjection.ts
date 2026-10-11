@@ -1,6 +1,6 @@
 import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from './canonicalCatalogue';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
-import { getAuthoritativeClaim } from './authoritativeProjection';
+import { getAuthoritativeClaim, isClaimSafeToProject } from './authoritativeProjection';
 import { FinancingClaim } from '../types/claims';
 export { getAuthoritativeClaim };
 import { FinancingProduct } from '../types/knowledge';
@@ -141,7 +141,7 @@ export function getAuthoritativeCatalogueProducts(): FinancingProduct[] {
     const fields = new Set(claims.map(claim => claim.field));
     for (const field of fields) {
       const claim = getAuthoritativeClaim(base.id, field);
-      if (claim) applyClaim(product, claim);
+      if (claim && isClaimSafeToProject(claim)) applyClaim(product, claim);
       else clearUnsupportedLegacyValue(product, field);
     }
     return product;
