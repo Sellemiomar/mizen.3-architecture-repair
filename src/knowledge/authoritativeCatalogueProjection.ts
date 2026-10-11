@@ -26,6 +26,11 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
     case 'maxFinancingAmount':
       if (typeof claim.value === 'number') { product.financialTerms.amount = { ...product.financialTerms.amount, max: claim.value, currency: 'TND' }; updateCriterion('financingRequested', 'LTE', claim.value); }
       break;
+    case 'incomeCapSmigMultiple':
+      if (typeof claim.value === 'number' && Number.isFinite(claim.value) && claim.value >= 0) {
+        updateCriterion('monthlyGrossHouseholdIncomeSmigMultiple', 'LTE', claim.value);
+      }
+      break;
     case 'publishedMarginRange': {
       const v = claim.value as { min?: number; max?: number };
       if (typeof v?.min === 'number' && typeof v?.max === 'number') {
