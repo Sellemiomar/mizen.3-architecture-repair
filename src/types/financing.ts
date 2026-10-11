@@ -322,6 +322,17 @@ export interface DocumentRequirement {
   };
 }
 
+export interface FinancingProgramCriterion {
+  id: string;
+  field: string;
+  operator: 'EQ' | 'NEQ' | 'GT' | 'GTE' | 'LT' | 'LTE' | 'IN' | 'NOT_IN' | 'BETWEEN' | 'REQUIRED' | 'CUSTOM';
+  expectedValue?: unknown;
+  critical: boolean;
+  description: { fr: string; ar: string };
+  evidenceStatus?: 'VERIFIED' | 'PARTIALLY_VERIFIED' | 'UNVERIFIED' | 'OUTDATED' | 'SOURCE_UNAVAILABLE';
+  unknownReason?: string;
+}
+
 export interface FinancingProgram {
   id: string;
   code: string;
@@ -336,6 +347,8 @@ export interface FinancingProgram {
   };
   category: FinancingCategory;
   purposes: FinancingPurpose[];
+  /** Source-tracked catalogue rules evaluated before a result can be labelled as documented eligibility. */
+  criteria?: FinancingProgramCriterion[];
   
   // Financial boundaries
   minAmount: number;             // TND — financing amount only; 0 means no established floor
