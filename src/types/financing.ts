@@ -346,6 +346,8 @@ export interface FinancingProgram {
     ar: string;
   };
   category: FinancingCategory;
+  /** Programme intake status; this is not applicant approval. */
+  operationalStatus?: 'ACTIVE_CONFIRMED' | 'ACTIVE_NOT_CONFIRMED' | 'UNKNOWN' | 'INACTIVE_CONFIRMED' | 'HISTORICAL_ONLY';
   purposes: FinancingPurpose[];
   /** Source-tracked catalogue rules evaluated before a result can be labelled as documented eligibility. */
   criteria?: FinancingProgramCriterion[];
