@@ -268,6 +268,84 @@ export function evaluateApplicationReadiness(
  * 3. Financial Compatibility
  * 4. Evidence Confidence
  */
+function evaluateCatalogueCriteria(
+  applicant: ApplicantProfile,
+  program: FinancingProgram,
+  ruleEvaluations: RuleEvaluation[],
+  matchedBecause: MatchReason['matchedBecause'],
+  potentialIssues: MatchReason['potentialIssues'],
+  needsVerification: MatchReason['needsVerification']
+): void {
+  for (const criterion of program.criteria || []) {
+    // These constraints already have specialized, user-facing evaluators below.
+    if (criterion.field === 'financingRequested') continue;
+    if (criterion.field === 'totalProjectCost' && ['bfpme_creation', 'premier_logement'].includes(program.id)) continue;
+    if (criterion.field === 'hasStartupActLabel' && program.eligibilityCriteria.requiresStartupLabel) continue;
+    if (criterion.field === 'isFirstPropertyPurchase' && program.applicability?.isFirstPropertyOnly) continue;
+
+    const rawValue = (applicant as unknown as Record<string, unknown>)[criterion.field];
+    const expected = criterion.expectedValue;
+    let status: RuleEvaluation['status'] = 'UNKNOWN';
+    let explanationFr = criterion.unknownReason || '';
+    let explanationAr = '';
+
+    if (criterion.operator === 'CUSTOM') {
+      explanationFr = explanationFr || 'Cette condition nécessite une vérification spécifique qui n’est pas encore automatisée.';
+      explanationAr = 'يتطلب هذا الشرط تحققاً خاصاً لم تتم أتمتته بعد.';
+    } else if (criterion.evidenceStatus !== 'VERIFIED') {
+      explanationFr = explanationFr || 'La preuve au niveau de ce critère n’est pas vérifiée : aucune conclusion automatique ne sera tirée.';
+      explanationAr = 'الدليل الخاص بهذا الشرط غير مثبت؛ لن يتم استخلاص نتيجة آلية.';
+    } else if (rawValue === undefined || rawValue === null || expected === undefined) {
+      explanationFr = explanationFr || 'Une information nécessaire au contrôle de cette condition manque dans le profil.';
+      explanationAr = 'تنقص الملف معلومة ضرورية للتحقق من هذا الشرط.';
+    } else {
+      const value = rawValue;
+      switch (criterion.operator) {
+        case 'EQ': status = value === expected ? 'PASS' : 'FAIL'; break;
+        case 'NEQ': status = value !== expected ? 'PASS' : 'FAIL'; break;
+        case 'GT': status = typeof value === 'number' && typeof expected === 'number' ? (value > expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'GTE': status = typeof value === 'number' && typeof expected === 'number' ? (value >= expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'LT': status = typeof value === 'number' && typeof expected === 'number' ? (value < expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'LTE': status = typeof value === 'number' && typeof expected === 'number' ? (value <= expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'IN': status = Array.isArray(expected) ? (expected.includes(value) ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'NOT_IN': status = Array.isArray(expected) ? (!expected.includes(value) ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'BETWEEN': {
+          const range = Array.isArray(expected) ? expected : [];
+          status = typeof value === 'number' && range.length === 2 &&
+            typeof range[0] === 'number' && typeof range[1] === 'number'
+            ? (value >= range[0] && value <= range[1] ? 'PASS' : 'FAIL')
+            : 'UNKNOWN';
+          break;
+        }
+        case 'REQUIRED': status = value ? 'PASS' : 'FAIL'; break;
+        case 'CUSTOM': status = 'UNKNOWN'; break;
+      }
+      if (status === 'UNKNOWN') {
+        explanationFr = explanationFr || 'La condition ne peut pas être évaluée avec les données disponibles.';
+        explanationAr = explanationAr || 'لا يمكن تقييم الشرط بالمعطيات المتاحة.';
+      } else if (status === 'PASS') {
+        explanationFr = `Condition vérifiée : ${criterion.description.fr}`;
+        explanationAr = `تم التحقق من الشرط: ${criterion.description.ar}`;
+      } else {
+        explanationFr = `Condition non satisfaite : ${criterion.description.fr}`;
+        explanationAr = `الشرط غير مستوفى: ${criterion.description.ar}`;
+      }
+    }
+
+    ruleEvaluations.push({
+      ruleId: `catalogue_${criterion.id}`,
+      label: criterion.description,
+      criticality: criterion.critical ? 'CRITICAL' : 'IMPORTANT',
+      status,
+      explanation: { fr: explanationFr, ar: explanationAr || explanationFr }
+    });
+
+    if (status === 'PASS') matchedBecause.push(criterion.description);
+    else if (status === 'FAIL') potentialIssues.push({ fr: explanationFr, ar: explanationAr || explanationFr });
+    else needsVerification.push({ fr: explanationFr, ar: explanationAr || explanationFr });
+  }
+}
+
 export function evaluateProgramCompatibility(
   applicant: ApplicantProfile,
   program: FinancingProgram,
@@ -277,6 +355,10 @@ export function evaluateProgramCompatibility(
   const potentialIssues: MatchReason['potentialIssues'] = [];
   const needsVerification: MatchReason['needsVerification'] = [];
   const ruleEvaluations: RuleEvaluation[] = [];
+
+  // Source-tracked catalogue criteria must be evaluated; missing or unverified
+  // critical criteria remain UNKNOWN instead of disappearing from matching.
+  evaluateCatalogueCriteria(applicant, program, ruleEvaluations, matchedBecause, potentialIssues, needsVerification);
 
   // =========================================================================
   // DIMENSION 1 — APPLICABILITY GATE
