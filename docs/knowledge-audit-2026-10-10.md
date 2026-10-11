@@ -118,3 +118,25 @@ The pages above establish what the providers publicly state; they do not indepen
 - Programme operational status is projected conservatively: ACTIVE_CONFIRMED is downgraded unless a fresh, verified, direct-primary claim explicitly confirms current intake.
 - Guarantee coverage is separate from cash financing. A generic programme ceiling or coverage percentage is not reported as applicant-confirmed coverage; only an explicit applicant-specific confirmed guarantee amount is counted in that separate field.
 - Regression tests cover stale/conflicted/partially verified claims, legacy ceiling fallback, unknown applicability, missing BFPME limits, critical catalogue criteria, and applicant-specific guarantee commitments.
+
+## Final targeted rule audit — 2026-10-11
+
+### FOPROLOS household income rule
+
+- The official Ministry page states a gross household-income ceiling of six times SMIG, with the spouse included where applicable. The catalogue now attaches that direct-primary source to the income criterion, and the runtime applicant type has an explicit `monthlyGrossHouseholdIncomeSmigMultiple` field.
+- Regression tests cover missing input (`UNKNOWN`), a ratio at or below six (`PASS` for this criterion only), and a ratio above six (`FAIL` for this criterion).
+- This ratio must be calculated from gross household income and the applicable SMIG, not inferred from net income or a coarse income band. The field is not yet wired into the applicant intake UI, so real user journeys without this value continue to show the criterion as unknown.
+- The ownership exception and qualifying employment-category checks remain manual confirmation gates. `employmentStatus: salaried_private` alone is not enough to establish that the worker belongs to a covered non-agricultural sector subject to the Labour Code. No definitive FOPROLOS eligibility result is permitted while those critical gates or programme availability remain unresolved.
+
+### ANETI Chèque Entreprendre
+
+- Targeted searches of the official ANETI and employment-ministry domains did not produce an accessible primary page establishing this programme's exact support type, amount, eligibility rules, or current intake.
+- Other official employment-support mechanisms (including a separate *bourse d'accompagnement*) are not evidence of Chèque Entreprendre terms and must not be substituted for it.
+- The catalogue entry remains an audit placeholder: `SOURCE_UNAVAILABLE` / `UNKNOWN`, no numeric amount, no inferred grant/loan classification, no confirmed operational status, and no verified stacking compatibility. This is an evidence limitation, not a conclusion that the programme does not exist or is inactive.
+
+### Final disposition
+
+- Implemented: source-backed FOPROLOS income-criterion evaluation and boundary regressions.
+- Deliberately unresolved: FOPROLOS household property ownership / extension exception, covered employment-category verification, and current intake confirmation.
+- Deliberately unresolved: ANETI Chèque Entreprendre support type, amount, eligibility, current intake and compatibility.
+- These unknowns must remain visible in matching and cannot be converted into documented eligibility or confirmed funding. Do not merge until the branch checks pass and the reviewer accepts the remaining explicit limitations.
