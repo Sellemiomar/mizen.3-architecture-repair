@@ -228,6 +228,31 @@ const sotugar = programs.find(p => p.id === 'sotugar_guarantee')!;
 const sotugarComponent = mapProgramToStackComponent(sotugar, { financingRequested: 150000, totalProjectCost: 200000 });
 assert(sotugarComponent.role === 'GUARANTEE' && sotugarComponent.isCashFunding === false, 'SOTUGAR remains a non-cash guarantee component');
 const gap = calculateFundingGap(150000, [sotugarComponent]);
+
+const uncommittedGuaranteeCeilingGap = calculateFundingGap(150000, [{
+  ...sotugarComponent,
+  maxPotentialAmount: 1000000,
+  coveragePercentage: 0.75,
+  confirmedGuaranteeCoverageAmount: undefined
+}]);
+assert(
+  uncommittedGuaranteeCeilingGap.guaranteeCoverageAmount === 0,
+  'Guarantee fund/program ceiling and generic percentage are not reported as applicant-confirmed guarantee coverage'
+);
+assert(
+  uncommittedGuaranteeCeilingGap.warnings.some(w => w.includes('aucun engagement individuel')),
+  'Uncommitted guarantee potential is explicitly labelled unconfirmed'
+);
+const confirmedGuaranteeGap = calculateFundingGap(150000, [{
+  ...sotugarComponent,
+  maxPotentialAmount: 1000000,
+  coveragePercentage: 0.75,
+  confirmedGuaranteeCoverageAmount: 60000
+}]);
+assert(
+  confirmedGuaranteeGap.guaranteeCoverageAmount === 60000,
+  'Only the explicit applicant-specific confirmed guarantee amount is reported as confirmed coverage'
+);
 assert(gap.verifiedCashFunding === 0 && gap.remainingFundingGap === 150000, 'Guarantee coverage cannot reduce the cash funding gap');
 
 // 6. UNKNOWN evidence cannot be counted as verified cash even when an amount is present.
