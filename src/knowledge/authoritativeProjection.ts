@@ -198,7 +198,7 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       operator: criterion.operator,
       expectedValue: criterion.expectedValue,
       critical: criterion.critical,
-      description: criterion.description,
+      description: { fr: criterion.description?.fr || criterion.field, ar: criterion.description?.ar || criterion.field },
       evidenceStatus: criterion.evidence?.status ||
         product.verification.fields.find(field => field.field === criterion.field)?.status,
       unknownReason: criterion.evidence?.unknownReason ||
