@@ -61,7 +61,7 @@ function isClaimCurrentAndUsable(claim: FinancingClaim, now = Date.now()): boole
 
 export function getAuthoritativeClaim(entityId: string, field: string): FinancingClaim | undefined {
   const candidates = CLAIMS_REPOSITORY.getAllClaims(entityId)
-    .filter(c => c.field === field && isClaimCurrentAndUsable(c));
+    .filter(c => c.field === field && isClaimCurrentAndUsable(c) && isClaimSafeToProject(c));
 
   // An explicit current UNKNOWN can block an unsupported legacy projection,
   // but it must not outrank a fresh, verified current primary claim.
