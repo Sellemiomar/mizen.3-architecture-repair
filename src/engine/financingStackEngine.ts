@@ -99,10 +99,18 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
 
     if (comp.role === 'GUARANTEE' || !comp.isCashFunding) {
       if (comp.role === 'GUARANTEE') {
-        const coverage = comp.coveragePercentage;
-        const maxCover = comp.maxPotentialAmount;
-        if (typeof maxCover === 'number' && Number.isFinite(maxCover) && maxCover > 0) guaranteeCoverageAmount += maxCover;
-        else if (typeof coverage === 'number' && Number.isFinite(coverage) && coverage > 0) guaranteeCoverageAmount += requiredFunding * coverage;
+        // A programme ceiling or generic coverage percentage is not the
+        // applicant's approved guarantee amount. Count only an explicit
+        // applicant-specific guarantee commitment.
+        const confirmedCoverage = comp.confirmedGuaranteeCoverageAmount;
+        if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0) {
+          guaranteeCoverageAmount += confirmedCoverage;
+        } else if (
+          (typeof comp.maxPotentialAmount === 'number' && comp.maxPotentialAmount > 0) ||
+          (typeof comp.coveragePercentage === 'number' && comp.coveragePercentage > 0)
+        ) {
+          warnings.push(`Couverture de garantie potentielle exclue du montant confirmé : aucun engagement individuel documenté pour ${comp.programName.fr}.`);
+        }
       }
       continue;
     }
