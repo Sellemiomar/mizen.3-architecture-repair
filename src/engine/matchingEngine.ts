@@ -676,7 +676,22 @@ export function evaluateProgramCompatibility(
   if (program.id === 'bfpme_creation') {
     // 1. Min project cost boundary check: 150,000 TND
     if (applicant.totalProjectCost !== undefined) {
-      if (program.projectCostMin !== undefined && applicant.totalProjectCost < program.projectCostMin) {
+      if (program.projectCostMin === undefined || program.projectCostMax === undefined) {
+        amountStatus = 'UNKNOWN';
+        const detail = {
+          fr: "Fourchette actuelle du coût de projet BFPME incomplète : les seuils minimum et maximum doivent être confirmés avant de conclure à l'adéquation.",
+          ar: "نطاق كلفة المشروع الحالي لدى BFPME غير مكتمل: يجب تأكيد الحدين الأدنى والأقصى قبل استنتاج التوافق."
+        };
+        ruleEvaluations.push({
+          ruleId: 'bfpmeProjectCostRange',
+          label: { fr: "Fourchette d'investissement BFPME", ar: "نطاق الاستثمار BFPME" },
+          criticality: 'CRITICAL',
+          status: 'UNKNOWN',
+          explanation: detail
+        });
+        financialDetails.push(detail);
+        needsVerification.push(detail);
+      } else if (applicant.totalProjectCost < program.projectCostMin) {
         amountStatus = 'FAIL';
         const detail = {
           fr: `Coût total du projet (${applicant.totalProjectCost.toLocaleString('fr-TN')} TND) inférieur au seuil minimum d'investissement de ${program.projectCostMin?.toLocaleString('fr-TN')} TND.`,
@@ -691,7 +706,7 @@ export function evaluateProgramCompatibility(
         });
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else if (program.projectCostMax !== undefined && applicant.totalProjectCost > program.projectCostMax) {
+      } else if (applicant.totalProjectCost > program.projectCostMax) {
         // 2. Max project cost boundary check: 15,000,000 TND
         amountStatus = 'FAIL';
         const detail = {
@@ -726,7 +741,22 @@ export function evaluateProgramCompatibility(
     }
 
     // 3. Absolute CMLT Ceiling: 2,500,000 TND
-    if (applicant.financingRequested !== undefined && program.maxAmount > 0 && applicant.financingRequested > program.maxAmount) {
+    if (applicant.financingRequested !== undefined && program.maxAmount <= 0) {
+      amountStatus = 'UNKNOWN';
+      const detail = {
+        fr: "Plafond actuel du montant de crédit CMLT BFPME non établi : ne pas conclure à l'adéquation sans vérifier le plafond applicable.",
+        ar: "السقف الحالي لمبلغ قرض BFPME غير مثبت: لا يمكن تأكيد التوافق دون التثبت من السقف المعمول به."
+      };
+      ruleEvaluations.push({
+        ruleId: 'bfpmeMaxCmltCeiling',
+        label: { fr: "Plafond CMLT BFPME", ar: "سقف قرض CMLT BFPME" },
+        criticality: 'CRITICAL',
+        status: 'UNKNOWN',
+        explanation: detail
+      });
+      financialDetails.push(detail);
+      needsVerification.push(detail);
+    } else if (applicant.financingRequested !== undefined && applicant.financingRequested > program.maxAmount) {
       amountStatus = 'FAIL';
       const detail = {
         fr: `Montant CMLT demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) dépasse le plafond de ${program.maxAmount.toLocaleString('fr-TN')} TND.`,
@@ -763,7 +793,22 @@ export function evaluateProgramCompatibility(
             ar: "مفهوم 'التمويل الشامل' لا يتوفر على سند رسمي موثق : حالة غير مؤكدة."
           }
         });
-      } else if (maxFinancingPercentage !== undefined && financingRatio > maxFinancingPercentage + 0.01) {
+      } else if (maxFinancingPercentage === undefined) {
+        amountStatus = 'UNKNOWN';
+        const detail = {
+          fr: "Quotité maximale de financement BFPME non établie par une revendication actuelle exploitable.",
+          ar: "النسبة القصوى لتمويل BFPME غير مثبتة بمعلومة حالية صالحة."
+        };
+        ruleEvaluations.push({
+          ruleId: 'bfpmeCmltRatioCeiling',
+          label: { fr: "Quotité maximale CMLT BFPME", ar: "النسبة القصوى لقرض CMLT BFPME" },
+          criticality: 'CRITICAL',
+          status: 'UNKNOWN',
+          explanation: detail
+        });
+        financialDetails.push(detail);
+        needsVerification.push(detail);
+      } else if (financingRatio > maxFinancingPercentage + 0.01) {
         amountStatus = 'FAIL';
         const detail = {
           fr: `Quotité de crédit CMLT demandée (${Math.round(financingRatio)}%) dépasse le plafond publié de ${maxFinancingPercentage}%.`,
@@ -778,11 +823,7 @@ export function evaluateProgramCompatibility(
         });
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else if (
-        (program.maxAmount <= 0 || applicant.financingRequested <= program.maxAmount) &&
-        (program.projectCostMin === undefined || applicant.totalProjectCost >= program.projectCostMin) &&
-        (program.projectCostMax === undefined || applicant.totalProjectCost <= program.projectCostMax)
-      ) {
+      } else {
         ruleEvaluations.push({
           ruleId: 'bfpmeCmltRatioCeiling',
           label: { fr: "Plafond CMLT 65% de l'investissement", ar: "سقف التمويل 65% من كلفة الاستثمار" },
