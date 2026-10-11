@@ -12,6 +12,11 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
   };
 
   switch (claim.field) {
+    case 'operationalStatus':
+      if (['ACTIVE_CONFIRMED', 'ACTIVE_NOT_CONFIRMED', 'UNKNOWN', 'INACTIVE_CONFIRMED', 'HISTORICAL_ONLY'].includes(String(claim.value))) {
+        product.operationalStatus = claim.value as FinancingProduct['operationalStatus'];
+      }
+      break;
     case 'minProjectCost':
       if (typeof claim.value === 'number') { product.financialTerms.projectCost = { ...product.financialTerms.projectCost, min: claim.value, currency: 'TND' }; updateCriterion('totalProjectCost', 'GTE', claim.value); }
       break;
@@ -99,6 +104,9 @@ function clearUnsupportedLegacyValue(product: FinancingProduct, field: string): 
   }
 
   switch (field) {
+    case 'operationalStatus':
+      product.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
+      break;
     case 'minProjectCost':
       if (product.financialTerms.projectCost) product.financialTerms.projectCost.min = undefined;
       break;
@@ -143,6 +151,20 @@ export function getAuthoritativeCatalogueProducts(): FinancingProduct[] {
       const claim = getAuthoritativeClaim(base.id, field);
       if (claim && isClaimSafeToProject(claim)) applyClaim(product, claim);
       else clearUnsupportedLegacyValue(product, field);
+    }
+
+    // Never present a canonical ACTIVE_CONFIRMED flag without a usable
+    // applicant-intake claim, even if no operational-status claim was recorded.
+    const operationalClaim = getAuthoritativeClaim(base.id, 'operationalStatus');
+    const hasConfirmedIntakeEvidence =
+      operationalClaim?.value === 'ACTIVE_CONFIRMED' &&
+      operationalClaim.ruleStatus === 'VERIFIED_CURRENT' &&
+      operationalClaim.operationalStatus === 'ACTIVE_CONFIRMED' &&
+      operationalClaim.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' &&
+      operationalClaim.source.evidenceStatus === 'VERIFIED' &&
+      (!operationalClaim.expiryDate || Date.parse(operationalClaim.expiryDate) >= Date.now());
+    if (product.operationalStatus === 'ACTIVE_CONFIRMED' && !hasConfirmedIntakeEvidence) {
+      product.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
     }
     return product;
   });
