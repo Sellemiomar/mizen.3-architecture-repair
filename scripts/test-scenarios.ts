@@ -508,8 +508,8 @@ const homeConstructUser: ApplicantProfile = {
 const homeConstructResults = runMatchingEngine(homeConstructUser);
 const foprolosForHome = homeConstructResults.find(r => r.program.id === 'foprolos_construction');
 assert(foprolosForHome !== undefined, 'FOPROLOS must be present for the home-construction regression scenario');
-assert(foprolosForHome?.applicabilityStatus === 'APPLICABLE', 'FOPROLOS is APPLICABLE for home construction');
-assert(foprolosForHome?.status === 'REQUIRES_CONFIRMATION' && foprolosForHome.financialEvaluation.amountStatus === 'UNKNOWN', 'FOPROLOS remains applicable but its SMIG-linked ceiling is not fabricated as a fixed TND amount');
+assert(foprolosForHome?.applicabilityStatus === 'UNKNOWN', 'FOPROLOS home-construction applicability remains review-gated until its full conditions are verified');
+assert(foprolosForHome?.status === 'REQUIRES_CONFIRMATION' && foprolosForHome.financialEvaluation.amountStatus === 'UNKNOWN', 'FOPROLOS remains confirmation-required and its SMIG-linked ceiling is not fabricated as a fixed TND amount');
 
 const carCreditForHome = homeConstructResults.find(r => r.program.id === 'banque_credit_auto');
 assert(carCreditForHome?.status === 'NOT_APPLICABLE', 'Crédit auto is NOT_APPLICABLE for home construction');
