@@ -160,6 +160,7 @@ export interface ApplicantProfile {
   // Key qualifying traits
   monthlyIncomeRange?: MonthlyIncomeRange;
   monthlyNetIncome?: number;       // Net monthly personal/household income when relevant (TND)
+  monthlyGrossHouseholdIncomeSmigMultiple?: number; // Gross household income, including spouse where applicable, divided by the applicable SMIG; do not infer from net income.
   monthlyDebtPayments?: number;    // Existing monthly debt/loan payments when disclosed (TND)
   employmentStatus?: EmploymentStatus;
   propertyType?: PropertyType;
