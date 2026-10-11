@@ -188,7 +188,7 @@ const intakeUnconfirmedResult = evaluateProgramCompatibility(
 assert(
   intakeUnconfirmedResult.status === 'REQUIRES_CONFIRMATION' &&
   intakeUnconfirmedResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY' &&
-  intakeUnconfirmedResult.needsVerification.some(note => note.fr.includes("l'ouverture actuelle des dépôts")),
+  intakeUnconfirmedResult.reasons.needsVerification.some(note => note.fr.includes("l'ouverture actuelle des dépôts")),
   'An otherwise matching programme with unconfirmed current intake requires confirmation, not documented eligibility'
 );
 
