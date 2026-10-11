@@ -107,7 +107,19 @@ assert(
 );
 
 const foprolosCriteriaProvider = providers.find(p => p.id === foprolos!.providerId)!;
-const foprolosCriteriaResult = evaluateProgramCompatibility(homeProfile, foprolos!, foprolosCriteriaProvider);
+const foprolosCriteriaApplicant = {
+  journey: 'home_construction' as const,
+  purpose: 'home_construction' as const,
+  totalProjectCost: 120000,
+  userContribution: 25000,
+  financingRequested: 95000,
+  employmentStatus: 'salaried_private' as const,
+  constructionType: 'construction' as const,
+  hasLandOwnershipTitle: true,
+  isFirstPropertyPurchase: true,
+  location: 'Nabeul'
+};
+const foprolosCriteriaResult = evaluateProgramCompatibility(foprolosCriteriaApplicant, foprolos!, foprolosCriteriaProvider);
 assert(
   foprolosCriteriaResult.ruleEvaluations.some(rule =>
     rule.ruleId === 'catalogue_crit_foprolos_household_ownership' && rule.status === 'UNKNOWN'
