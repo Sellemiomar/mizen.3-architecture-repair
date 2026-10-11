@@ -69,6 +69,18 @@ export function getAuthoritativeClaim(entityId: string, field: string): Financin
     .sort((a, b) => rank(b) - rank(a) || String(b.retrievalDate).localeCompare(String(a.retrievalDate)))[0];
 }
 
+/**
+ * Projection policy is stricter than retrieval: partially verified numeric
+ * terms must never become hard limits simply because no stronger claim exists.
+ * An explicit UNKNOWN may be projected only as an unknown, not as a number.
+ */
+export function isClaimSafeToProject(claim: FinancingClaim): boolean {
+  if (claim.ruleStatus === 'VERIFIED_CURRENT' && claim.source.evidenceStatus === 'VERIFIED') return true;
+  if (claim.ruleStatus === 'UNKNOWN' && claim.value === 'UNKNOWN') return true;
+  if (claim.field === 'publishedMarginRange' && claim.ruleStatus === 'PARTIALLY_VERIFIED') return true;
+  return false;
+}
+
 function mapCategory(product: FinancingProduct): FinancingCategory {
   const category = product.category as string;
   if (product.id === 'foprodi_dotation') return 'equity_quasi_equity';
@@ -354,7 +366,7 @@ function project(base: FinancingProduct): FinancingProgram {
 
   for (const field of claimedFields) {
     const claim = getAuthoritativeClaim(base.id, field);
-    if (claim) applyClaim(program, claim);
+    if (claim && isClaimSafeToProject(claim)) applyClaim(program, claim);
   }
 
   const pricingClaim = getAuthoritativeClaim(base.id, 'pricingRelationship');
