@@ -33,6 +33,8 @@ export interface StackComponent {
   confirmedCommitmentAmount?: number;
   /** Applicant-specific status; product operational status is not a funding commitment. */
   fundingCommitmentStatus?: 'NOT_REQUESTED' | 'APPLIED' | 'OFFERED' | 'COMMITTED' | 'UNKNOWN';
+  /** Actual applicant-specific guarantee amount confirmed by the guarantee provider; not a programme ceiling. */
+  confirmedGuaranteeCoverageAmount?: number;
   maxPotentialAmount?: number;
   coveragePercentage?: number;
   rateType?: string;
