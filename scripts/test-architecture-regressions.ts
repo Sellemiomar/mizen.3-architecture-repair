@@ -123,6 +123,36 @@ assert(
   'Unknown programme applicability cannot produce a definitive documented-eligibility result'
 );
 
+// Missing BFPME limits must not be treated as a successful range/ratio check.
+const bfpmeUnknownLimits = structuredClone(programs.find(p => p.id === 'bfpme_creation')!);
+bfpmeUnknownLimits.projectCostMin = undefined;
+bfpmeUnknownLimits.projectCostMax = undefined;
+bfpmeUnknownLimits.maxAmount = 0;
+bfpmeUnknownLimits.maxFinancingPercentage = undefined;
+bfpmeUnknownLimits.verification.status = 'VERIFIED';
+bfpmeUnknownLimits.verification.unverifiedFields = [];
+const bfpmeApplicant = {
+  journey: 'startup' as const,
+  purpose: 'creation' as const,
+  totalProjectCost: 300000,
+  userContribution: 120000,
+  financingRequested: 180000,
+  sector: 'industry',
+  location: 'Zaghouan',
+  businessStage: 'idea_project' as const,
+  legalStructure: 'suarl' as const,
+  generalApplicantType: 'business' as const,
+  isRegionalDevelopmentZone: false
+};
+const bfpmeProvider = providers.find(p => p.id === bfpmeUnknownLimits.providerId)!;
+const bfpmeUnknownLimitResult = evaluateProgramCompatibility(bfpmeApplicant, bfpmeUnknownLimits, bfpmeProvider);
+assert(
+  bfpmeUnknownLimitResult.financialEvaluation.amountStatus === 'UNKNOWN' &&
+  bfpmeUnknownLimitResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY' &&
+  bfpmeUnknownLimitResult.ruleEvaluations.some(r => r.ruleId === 'bfpmeProjectCostRange' && r.status === 'UNKNOWN'),
+  'Missing BFPME project-cost, loan and percentage ceilings cannot be converted into passing eligibility checks'
+);
+
 // Authoritative claims must not let expired/stale primary evidence or unresolved
 // conflicts override a current, non-conflicting claim.
 const claimTemplate = CLAIMS_REPOSITORY.getAllClaims().find(c => c.source.evidenceStatus === 'VERIFIED')!;
