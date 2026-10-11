@@ -202,6 +202,8 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       description: { fr: criterion.description?.fr || criterion.field, ar: criterion.description?.ar || criterion.field },
       evidenceStatus: criterion.evidence?.status ||
         product.verification.fields.find(field => field.field === criterion.field)?.status,
+      evidenceSourceIds: criterion.evidence?.sourceIds ||
+        product.verification.fields.find(field => field.field === criterion.field)?.sourceIds || [],
       unknownReason: criterion.evidence?.unknownReason ||
         (criterion.evidence?.status && criterion.evidence.status !== 'VERIFIED'
           ? criterion.evidence.unknownReason || `Criterion evidence status is ${criterion.evidence.status}`
