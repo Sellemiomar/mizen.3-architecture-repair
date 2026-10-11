@@ -601,6 +601,22 @@ assert(
   'Catalogue projection hides the legacy financing ceiling when no current usable claim remains'
 );
 
+const partialCeilingClaim = structuredClone(staleCeilingClaim);
+partialCeilingClaim.claimId = 'audit_partial_bfpme_ceiling';
+partialCeilingClaim.value = 9999999;
+partialCeilingClaim.ruleStatus = 'PARTIALLY_VERIFIED';
+partialCeilingClaim.retrievalDate = recentIso;
+partialCeilingClaim.source.lastVerifiedAt = recentIso;
+CLAIMS_REPOSITORY.ingestClaims([partialCeilingClaim]);
+assert(
+  getAuthoritativeFinancingProgram('bfpme_creation')?.maxAmount === 0,
+  'Partially verified BFPME ceiling cannot become a hard runtime eligibility limit'
+);
+assert(
+  getAuthoritativeCatalogueProducts().find(p => p.id === 'bfpme_creation')?.financialTerms.amount?.max === undefined,
+  'Partially verified financing ceiling stays hidden rather than overriding the legacy value'
+);
+
 if (failed > 0) {
   console.error(`❌ ${failed} architecture regression guard(s) failed.`);
   process.exit(1);
