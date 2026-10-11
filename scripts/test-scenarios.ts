@@ -36,6 +36,7 @@ const profileA: ApplicantProfile = {
   businessStage: 'idea_project',
   legalStructure: 'suarl',
   hasHigherEducationDegree: true,
+  applicantAge: 25,
   hasStartupActLabel: false,
   isRegionalDevelopmentZone: false,
   structurePreference: 'any'
