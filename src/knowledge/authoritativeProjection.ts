@@ -192,6 +192,20 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     tagline: product.shortDescription as { fr: string; ar: string },
     category: mapCategory(product),
     purposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
+    criteria: product.criteria.map(criterion => ({
+      id: criterion.id,
+      field: criterion.field,
+      operator: criterion.operator,
+      expectedValue: criterion.expectedValue,
+      critical: criterion.critical,
+      description: criterion.description,
+      evidenceStatus: criterion.evidence?.status ||
+        product.verification.fields.find(field => field.field === criterion.field)?.status,
+      unknownReason: criterion.evidence?.unknownReason ||
+        (criterion.evidence?.status && criterion.evidence.status !== 'VERIFIED'
+          ? criterion.evidence.unknownReason || `Criterion evidence status is ${criterion.evidence.status}`
+          : undefined)
+    })),
     minAmount: amount?.min ?? 0,
     maxAmount: amount?.max ?? 0,
     minContributionPercent: contribution?.min ?? 0,
@@ -240,7 +254,7 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     applicability: {
       supportedPurposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
       requiresBusinessEntity: product.applicability.requiresBusinessEntity,
-      isFirstPropertyOnly: false,
+      isFirstPropertyOnly: Boolean(product.applicability.isFirstPropertyOnly),
       unverifiedApplicability: Boolean(product.applicability.unverifiedApplicability || verification.status === 'UNVERIFIED')
     },
     verification: {
