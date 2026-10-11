@@ -1096,6 +1096,11 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         operator: 'LTE',
         expectedValue: 6,
         critical: true,
+        evidence: {
+          status: 'VERIFIED',
+          sourceIds: ['src_mehat_foprolos'],
+          unknownReason: 'Le multiplicateur du SMIG est documenté, mais le revenu brut du ménage et le SMIG applicable doivent être fournis/vérifiés.'
+        },
         description: {
           fr: 'Revenu mensuel brut du ménage, conjoint inclus le cas échéant, ne dépassant pas six fois le SMIG selon la page officielle actuelle.',
           ar: 'الدخل الشهري الخام للأسرة لا يتجاوز ست مرات الأجر الأدنى المهني المضمون وفق الصفحة الرسمية الحالية.'
