@@ -1,6 +1,8 @@
 import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from './canonicalCatalogue';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
 import { getAuthoritativeClaim } from './authoritativeProjection';
+import { FinancingClaim } from '../types/claims';
+export { getAuthoritativeClaim };
 import { FinancingProduct } from '../types/knowledge';
 
 function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
