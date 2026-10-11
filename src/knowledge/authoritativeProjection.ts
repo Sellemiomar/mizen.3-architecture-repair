@@ -191,6 +191,7 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     name: product.name as { fr: string; ar: string },
     tagline: product.shortDescription as { fr: string; ar: string },
     category: mapCategory(product),
+    operationalStatus: product.operationalStatus || 'UNKNOWN',
     purposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
     criteria: product.criteria.map(criterion => ({
       id: criterion.id,
@@ -381,6 +382,21 @@ function project(base: FinancingProduct): FinancingProgram {
   for (const field of claimedFields) {
     const claim = getAuthoritativeClaim(base.id, field);
     if (claim && isClaimSafeToProject(claim)) applyClaim(program, claim);
+  }
+
+  const operationalClaim = getAuthoritativeClaim(base.id, 'operationalStatus');
+  const operationalClaimIsConfirmedIntake =
+    operationalClaim?.value === 'ACTIVE_CONFIRMED' &&
+    operationalClaim.ruleStatus === 'VERIFIED_CURRENT' &&
+    operationalClaim.operationalStatus === 'ACTIVE_CONFIRMED' &&
+    operationalClaim.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' &&
+    operationalClaim.source.evidenceStatus === 'VERIFIED' &&
+    (!operationalClaim.expiryDate || Date.parse(operationalClaim.expiryDate) >= Date.now());
+  if (operationalClaim && isClaimSafeToProject(operationalClaim)) {
+    program.operationalStatus = operationalClaim.value as FinancingProgram['operationalStatus'];
+  }
+  if (program.operationalStatus === 'ACTIVE_CONFIRMED' && !operationalClaimIsConfirmedIntake) {
+    program.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
   }
 
   const pricingClaim = getAuthoritativeClaim(base.id, 'pricingRelationship');
