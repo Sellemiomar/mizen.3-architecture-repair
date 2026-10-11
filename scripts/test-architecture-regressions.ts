@@ -12,7 +12,7 @@ import {
   mapProgramToStackComponent,
   determineStackFundingRole
 } from '../src/engine/financingStackEngine';
-import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
+import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders, getAuthoritativeFinancingProgram } from '../src/knowledge/authoritativeProjection';
 import { CANONICAL_PRODUCTS } from '../src/knowledge/canonicalCatalogue';
 import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 import { getAuthoritativeCatalogueProducts, getAuthoritativeCatalogueProviders } from '../src/knowledge/authoritativeCatalogueProjection';
@@ -546,6 +546,29 @@ assert(CLAIMS_REPOSITORY.getAllClaims('sotugar_guarantee').some(c => c.field ===
 
 const startupBourse = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourse?.maxAmount === 0, 'Startup Act bourse does not expose the stale fixed 36,000 DT ceiling; zero denotes no fixed total amount');
+
+// Last-resort shadowing guard: if all max-amount claims become stale, neither
+// runtime projection may silently fall back to the canonical catalogue literal.
+const staleCeilingClaim = structuredClone(claimTemplate);
+staleCeilingClaim.claimId = 'audit_expired_bfpme_ceiling';
+staleCeilingClaim.entityId = 'bfpme_creation';
+staleCeilingClaim.field = 'maxFinancingAmount';
+staleCeilingClaim.value = 9999999;
+staleCeilingClaim.ruleStatus = 'VERIFIED_CURRENT';
+staleCeilingClaim.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
+staleCeilingClaim.evidenceStrength = 'DIRECT_PRIMARY_CURRENT';
+staleCeilingClaim.conflictStatus = 'NONE';
+staleCeilingClaim.retrievalDate = recentIso;
+staleCeilingClaim.source.lastVerifiedAt = new Date(nowMs - 200 * 24 * 60 * 60 * 1000).toISOString();
+CLAIMS_REPOSITORY.ingestClaims([staleCeilingClaim]);
+assert(
+  getAuthoritativeFinancingProgram('bfpme_creation')?.maxAmount === 0,
+  'Stale max-financing claim cannot fall back to the legacy BFPME amount ceiling'
+);
+assert(
+  getAuthoritativeCatalogueProducts().find(p => p.id === 'bfpme_creation')?.financialTerms.amount?.max === undefined,
+  'Catalogue projection hides the legacy financing ceiling when no current usable claim remains'
+);
 
 if (failed > 0) {
   console.error(`❌ ${failed} architecture regression guard(s) failed.`);
