@@ -229,7 +229,7 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       supportedPurposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
       requiresBusinessEntity: product.applicability.requiresBusinessEntity,
       isFirstPropertyOnly: false,
-      unverifiedApplicability: verification.status === 'UNVERIFIED'
+      unverifiedApplicability: Boolean(product.applicability.unverifiedApplicability || verification.status === 'UNVERIFIED')
     },
     verification: {
       status: verification.status === 'UNVERIFIED' && !verificationFields.some(f => f.status === 'VERIFIED')
