@@ -106,6 +106,19 @@ assert(
   'A critical catalogue condition requiring partner-bank filing cannot silently disappear from matching'
 );
 
+const foprolosCriteriaProvider = providers.find(p => p.id === foprolos!.providerId)!;
+const foprolosCriteriaResult = evaluateProgramCompatibility(homeProfile, foprolos!, foprolosCriteriaProvider);
+assert(
+  foprolosCriteriaResult.ruleEvaluations.some(rule =>
+    rule.ruleId === 'catalogue_crit_foprolos_household_ownership' && rule.status === 'UNKNOWN'
+  ) &&
+  foprolosCriteriaResult.ruleEvaluations.some(rule =>
+    rule.ruleId === 'catalogue_crit_foprolos_salaried' && rule.status === 'UNKNOWN'
+  ) &&
+  foprolosCriteriaResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY',
+  'FOPROLOS household ownership and salaried-category CUSTOM rules stay unresolved until their dedicated evidence and evaluators exist'
+);
+
 // 2. FOPROLOS: construction works, unrelated car journey is blocked.
 const homeProfile = {
   journey: 'home_construction' as const,
