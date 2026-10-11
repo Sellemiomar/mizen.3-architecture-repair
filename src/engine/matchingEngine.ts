@@ -292,7 +292,7 @@ function evaluateCatalogueCriteria(
     if (criterion.operator === 'CUSTOM') {
       explanationFr = explanationFr || 'Cette condition nécessite une vérification spécifique qui n’est pas encore automatisée.';
       explanationAr = 'يتطلب هذا الشرط تحققاً خاصاً لم تتم أتمتته بعد.';
-    } else if (criterion.evidenceStatus !== 'VERIFIED') {
+    } else if (criterion.evidenceStatus !== 'VERIFIED' || !criterion.evidenceSourceIds?.length) {
       explanationFr = explanationFr || 'La preuve au niveau de ce critère n’est pas vérifiée : aucune conclusion automatique ne sera tirée.';
       explanationAr = 'الدليل الخاص بهذا الشرط غير مثبت؛ لن يتم استخلاص نتيجة آلية.';
     } else if (rawValue === undefined || rawValue === null || (expected === undefined && criterion.operator !== 'REQUIRED')) {
