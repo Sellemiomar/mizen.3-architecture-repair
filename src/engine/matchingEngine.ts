@@ -295,7 +295,7 @@ function evaluateCatalogueCriteria(
     } else if (criterion.evidenceStatus !== 'VERIFIED') {
       explanationFr = explanationFr || 'La preuve au niveau de ce critère n’est pas vérifiée : aucune conclusion automatique ne sera tirée.';
       explanationAr = 'الدليل الخاص بهذا الشرط غير مثبت؛ لن يتم استخلاص نتيجة آلية.';
-    } else if (rawValue === undefined || rawValue === null || expected === undefined) {
+    } else if (rawValue === undefined || rawValue === null || (expected === undefined && criterion.operator !== 'REQUIRED')) {
       explanationFr = explanationFr || 'Une information nécessaire au contrôle de cette condition manque dans le profil.';
       explanationAr = 'تنقص الملف معلومة ضرورية للتحقق من هذا الشرط.';
     } else {
