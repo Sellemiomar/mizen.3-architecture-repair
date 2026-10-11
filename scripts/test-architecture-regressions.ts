@@ -731,6 +731,31 @@ assert(
   'Partially verified financing ceiling stays hidden rather than overriding the legacy value'
 );
 
+// Authoritative FOPROLOS income-cap claims must update the actual matcher criterion,
+ // rather than leaving the canonical literal at six SMIG.
+const existingFoprolosIncomeClaim = CLAIMS_REPOSITORY.getAllClaims('foprolos_construction')
+  .find(claim => claim.field === 'incomeCapSmigMultiple');
+assert(existingFoprolosIncomeClaim !== undefined, 'FOPROLOS authoritative income-cap claim exists for projection regression');
+if (existingFoprolosIncomeClaim) {
+  CLAIMS_REPOSITORY.ingestClaims([{
+    ...existingFoprolosIncomeClaim,
+    claimId: 'test_claim_foprolos_income_cap_changed',
+    value: 5,
+    retrievalDate: new Date().toISOString().slice(0, 10),
+    notes: {
+      fr: 'Synthetic regression claim only: threshold changed to verify criterion projection.',
+      ar: 'ادعاء اختباري اصطناعي فقط للتحقق من إسقاط الحد على معيار المطابقة.'
+    }
+  }]);
+  const projectedFoprolosIncomeCriterion = getAuthoritativeCatalogueProducts()
+    .find(product => product.id === 'foprolos_construction')
+    ?.criteria.find(criterion => criterion.id === 'crit_foprolos_income');
+  assert(
+    projectedFoprolosIncomeCriterion?.expectedValue === 5,
+    'A changed authoritative income-cap claim updates the FOPROLOS matcher threshold instead of leaving a stale hard-coded six'
+  );
+}
+
 if (failed > 0) {
   console.error(`❌ ${failed} architecture regression guard(s) failed.`);
   process.exit(1);
