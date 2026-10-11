@@ -64,7 +64,7 @@ assert(foprolos?.maxFinancingPercentage === 90, 'FOPROLOS construction financing
 assert(foprolos?.minContributionPercent === 5, 'FOPROLOS minimum documented contribution floor is 5%');
 assert(foprolos?.durationMonthsMax === 300, 'FOPROLOS construction repayment ceiling is 25 years');
 assert(foprolos?.gracePeriodMonthsMax === 24, 'FOPROLOS construction grace period is up to 2 years');
-assert(foprolos?.applicability.unverifiedApplicability === true, 'Explicitly unverified FOPROLOS applicability remains a runtime confirmation gate');
+assert(foprolos?.applicability?.unverifiedApplicability === true, 'Explicitly unverified FOPROLOS applicability remains a runtime confirmation gate');
 assert(foprolos?.verification.verifiedFields.includes('gracePeriodMonths') === true, 'FOPROLOS grace period is field-level verified');
 const startupBourseEarly = programs.find(p => p.id === 'startup_act_bourse');
 assert(startupBourseEarly !== undefined, 'Startup Act founder stipend must exist');
@@ -137,7 +137,7 @@ const bfpmeApplicant = {
   totalProjectCost: 300000,
   userContribution: 120000,
   financingRequested: 180000,
-  sector: 'industry',
+  sector: 'industry' as const,
   location: 'Zaghouan',
   businessStage: 'idea_project' as const,
   legalStructure: 'suarl' as const,
