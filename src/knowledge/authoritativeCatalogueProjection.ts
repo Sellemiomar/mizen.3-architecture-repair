@@ -74,14 +74,28 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
 }
 
 function clearUnsupportedLegacyValue(product: FinancingProduct, field: string): void {
-  const verification = product.financialTerms.verification.find(item => item.field === field);
-  if (verification) {
-    verification.status = 'UNVERIFIED';
-    verification.unknownReason = 'Prior claim exists, but no current, non-conflicting, in-date claim is usable.';
-    verification.notes = {
-      fr: 'Valeur héritée masquée : la revendication disponible est périmée, expirée ou en conflit et doit être revérifiée.',
-      ar: 'تم إخفاء القيمة القديمة: المعطى المتاح متقادم أو منتهي الصلاحية أو متعارض ويجب التثبت منه.'
-    };
+  const reason = 'Prior claim exists, but no current, non-conflicting, in-date claim is usable.';
+  const notes = {
+    fr: 'Valeur héritée masquée : la revendication disponible est périmée, expirée ou en conflit et doit être revérifiée.',
+    ar: 'تم إخفاء القيمة القديمة: المعطى المتاح متقادم أو منتهي الصلاحية أو متعارض ويجب التثبت منه.'
+  };
+  const matchingEvidence = [
+    ...product.verification.fields.filter(item => item.field === field),
+    ...product.financialTerms.verification.filter(item => item.field === field)
+  ];
+  for (const evidence of matchingEvidence) {
+    evidence.status = 'UNVERIFIED';
+    evidence.unknownReason = reason;
+    evidence.notes = notes;
+  }
+  if (!product.financialTerms.verification.some(item => item.field === field)) {
+    product.financialTerms.verification.push({
+      field,
+      status: 'UNVERIFIED',
+      sourceIds: [],
+      unknownReason: reason,
+      notes
+    });
   }
 
   switch (field) {
