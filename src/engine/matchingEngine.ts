@@ -1059,6 +1059,8 @@ export function evaluateProgramCompatibility(
     (program as any).operationalStatus === 'HISTORICAL_ONLY' || 
     program.verification.status === 'OUTDATED' ||
     (program.verification.status as string) === 'HISTORICAL';
+  const operationalStatusNeedsConfirmation =
+    ['ACTIVE_NOT_CONFIRMED', 'UNKNOWN'].includes(String((program as any).operationalStatus));
 
   const hasUnverified = program.verification.unverifiedFields && program.verification.unverifiedFields.length > 0;
   const isPartiallyVerified = program.verification.status === 'PARTIALLY_VERIFIED' || hasUnverified;
@@ -1114,13 +1116,20 @@ export function evaluateProgramCompatibility(
     criticalUnknowns.length > 0 ||
     amountStatus === 'UNKNOWN' ||
     isOutdated ||
-    isUnverifiedEvidence
+    isUnverifiedEvidence ||
+    operationalStatusNeedsConfirmation
   ) {
     // 3. Critical information unknown or evidence outdated
     status = 'REQUIRES_CONFIRMATION';
     alignmentLevel = 'partial_alignment';
     eligibilityOutcome = 'UNKNOWN';
     scoreWeight = 400 + (passedRules.length * 10) - (unknownRules.length * 5);
+    if (operationalStatusNeedsConfirmation) {
+      needsVerification.push({
+        fr: "Les critères publics peuvent correspondre, mais l'ouverture actuelle des dépôts doit être confirmée auprès de l'organisme.",
+        ar: "قد تتوافق المعايير المنشورة، لكن يجب التأكد من الجهة المعنية من أن قبول الملفات متاح حالياً."
+      });
+    }
   } else if (failedRules.length > 0 || unknownRules.length > 1 || contributionStatus === 'FAIL') {
     // 4. Potential alignment: main criteria fit, minor points to adjust
     status = 'POTENTIAL_ALIGNMENT';
