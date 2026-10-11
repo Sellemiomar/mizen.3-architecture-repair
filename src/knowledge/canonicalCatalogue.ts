@@ -1097,6 +1097,7 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         expectedValue: 6,
         critical: true,
         evidence: {
+          field: 'monthlyGrossHouseholdIncomeSmigMultiple',
           status: 'VERIFIED',
           sourceIds: ['src_mehat_foprolos'],
           unknownReason: 'Le multiplicateur du SMIG est documenté, mais le revenu brut du ménage et le SMIG applicable doivent être fournis/vérifiés.'
