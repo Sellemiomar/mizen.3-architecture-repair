@@ -73,13 +73,62 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
   }
 }
 
+function clearUnsupportedLegacyValue(product: FinancingProduct, field: string): void {
+  const verification = product.financialTerms.verification.find(item => item.field === field);
+  if (verification) {
+    verification.status = 'UNVERIFIED';
+    verification.unknownReason = 'Prior claim exists, but no current, non-conflicting, in-date claim is usable.';
+    verification.notes = {
+      fr: 'Valeur héritée masquée : la revendication disponible est périmée, expirée ou en conflit et doit être revérifiée.',
+      ar: 'تم إخفاء القيمة القديمة: المعطى المتاح متقادم أو منتهي الصلاحية أو متعارض ويجب التثبت منه.'
+    };
+  }
+
+  switch (field) {
+    case 'minProjectCost':
+      if (product.financialTerms.projectCost) product.financialTerms.projectCost.min = undefined;
+      break;
+    case 'maxProjectCost':
+      if (product.financialTerms.projectCost) product.financialTerms.projectCost.max = undefined;
+      break;
+    case 'maxFinancingAmount':
+      if (product.financialTerms.amount) product.financialTerms.amount.max = undefined;
+      break;
+    case 'publishedMarginRange':
+    case 'pricingRelationship':
+      product.financialTerms.rate = {
+        ...product.financialTerms.rate,
+        type: 'UNKNOWN',
+        value: undefined,
+        margin: undefined,
+        referenceIndex: undefined,
+        min: undefined,
+        max: undefined,
+        ruleStatus: 'UNKNOWN',
+        explanation: {
+          fr: 'Tarification masquée : aucune revendication actuelle exploitable ne permet un calcul fiable.',
+          ar: 'تم إخفاء شروط التسعير: لا توجد معلومة حالية صالحة تسمح باحتساب موثوق.'
+        }
+      };
+      break;
+    case 'coverageBasis':
+      if (product.financialTerms.guaranteeDetails) product.financialTerms.guaranteeDetails.coverageBasis = 'UNKNOWN';
+      break;
+    case 'governorates':
+      if (product.financialTerms.guaranteeDetails) product.financialTerms.guaranteeDetails.governorates = undefined;
+      break;
+  }
+}
+
 export function getAuthoritativeCatalogueProducts(): FinancingProduct[] {
   return CANONICAL_PRODUCTS.map(base => {
     const product = structuredClone(base) as FinancingProduct;
-    const fields = new Set(CLAIMS_REPOSITORY.getAllClaims(base.id).map(c => c.field));
+    const claims = CLAIMS_REPOSITORY.getAllClaims(base.id);
+    const fields = new Set(claims.map(claim => claim.field));
     for (const field of fields) {
       const claim = getAuthoritativeClaim(base.id, field);
       if (claim) applyClaim(product, claim);
+      else clearUnsupportedLegacyValue(product, field);
     }
     return product;
   });
