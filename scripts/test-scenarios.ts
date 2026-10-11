@@ -46,7 +46,7 @@ const resultsA = runMatchingEngine(profileA);
 assert(resultsA.length > 0, 'Scenario A matches programs');
 const btsDiplomesA = resultsA.find(r => r.program.id === 'bts_diplomes');
 assert(btsDiplomesA !== undefined, 'BTS Diplômés is evaluated');
-assert(btsDiplomesA?.reasons.alignmentLevel === 'strong_alignment', 'BTS Diplômés has strong alignment for graduate with 75k DT');
+assert(btsDiplomesA?.status === 'REQUIRES_CONFIRMATION', 'BTS Diplômés requires current-intake confirmation despite fitting the graduate financing criteria');
 assert(btsDiplomesA?.program.name.fr.includes('Crédit Professionnel'), 'BTS catalogue identity is the general Crédit Professionnel product, not a degree-only product');
 assert(!btsDiplomesA?.ruleEvaluations.some(r => r.ruleId === 'requiresDegree'), 'General BTS Crédit Professionnel does not invent a higher-education degree requirement');
 
@@ -72,7 +72,7 @@ const profileB: ApplicantProfile = {
 const resultsB = runMatchingEngine(profileB);
 const bfpmeB = resultsB.find(r => r.program.id === 'bfpme_creation');
 const sotugarB = resultsB.find(r => r.program.id === 'sotugar_guarantee');
-assert(bfpmeB !== undefined && bfpmeB.reasons.alignmentLevel === 'strong_alignment', 'BFPME matches 250k DT PME expansion with strong alignment');
+assert(bfpmeB !== undefined && bfpmeB.status === 'REQUIRES_CONFIRMATION', 'BFPME fits the 250k DT PME expansion criteria but current intake must be confirmed');
 assert(sotugarB !== undefined && sotugarB.status === 'REQUIRES_CONFIRMATION', 'SOTUGAR remains a candidate but requires confirmation because it guarantees lender credit rather than lending a project amount directly');
 const stackSeedMatchesB = resultsB.filter(r => r.program.id === 'bfpme_creation' || r.program.id === 'sotugar_guarantee').map(r => JSON.parse(JSON.stringify(r)));
 // BTS cap is 150k DT and doesn't cover expansion
@@ -438,7 +438,7 @@ const homeProfile: ApplicantProfile = {
 const homeResults = runMatchingEngine(homeProfile);
 const premierLogement = homeResults.find(r => r.program.id === 'premier_logement');
 assert(premierLogement !== undefined, 'Premier Logement is evaluated');
-assert(premierLogement?.reasons.alignmentLevel === 'strong_alignment', 'Premier Logement matches middle-class primo-accédant');
+assert(premierLogement?.status === 'REQUIRES_CONFIRMATION', 'Premier Logement fits the middle-class first-home criteria but current intake must be confirmed');
 assert(Boolean(premierLogement?.reasons.matchedBecause.some(m => m.fr.includes('classe moyenne'))), 'Validates income scale');
 
 // -------------------------------------------------------------
