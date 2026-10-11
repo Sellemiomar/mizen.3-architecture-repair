@@ -318,7 +318,6 @@ function evaluateCatalogueCriteria(
           break;
         }
         case 'REQUIRED': status = value ? 'PASS' : 'FAIL'; break;
-        case 'CUSTOM': status = 'UNKNOWN'; break;
       }
       if (status === 'UNKNOWN') {
         explanationFr = explanationFr || 'La condition ne peut pas être évaluée avec les données disponibles.';
