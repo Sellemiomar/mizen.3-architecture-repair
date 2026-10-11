@@ -159,6 +159,39 @@ assert(
   'A supplied household gross-income ratio above six SMIG fails the documented FOPROLOS income criterion'
 );
 
+// An otherwise matching synthetic programme must not claim documented eligibility
+// while current intake remains unconfirmed.
+const intakeUnconfirmedProgram = structuredClone(foprolos!);
+intakeUnconfirmedProgram.id = 'audit_unconfirmed_intake';
+intakeUnconfirmedProgram.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
+intakeUnconfirmedProgram.criteria = [];
+intakeUnconfirmedProgram.applicability = {
+  supportedJourneys: ['home_construction'],
+  supportedPurposes: ['home_construction'],
+  supportedBuyerTypes: ['individual'],
+  unverifiedApplicability: false
+};
+intakeUnconfirmedProgram.maxAmount = 200000;
+intakeUnconfirmedProgram.maxFinancingPercentage = 100;
+intakeUnconfirmedProgram.minContributionPercent = 0;
+intakeUnconfirmedProgram.verification = {
+  ...intakeUnconfirmedProgram.verification,
+  status: 'VERIFIED',
+  unverifiedFields: [],
+  notes: { fr: '', ar: '' }
+};
+const intakeUnconfirmedResult = evaluateProgramCompatibility(
+  foprolosCriteriaApplicant,
+  intakeUnconfirmedProgram,
+  foprolosCriteriaProvider
+);
+assert(
+  intakeUnconfirmedResult.status === 'REQUIRES_CONFIRMATION' &&
+  intakeUnconfirmedResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY' &&
+  intakeUnconfirmedResult.needsVerification.some(note => note.fr.includes("l'ouverture actuelle des dépôts")),
+  'An otherwise matching programme with unconfirmed current intake requires confirmation, not documented eligibility'
+);
+
 // 2. FOPROLOS: construction works, unrelated car journey is blocked.
 const homeProfile = {
   journey: 'home_construction' as const,
@@ -703,3 +736,28 @@ if (failed > 0) {
   process.exit(1);
 }
 console.log('🎉 Architecture regression guardrails passed.');
+
+// Authoritative FOPROLOS income-cap claims must update the actual matcher criterion,
+// rather than leaving the canonical literal at six SMIG.
+const existingFoprolosIncomeClaim = CLAIMS_REPOSITORY.getAllClaims('foprolos_construction')
+  .find(claim => claim.field === 'incomeCapSmigMultiple');
+assert(existingFoprolosIncomeClaim !== undefined, 'FOPROLOS authoritative income-cap claim exists for projection regression');
+if (existingFoprolosIncomeClaim) {
+  CLAIMS_REPOSITORY.ingestClaims([{
+    ...existingFoprolosIncomeClaim,
+    claimId: 'test_claim_foprolos_income_cap_changed',
+    value: 5,
+    retrievalDate: new Date().toISOString().slice(0, 10),
+    notes: {
+      fr: 'Synthetic regression claim only: threshold changed to verify criterion projection.',
+      ar: 'ادعاء اختباري اصطناعي فقط للتحقق من إسقاط الحد على معيار المطابقة.'
+    }
+  }]);
+  const projectedFoprolosIncomeCriterion = getAuthoritativeCatalogueProducts()
+    .find(product => product.id === 'foprolos_construction')
+    ?.criteria.find(criterion => criterion.id === 'crit_foprolos_income');
+  assert(
+    projectedFoprolosIncomeCriterion?.expectedValue === 5,
+    'A changed authoritative income-cap claim updates the FOPROLOS matcher threshold instead of leaving a stale hard-coded six'
+  );
+}
