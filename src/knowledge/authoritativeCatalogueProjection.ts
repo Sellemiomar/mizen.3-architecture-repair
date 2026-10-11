@@ -1,24 +1,7 @@
 import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from './canonicalCatalogue';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
-import { FinancingClaim } from '../types/claims';
+import { getAuthoritativeClaim } from './authoritativeProjection';
 import { FinancingProduct } from '../types/knowledge';
-
-function rank(c: FinancingClaim): number {
-  if (c.ruleStatus === 'VERIFIED_HISTORICAL' || c.operationalStatus === 'HISTORICAL_ONLY') return -100;
-  if (c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' && c.ruleStatus === 'VERIFIED_CURRENT') return 100;
-  if (c.ruleStatus === 'UNKNOWN') return 80;
-  if (c.ruleStatus === 'PARTIALLY_VERIFIED') return 60;
-  if (c.evidenceStrength === 'OFFICIAL_SECONDARY') return 40;
-  if (c.evidenceStrength === 'SECONDARY') return 20;
-  return 0;
-}
-
-export function getAuthoritativeClaim(entityId: string, field: string): FinancingClaim | undefined {
-  return CLAIMS_REPOSITORY.getAllClaims(entityId)
-    .filter(c => c.field === field && c.conflictStatus !== 'SUPERSEDED')
-    .filter(c => c.ruleStatus !== 'VERIFIED_HISTORICAL' && c.operationalStatus !== 'HISTORICAL_ONLY')
-    .sort((a,b) => rank(b)-rank(a) || String(b.retrievalDate).localeCompare(String(a.retrievalDate)))[0];
-}
 
 function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
   const updateCriterion = (field: string, operator: string, expectedValue: unknown) => {
