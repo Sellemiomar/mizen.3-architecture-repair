@@ -130,6 +130,34 @@ assert(
   foprolosCriteriaResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY',
   'FOPROLOS household ownership and salaried-category CUSTOM rules stay unresolved until their dedicated evidence and evaluators exist'
 );
+assert(
+  foprolosCriteriaResult.ruleEvaluations.some(rule =>
+    rule.ruleId === 'catalogue_crit_foprolos_income' && rule.status === 'UNKNOWN'
+  ),
+  'FOPROLOS household income stays UNKNOWN when the gross household-income/SMIG ratio is missing'
+);
+const foprolosWithinIncomeCap = evaluateProgramCompatibility(
+  { ...foprolosCriteriaApplicant, monthlyGrossHouseholdIncomeSmigMultiple: 5.5 },
+  foprolos!,
+  foprolosCriteriaProvider
+);
+assert(
+  foprolosWithinIncomeCap.ruleEvaluations.some(rule =>
+    rule.ruleId === 'catalogue_crit_foprolos_income' && rule.status === 'PASS'
+  ),
+  'A supplied household gross-income ratio at or below six SMIG passes only the documented income criterion'
+);
+const foprolosOverIncomeCap = evaluateProgramCompatibility(
+  { ...foprolosCriteriaApplicant, monthlyGrossHouseholdIncomeSmigMultiple: 6.01 },
+  foprolos!,
+  foprolosCriteriaProvider
+);
+assert(
+  foprolosOverIncomeCap.ruleEvaluations.some(rule =>
+    rule.ruleId === 'catalogue_crit_foprolos_income' && rule.status === 'FAIL'
+  ),
+  'A supplied household gross-income ratio above six SMIG fails the documented FOPROLOS income criterion'
+);
 
 // 2. FOPROLOS: construction works, unrelated car journey is blocked.
 const homeProfile = {
