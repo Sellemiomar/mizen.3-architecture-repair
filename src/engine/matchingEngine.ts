@@ -10,7 +10,8 @@ import {
   EvidenceEvaluation,
   MatchStatus,
   ApplicationReadiness,
-  EligibilityOutcome
+  EligibilityOutcome,
+  CriteriaFit
 } from '../types/financing';
 import { 
   getAuthoritativeFinancingPrograms, 
@@ -1090,6 +1091,21 @@ export function evaluateProgramCompatibility(
   const failedRules = ruleEvaluations.filter(r => r.status === 'FAIL');
   const unknownRules = ruleEvaluations.filter(r => r.status === 'UNKNOWN');
 
+  // Keep documented criteria fit independent from operational availability. A
+  // programme can fit the published rules while current intake remains unconfirmed.
+  const criteriaFit: CriteriaFit =
+    criticalFailures.length > 0 || amountStatus === 'FAIL'
+      ? 'BLOCKED'
+      : applicability.status === 'UNKNOWN' ||
+        criticalUnknowns.length > 0 ||
+        amountStatus === 'UNKNOWN' ||
+        isOutdated ||
+        isUnverifiedEvidence
+        ? 'UNKNOWN'
+        : failedRules.length > 0 || unknownRules.length > 1 || contributionStatus === 'FAIL'
+          ? 'POTENTIAL'
+          : 'STRONG';
+
   let status: MatchStatus = 'STRONG_ALIGNMENT';
   let alignmentLevel: MatchReason['alignmentLevel'] = 'strong_alignment';
   let eligibilityOutcome: EligibilityOutcome = 'DOCUMENTED_ELIGIBILITY';
@@ -1171,6 +1187,7 @@ export function evaluateProgramCompatibility(
     provider,
     status,
     eligibilityOutcome,
+    criteriaFit,
     applicabilityStatus: applicability.status,
     applicabilityReason: applicability.reason,
     ruleEvaluations,
