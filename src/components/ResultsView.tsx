@@ -64,6 +64,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const filteredResults = candidateResults.filter(r => {
     if (filterLevel === 'all') return r.status !== 'NOT_MATCHED';
     if (filterLevel === 'potential_blockers') return r.reasons.alignmentLevel === 'potential_blockers';
+    if (filterLevel === 'strong_alignment') return r.status !== 'NOT_MATCHED' && r.criteriaFit === 'STRONG';
     return r.status !== 'NOT_MATCHED' && r.reasons.alignmentLevel === filterLevel;
   });
 
@@ -467,7 +468,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
           }`}
         >
-          {language === 'ar' ? 'توافق قوي' : 'Forte adéquation'} ({applicableResults.filter(r => r.reasons.alignmentLevel === 'strong_alignment').length})
+          {language === 'ar' ? 'المعايير متوافقة' : 'Critères compatibles'} ({applicableResults.filter(r => r.criteriaFit === 'STRONG').length})
         </button>
 
         <button
