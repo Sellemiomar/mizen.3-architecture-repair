@@ -597,8 +597,8 @@ assert(!badStack, 'UNKNOWN compatibility is excluded from viable financing stack
 const bfpmeStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'bfpme_creation')!, { financingRequested: 50000, totalProjectCost: 100000 });
 const secondCashStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'banque_credit_auto')!, { financingRequested: 50000, totalProjectCost: 100000 });
 const intakePendingStack = evaluateStackCandidate(
-  [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED', operationalStatus: 'ACTIVE_NOT_CONFIRMED' },
-   { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED', operationalStatus: 'ACTIVE_CONFIRMED' }],
+  [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_NOT_CONFIRMED' },
+   { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_CONFIRMED' }],
   [],
   50000
 );
@@ -608,7 +608,7 @@ assert(
 );
 const evidencePendingStack = evaluateStackCandidate(
   [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'PARTIALLY_VERIFIED', operationalStatus: 'ACTIVE_CONFIRMED' },
-   { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED', operationalStatus: 'ACTIVE_CONFIRMED' }],
+   { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_CONFIRMED' }],
   [],
   50000
 );
