@@ -204,6 +204,18 @@ assert(
   'An otherwise matching programme with unconfirmed current intake requires confirmation, not documented eligibility'
 );
 
+const sameProgrammeWithConfirmedIntake = structuredClone(intakeUnconfirmedProgram);
+sameProgrammeWithConfirmedIntake.operationalStatus = 'ACTIVE_CONFIRMED';
+const sameProgrammeConfirmedResult = evaluateProgramCompatibility(
+  foprolosCriteriaApplicant,
+  sameProgrammeWithConfirmedIntake,
+  foprolosCriteriaProvider
+);
+assert(
+  intakeUnconfirmedResult.criteriaFit === sameProgrammeConfirmedResult.criteriaFit,
+  'Criteria fit is evaluated independently from current intake status'
+);
+
 // 2. FOPROLOS: construction works, unrelated car journey is blocked.
 const homeProfile = {
   journey: 'home_construction' as const,
