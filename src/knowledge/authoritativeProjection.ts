@@ -201,7 +201,22 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
       id: criterion.id,
       field: criterion.field,
       operator: criterion.operator,
-      expectedValue: criterion.expectedValue,
+      expectedValue: (() => {
+        // FOPROLOS's gross-household-income ceiling is canonicalized in the
+        // claims repository under incomeCapSmigMultiple. Do not let the
+        // catalogue's legacy literal survive a changed, stale, or unknown claim.
+        if (criterion.field !== 'monthlyGrossHouseholdIncomeSmigMultiple') {
+          return criterion.expectedValue;
+        }
+        const claimField = 'incomeCapSmigMultiple';
+        const hasCanonicalClaim = CLAIMS_REPOSITORY.getAllClaims(product.id)
+          .some(claim => claim.field === claimField);
+        if (!hasCanonicalClaim) return criterion.expectedValue;
+        const incomeCapClaim = getAuthoritativeClaim(product.id, claimField);
+        return incomeCapClaim && isClaimSafeToProject(incomeCapClaim)
+          ? incomeCapClaim.value
+          : undefined;
+      })(),
       critical: criterion.critical,
       description: { fr: criterion.description?.fr || criterion.field, ar: criterion.description?.ar || criterion.field },
       evidenceStatus: criterion.evidence?.status ||
