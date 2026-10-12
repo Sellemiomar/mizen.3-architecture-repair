@@ -10,6 +10,7 @@ import {
   calculateFundingGap,
   generateFinancingStacks,
   mapProgramToStackComponent,
+  evaluateStackCandidate,
   determineStackFundingRole
 } from '../src/engine/financingStackEngine';
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders, getAuthoritativeFinancingProgram } from '../src/knowledge/authoritativeProjection';
@@ -579,6 +580,31 @@ const badStack = stackResult.stacks.find(s =>
   s.components.some(c => c.programId === 'banque_zitouna_mourabaha')
 );
 assert(!badStack, 'UNKNOWN compatibility is excluded from viable financing stacks');
+
+// Even when the compatibility registry confirms a pair, unconfirmed operational
+// intake must prevent the UI from labelling the whole structure "Compatibilité confirmée".
+const bfpmeStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'bfpme_creation')!, { financingRequested: 50000, totalProjectCost: 100000 });
+const bhStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'bh_bank_loan')!, { financingRequested: 50000, totalProjectCost: 100000 });
+const intakePendingStack = evaluateStackCandidate(
+  [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED', operationalStatus: 'ACTIVE_NOT_CONFIRMED' },
+   { ...bhStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED', operationalStatus: 'ACTIVE_CONFIRMED' }],
+  [],
+  50000
+);
+assert(
+  intakePendingStack?.overallStatus === 'CONDITIONAL',
+  'A verified-compatible pair with unconfirmed current intake is conditional, never confirmed'
+);
+const evidencePendingStack = evaluateStackCandidate(
+  [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'PARTIALLY_VERIFIED', operationalStatus: 'ACTIVE_CONFIRMED' },
+   { ...bhStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED', operationalStatus: 'ACTIVE_CONFIRMED' }],
+  [],
+  50000
+);
+assert(
+  evidencePendingStack?.overallStatus === 'CONDITIONAL',
+  'A verified-compatible pair with partially verified terms is conditional, never confirmed'
+);
 
 
 // 8. High-risk legacy financial literals must not leak back into runtime.
