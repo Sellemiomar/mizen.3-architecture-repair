@@ -537,6 +537,8 @@ export interface CostEstimate {
 import { ExclusionReason, SimulatorReference } from './knowledge';
 export * from './knowledge';
 
+export type CriteriaFit = 'STRONG' | 'POTENTIAL' | 'BLOCKED' | 'UNKNOWN';
+
 export type EligibilityOutcome = 
   | 'DOCUMENTED_ELIGIBILITY'
   | 'POTENTIAL_ELIGIBILITY'
@@ -549,6 +551,8 @@ export interface MatchResult {
   provider: Provider;
   status: MatchStatus;
   eligibilityOutcome?: EligibilityOutcome;
+  /** Public-rule fit, separate from whether the programme is currently accepting applications. */
+  criteriaFit?: CriteriaFit;
   applicabilityStatus: ApplicabilityStatus;
   applicabilityReason?: {
     fr: string;
