@@ -533,6 +533,16 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         {program.category.replace('_', ' ').toUpperCase()}
                       </span>
                       <VerificationBadge verification={program.verification} language={language} />
+                      {program.id === 'bts_credit_sur_honneur' && (
+                        <span
+                          title={language === 'ar'
+                            ? 'الدعم محدود حسب الفئة؛ يجب تأكيد السقف الحالي وإمكانية الجمع.'
+                            : 'Soutien potentiellement complémentaire : plafond par catégorie, disponibilité et cumul à confirmer.'}
+                          className="px-2 py-0.5 rounded-md bg-violet-50 text-violet-800 border border-violet-200 text-[10px] font-bold"
+                        >
+                          {language === 'ar' ? 'دعم تكميلي محتمل — مبلغ محدود' : 'Petit ticket / complément potentiel'}
+                        </span>
+                      )}
                     </div>
 
                     <h3
