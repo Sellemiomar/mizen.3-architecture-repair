@@ -540,7 +540,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                             : 'Soutien potentiellement complémentaire : plafond par catégorie, disponibilité et cumul à confirmer.'}
                           className="px-2 py-0.5 rounded-md bg-violet-50 text-violet-800 border border-violet-200 text-[10px] font-bold"
                         >
-                          {language === 'ar' ? 'دعم تكميلي محتمل — مبلغ محدود' : 'Petit ticket / complément potentiel'}
+                          {language === 'ar' ? 'دعم تكميلي محتمل · السقف يحتاج إلى تأكيد' : 'Petit ticket / complément — plafond à confirmer'}
                         </span>
                       )}
                     </div>
