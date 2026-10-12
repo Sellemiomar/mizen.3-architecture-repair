@@ -1099,8 +1099,7 @@ export function evaluateProgramCompatibility(
       : applicability.status === 'UNKNOWN' ||
         criticalUnknowns.length > 0 ||
         amountStatus === 'UNKNOWN' ||
-        isOutdated ||
-        isUnverifiedEvidence
+        isOutdated
         ? 'UNKNOWN'
         : failedRules.length > 0 || unknownRules.length > 1 || contributionStatus === 'FAIL'
           ? 'POTENTIAL'
