@@ -54,6 +54,17 @@ assert(legacyImports.length === 0, 'Deprecated financingData fixture must never 
 const programs = getAuthoritativeFinancingPrograms();
 const providers = getAuthoritativeProviders();
 
+// Small-ticket support must be visually separated from primary-gap financing.
+// This programme's detailed tier and current availability remain partly unverified,
+// so the UI must not imply that it can cover the full request.
+const resultsViewSource = readFileSync(join(process.cwd(), 'src/components/ResultsView.tsx'), 'utf8');
+assert(
+  resultsViewSource.includes("program.id === 'bts_credit_sur_honneur'") &&
+  resultsViewSource.includes('Petit ticket / complément — plafond à confirmer') &&
+  resultsViewSource.includes('السقف يحتاج إلى تأكيد'),
+  'BTS Crédit sur l’honneur is visibly labelled as supplementary small-ticket support with its ceiling unconfirmed'
+);
+
 // 1. Required current mechanisms must exist.
 const foprolos = programs.find(p => p.id === 'foprolos_construction');
 const foprodi = programs.find(p => p.id === 'foprodi_dotation');
