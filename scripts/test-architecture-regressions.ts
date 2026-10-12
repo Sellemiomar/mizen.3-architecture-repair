@@ -86,6 +86,13 @@ assert(!startupBourseEarly?.rateDescription.fr.includes('non remboursable'), 'St
 assert(!String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.financialTerms.rate?.explanation?.ar || '').includes('غير مستردة'), 'Startup stipend Arabic explanation must not mislabel it as a non-refundable grant');
 assert(String(CANONICAL_PRODUCTS.find(p => p.id === 'startup_act_bourse')?.shortDescription?.ar || '').includes('5,000') === true, 'Startup stipend Arabic description must include the current 5,000 TND upper range');
 assert(foprolos?.rateType === 'fixed' && foprolos?.rateDescription.fr.includes('1%, 3%, 5% ou 7%'), 'FOPROLOS exposes the verified income-category rate schedule');
+const foproloIncomeCapClaim = getAuthoritativeClaim('foprolos_construction', 'incomeCapSmigMultiple');
+const foproloIncomeCriterion = foprolos?.criteria?.find(criterion => criterion.id === 'crit_foprolos_income');
+assert(
+  foproloIncomeCapClaim !== undefined &&
+  foproloIncomeCriterion?.expectedValue === foproloIncomeCapClaim.value,
+  'FOPROLOS gross-household-income criterion uses the authoritative incomeCapSmigMultiple claim rather than a stale catalogue literal'
+);
 assert(foprolos?.maxAmount === 0, 'FOPROLOS does not invent a fixed DT ceiling from the 300-SMIG formula');
 assert(foprodi !== undefined, 'FOPRODI must exist in authoritative runtime');
 assert(enda !== undefined, 'Enda Bidaya must exist in authoritative runtime');
