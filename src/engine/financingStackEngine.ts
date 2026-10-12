@@ -213,9 +213,20 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
         fr: `La preuve de ${comp.programName.fr} est historique et doit être confirmée pour le montage actuel.`,
         ar: `الدليل الخاص بـ ${comp.programName.ar} تاريخي ويجب تأكيده للتركيب الحالي.`
       });
+    } else if (!['VERIFIED', 'VERIFIED_CURRENT'].includes(String(comp.evidenceStatus))) {
+      // A technically compatible pair is not a confirmed financing structure
+      // when one component's core terms are only partially verified.
+      if (overallStatus === 'SUPPORTED') overallStatus = 'CONDITIONAL';
+      unresolvedAssumptions.push({
+        fr: `Les conditions essentielles de ${comp.programName.fr} ne sont que partiellement vérifiées : la compatibilité du montage reste conditionnelle.`,
+        ar: `الشروط الأساسية لـ ${comp.programName.ar} موثقة جزئياً فقط؛ لذلك يبقى توافق التركيبة مشروطاً.`
+      });
     }
 
     if (comp.operationalStatus === 'ACTIVE_NOT_CONFIRMED' || comp.operationalStatus === 'UNKNOWN') {
+      // Current intake must be confirmed before the whole structure can be
+      // labelled as confirmed compatibility.
+      if (overallStatus === 'SUPPORTED') overallStatus = 'CONDITIONAL';
       unresolvedAssumptions.push({
         fr: `Statut opérationnel de ${comp.programName.fr} à confirmer au guichet.`,
         ar: `الوضعية العملية لـ ${comp.programName.ar} تتطلب التأكيد لدى الشباك.`
