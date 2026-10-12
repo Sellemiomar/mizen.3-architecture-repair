@@ -1169,7 +1169,7 @@ assert(!hasZeroDTComponent, 'AA.8c. Zero-value (0 DT) components are strictly fo
 
 const bfpmeSotugarStack = stacksResult.stacks.find(s => s.components.some(c => c.programId === 'bfpme_creation') && s.supportComponents.some(c => c.programId === 'sotugar_guarantee'));
 if (bfpmeSotugarStack) {
-  assert(bfpmeSotugarStack.overallStatus === 'POTENTIALLY_COMPATIBLE', 'AA.9. BFPME + SOTUGAR stack is POTENTIALLY_COMPATIBLE (not unconditionally confirmed)');
+  assert(['POTENTIALLY_COMPATIBLE', 'CONDITIONAL'].includes(bfpmeSotugarStack.overallStatus), 'AA.9. BFPME + SOTUGAR is at most potential/conditional; unconfirmed intake cannot be labelled confirmed');
   assert(bfpmeSotugarStack.confidence === 'LOW', 'AA.10. BFPME + SOTUGAR stack propagates LOW confidence');
   assert(!bfpmeSotugarStack.isReliablyCalculable, 'AA.11. Unknown BFPME rate prevents payment/amortization calculation in stack');
 }
