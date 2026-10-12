@@ -55,12 +55,16 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [showInapplicableAudit, setShowInapplicableAudit] = useState(false);
   const [handoffTarget, setHandoffTarget] = useState<{ program: FinancingProgram; provider: Provider; result: MatchResult } | null>(null);
 
-  const applicableResults = results.filter(r => r.status !== 'NOT_APPLICABLE');
+  // Keep hard-blocked mechanisms available under "Points d’attention", but
+  // never count or present them as applicable financing candidates by default.
+  const candidateResults = results.filter(r => r.status !== 'NOT_APPLICABLE');
+  const applicableResults = candidateResults.filter(r => r.status !== 'NOT_MATCHED');
   const nonApplicableResults = results.filter(r => r.status === 'NOT_APPLICABLE');
 
-  const filteredResults = applicableResults.filter(r => {
-    if (filterLevel === 'all') return true;
-    return r.reasons.alignmentLevel === filterLevel;
+  const filteredResults = candidateResults.filter(r => {
+    if (filterLevel === 'all') return r.status !== 'NOT_MATCHED';
+    if (filterLevel === 'potential_blockers') return r.reasons.alignmentLevel === 'potential_blockers';
+    return r.status !== 'NOT_MATCHED' && r.reasons.alignmentLevel === filterLevel;
   });
 
   const isProfileEmpty = !applicantProfile.financingRequested && 
@@ -487,7 +491,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
           }`}
         >
-          {language === 'ar' ? 'شروط تتطلب المراجعة' : 'Points d’attention'} ({applicableResults.filter(r => r.reasons.alignmentLevel === 'potential_blockers').length})
+          {language === 'ar' ? 'شروط تتطلب المراجعة' : 'Points d’attention'} ({candidateResults.filter(r => r.reasons.alignmentLevel === 'potential_blockers').length})
         </button>
       </div>
 
