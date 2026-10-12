@@ -510,6 +510,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         {filteredResults.map((item) => {
           const { program, provider, reasons, costEstimate } = item;
           const isCompared = comparedProgramIds.includes(program.id);
+          const criteriaFitNeedsIntakeConfirmation = item.criteriaFit === 'STRONG' && item.status === 'REQUIRES_CONFIRMATION' && ['ACTIVE_NOT_CONFIRMED', 'UNKNOWN'].includes(String(program.operationalStatus));
 
           return (
             <div
@@ -559,19 +560,21 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   {/* Alignment Level Badge */}
                   <div className="shrink-0 self-start sm:self-auto">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
-                      reasons.alignmentLevel === 'strong_alignment'
+                      criteriaFitNeedsIntakeConfirmation || reasons.alignmentLevel === 'strong_alignment'
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                         : reasons.alignmentLevel === 'partial_alignment'
                         ? 'bg-amber-50 text-amber-800 border border-amber-200'
                         : 'bg-rose-50 text-rose-800 border border-rose-200'
                     }`}>
-                      {reasons.alignmentLevel === 'strong_alignment' ? (
+                      {criteriaFitNeedsIntakeConfirmation || reasons.alignmentLevel === 'strong_alignment' ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                       ) : (
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                       )}
                       <span>
-                        {reasons.alignmentLevel === 'strong_alignment'
+                        {criteriaFitNeedsIntakeConfirmation
+                          ? (language === 'ar' ? 'المعايير متوافقة · تأكيد توفر التقديم مطلوب' : 'Critères compatibles · disponibilité à confirmer')
+                          : reasons.alignmentLevel === 'strong_alignment'
                           ? t.alignmentStrong
                           : reasons.alignmentLevel === 'partial_alignment'
                           ? t.alignmentPartial
