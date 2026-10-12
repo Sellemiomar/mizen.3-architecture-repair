@@ -78,6 +78,7 @@ const stackSeedMatchesB = resultsB.filter(r => r.program.id === 'bfpme_creation'
 // BTS cap is 150k DT and doesn't cover expansion
 const btsB = resultsB.find(r => r.program.id === 'bts_diplomes');
 assert(Boolean(btsB?.reasons.potentialIssues.some(p => p.fr.includes('dépasse le plafond') || p.fr.includes('Non applicable'))), 'BTS flags non-applicability or amount exceeding cap');
+assert(btsB?.status === 'NOT_MATCHED', 'A BTS option exceeding its documented ceiling is a blocker, not an applicable financing candidate');
 
 // -------------------------------------------------------------
 // Scenario C: Innovative startup, 30,000 DT R&D/Tech in Tunis
