@@ -181,7 +181,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
   };
 }
 
-export function evaluateStackCandidate(cashComponents: StackComponent[], supportComponents: StackComponent[], requiredFunding: number, userContribution?: number): FinancingStackCandidate | null {
+export export function evaluateStackCandidate(cashComponents: StackComponent[], supportComponents: StackComponent[], requiredFunding: number, userContribution?: number): FinancingStackCandidate | null {
   const allComponents = [...cashComponents, ...supportComponents];
   if (allComponents.length < 2) return null;
   const ids = allComponents.map(c => c.programId);
