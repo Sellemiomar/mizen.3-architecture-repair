@@ -223,6 +223,18 @@ assert(
   'Criteria fit is evaluated independently from current intake status'
 );
 
+const sameProgrammeWithUnverifiedCommercialTerms = structuredClone(intakeUnconfirmedProgram);
+sameProgrammeWithUnverifiedCommercialTerms.verification.status = 'UNVERIFIED';
+const sameProgrammeUnverifiedTermsResult = evaluateProgramCompatibility(
+  foprolosCriteriaApplicant,
+  sameProgrammeWithUnverifiedCommercialTerms,
+  foprolosCriteriaProvider
+);
+assert(
+  intakeUnconfirmedResult.criteriaFit === sameProgrammeUnverifiedTermsResult.criteriaFit,
+  'Unverified commercial terms do not erase independently evaluated public-criteria fit'
+);
+
 // 2. FOPROLOS: construction works, unrelated car journey is blocked.
 const homeProfile = {
   journey: 'home_construction' as const,
