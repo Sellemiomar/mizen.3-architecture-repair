@@ -16,7 +16,8 @@ import {
 import { 
   getAuthoritativeFinancingPrograms, 
   getAuthoritativeProviders, 
-  getAuthoritativeRegionalDevelopmentZones 
+  getAuthoritativeRegionalDevelopmentZones,
+  getAuthoritativeClaim
 } from '../knowledge/authoritativeProjection';
 import { calculateFinancingCost } from './financialCalculations';
 import { formatVerificationNeed, getFieldLabel } from '../utils/verificationLabels';
@@ -947,6 +948,60 @@ export function evaluateProgramCompatibility(
       };
       financialDetails.push(detail);
       potentialIssues.push(detail);
+    }
+  } else if (program.id === 'bts_credit_sur_honneur') {
+    // The Honour Loan has category-specific maxima stored as authoritative claims,
+    // not as one generic product.maxAmount. Use the applicable published tier
+    // when known so a large request cannot pass as merely "unknown".
+    const isMicroProject = applicant.legalStructure === 'not_yet_created' ||
+      applicant.businessStage === 'idea_project';
+    const capField = isMicroProject
+      ? 'maxFinancingAmountMicroProject'
+      : 'maxFinancingAmountSmeCommunity';
+    const capClaim = getAuthoritativeClaim('bts_credit_sur_honneur', capField);
+    const tierCap = typeof capClaim?.value === 'number' ? capClaim.value : undefined;
+
+    if (applicant.financingRequested === undefined || applicant.financingRequested <= 0 || tierCap === undefined) {
+      amountStatus = 'UNKNOWN';
+      const detail = {
+        fr: 'Le plafond applicable du Crédit sur l’honneur BTS doit être confirmé pour la catégorie du demandeur.',
+        ar: 'يجب تأكيد السقف المطبق لقرض الشرف من BTS حسب فئة طالب التمويل.'
+      };
+      ruleEvaluations.push({
+        ruleId: 'btsHonourLoanTierCap',
+        label: { fr: 'Plafond par catégorie — Crédit sur l’honneur BTS', ar: 'السقف حسب الفئة — قرض الشرف BTS' },
+        criticality: 'CRITICAL',
+        status: 'UNKNOWN',
+        explanation: detail
+      });
+      financialDetails.push(detail);
+      needsVerification.push(detail);
+    } else if (applicant.financingRequested > tierCap) {
+      amountStatus = 'FAIL';
+      const detail = {
+        fr: `Montant demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) supérieur au plafond annoncé de ${tierCap.toLocaleString('fr-TN')} TND pour cette catégorie.`,
+        ar: `المبلغ المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) يتجاوز السقف المعلن لهذه الفئة وهو ${tierCap.toLocaleString('fr-TN')} د.`
+      };
+      ruleEvaluations.push({
+        ruleId: 'btsHonourLoanTierCap',
+        label: { fr: 'Plafond par catégorie — Crédit sur l’honneur BTS', ar: 'السقف حسب الفئة — قرض الشرف BTS' },
+        criticality: 'CRITICAL',
+        status: 'FAIL',
+        explanation: detail
+      });
+      financialDetails.push(detail);
+      potentialIssues.push(detail);
+    } else {
+      ruleEvaluations.push({
+        ruleId: 'btsHonourLoanTierCap',
+        label: { fr: 'Plafond par catégorie — Crédit sur l’honneur BTS', ar: 'السقف حسب الفئة — قرض الشرف BTS' },
+        criticality: 'CRITICAL',
+        status: 'PASS',
+        explanation: {
+          fr: `Montant demandé compatible avec le plafond annoncé de ${tierCap.toLocaleString('fr-TN')} TND; conditions détaillées et ouverture des dépôts à confirmer.`,
+          ar: `المبلغ المطلوب ضمن السقف المعلن ${tierCap.toLocaleString('fr-TN')} د؛ يجب تأكيد الشروط التفصيلية وفتح قبول الملفات.`
+        }
+      });
     }
   } else if (program.category === 'guarantee' || program.id === 'startup_act_bourse') {
     // These mechanisms do not provide a project-loan amount: SOTUGAR guarantees a lender's credit,
