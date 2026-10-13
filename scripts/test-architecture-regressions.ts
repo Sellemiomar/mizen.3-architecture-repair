@@ -54,6 +54,31 @@ assert(legacyImports.length === 0, 'Deprecated financingData fixture must never 
 const programs = getAuthoritativeFinancingPrograms();
 const providers = getAuthoritativeProviders();
 
+// A large SME request must not remain an applicable BTS Honour Loan candidate
+// merely because the product stores its tiered caps as claims rather than maxAmount.
+const btsHonour = programs.find(p => p.id === 'bts_credit_sur_honneur');
+const btsProvider = providers.find(p => p.id === btsHonour?.providerId);
+if (btsHonour && btsProvider) {
+  const largeIndustrialSme = {
+    purpose: 'equipment' as const,
+    sector: 'industry' as const,
+    location: 'Zaghouan',
+    businessStage: 'established_under_2y' as const,
+    legalStructure: 'suarl' as const,
+    totalProjectCost: 300000,
+    userContribution: 60000,
+    financingRequested: 240000
+  };
+  const btsHonourResult = evaluateProgramCompatibility(largeIndustrialSme, btsHonour, btsProvider);
+  assert(
+    btsHonourResult.financialEvaluation.amountStatus === 'FAIL' &&
+    btsHonourResult.status === 'NOT_MATCHED',
+    'BTS Honour Loan request above the authoritative SME tier ceiling is blocked, not listed as an applicable candidate'
+  );
+} else {
+  assert(false, 'BTS Honour Loan and provider must exist for tier-cap regression');
+}
+
 // Small-ticket support must be visually separated from primary-gap financing.
 // This programme's detailed tier and current availability remain partly unverified,
 // so the UI must not imply that it can cover the full request.
