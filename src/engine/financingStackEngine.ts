@@ -310,6 +310,21 @@ export function generateFinancingStacks(
     requiredFunding = raw.requiredFunding ?? profile.financingRequested ?? (profile.totalProjectCost ? profile.totalProjectCost - (profile.userContribution || 0) : 80000);
   }
 
+  // Invalid user-entered financing requirements must not leak into stack
+  // totals or produce nonsensical negative/NaN gap labels.
+  if (!Number.isFinite(requiredFunding) || requiredFunding < 0) {
+    return {
+      requiredFunding: 0,
+      totalProjectCost: profile.totalProjectCost,
+      userContribution: profile.userContribution,
+      stacks: [],
+      unverifiedCombinations: [],
+      unknownPairEvaluations: [],
+      evaluatedPairCount: 0,
+      evidenceSummary: { verifiedPairs: 0, potentialPairs: 0, unknownPairs: 0 }
+    };
+  }
+
   const eligible = matches.filter(m =>
     ['STRONG_ALIGNMENT', 'POTENTIAL_ALIGNMENT', 'REQUIRES_CONFIRMATION', 'ELIGIBLE', 'PARTIALLY_ELIGIBLE'].includes(m.status as string) ||
     ['strong_alignment', 'partial_alignment'].includes(m.reasons?.alignmentLevel)
