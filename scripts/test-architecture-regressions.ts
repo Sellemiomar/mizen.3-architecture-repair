@@ -54,6 +54,25 @@ assert(legacyImports.length === 0, 'Deprecated financingData fixture must never 
 const programs = getAuthoritativeFinancingPrograms();
 const providers = getAuthoritativeProviders();
 
+// Stack synthesis must reject invalid required amounts at its own boundary,
+// not merely rely on calculateFundingGap to sanitize a later calculation.
+const negativeFundingStack = generateFinancingStacks({
+  applicantProfile: { financingRequested: -1 } as any,
+  matchResults: []
+});
+assert(
+  negativeFundingStack.requiredFunding === 0 && negativeFundingStack.stacks.length === 0,
+  'Negative financing requirement cannot leak into generated stack totals'
+);
+const nonFiniteFundingStack = generateFinancingStacks({
+  applicantProfile: { financingRequested: Number.NaN } as any,
+  matchResults: []
+});
+assert(
+  nonFiniteFundingStack.requiredFunding === 0 && nonFiniteFundingStack.stacks.length === 0,
+  'Non-finite financing requirement cannot leak into generated stack totals'
+);
+
 // A large SME request must not remain an applicable BTS Honour Loan candidate
 // merely because the product stores its tiered caps as claims rather than maxAmount.
 const btsHonour = programs.find(p => p.id === 'bts_credit_sur_honneur');
