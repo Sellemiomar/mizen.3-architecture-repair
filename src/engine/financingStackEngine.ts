@@ -149,6 +149,21 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
       continue;
     }
 
+    // A signed applicant-specific amount must not silently override a known
+    // programme-level ceiling. Treat the contradiction as unresolved until
+    // an authorized exception or corrected source is recorded explicitly.
+    if (
+      typeof comp.maxPotentialAmount === 'number' &&
+      Number.isFinite(comp.maxPotentialAmount) &&
+      comp.maxPotentialAmount > 0 &&
+      commitment > comp.maxPotentialAmount
+    ) {
+      warnings.push(
+        `Financement exclu du total confirmé : l'engagement individuel pour ${comp.programName.fr} (${commitment} DT) dépasse le plafond publié (${comp.maxPotentialAmount} DT) ; vérifier une éventuelle dérogation documentée.`
+      );
+      continue;
+    }
+
     verifiedCashFunding += commitment;
   }
 
