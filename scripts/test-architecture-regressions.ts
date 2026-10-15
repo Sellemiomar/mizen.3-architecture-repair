@@ -767,6 +767,30 @@ assert(
   percentageCappedAllocation.allocatedAmount === 40000,
   'A documented financing percentage and project cost can provide a bounded candidate allocation even when the DT ceiling is unknown'
 );
+const percentageCeilingComponent = createStackComponent(
+  { program: percentageCappedProgram } as any,
+  50000,
+  100000
+);
+assert(
+  percentageCeilingComponent.maxPotentialAmount === 40000,
+  'A project-specific percentage cap is retained as the ceiling for later commitment validation'
+);
+const percentageCeilingConflict = calculateFundingGap(100000, [{
+  ...percentageCeilingComponent,
+  programId: 'percentage-ceiling-conflict',
+  isCashFunding: true,
+  role: 'DEBT',
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED',
+  fundingCommitmentStatus: 'COMMITTED',
+  confirmedCommitmentAmount: 50000
+}]);
+assert(
+  percentageCeilingConflict.verifiedCashFunding === 0 &&
+  percentageCeilingConflict.warnings.some(w => w.includes('dépasse le plafond publié')),
+  'A committed amount above the known project-cost percentage cap is excluded from confirmed cash totals'
+);
 const infiniteDirectAllocation = createStackComponent({ program: unknownCeilingProgram } as any, Number.POSITIVE_INFINITY);
 assert(
   infiniteDirectAllocation.allocatedAmount === undefined,
