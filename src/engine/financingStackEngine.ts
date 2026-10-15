@@ -117,7 +117,20 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
         // applicant's approved guarantee amount. Count only an explicit
         // applicant-specific guarantee commitment.
         const confirmedCoverage = comp.confirmedGuaranteeCoverageAmount;
-        if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0) {
+        const knownGuaranteeCeiling = comp.maxPotentialAmount;
+        if (
+          typeof confirmedCoverage === 'number' &&
+          Number.isFinite(confirmedCoverage) &&
+          confirmedCoverage > 0 &&
+          typeof knownGuaranteeCeiling === 'number' &&
+          Number.isFinite(knownGuaranteeCeiling) &&
+          knownGuaranteeCeiling > 0 &&
+          confirmedCoverage > knownGuaranteeCeiling
+        ) {
+          warnings.push(
+            `Couverture de garantie exclue du montant confirmé : l'engagement individuel pour ${comp.programName.fr} (${confirmedCoverage} DT) dépasse le plafond publié (${knownGuaranteeCeiling} DT) ; vérifier une éventuelle dérogation documentée.`
+          );
+        } else if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0) {
           guaranteeCoverageAmount += confirmedCoverage;
         } else if (
           (typeof comp.maxPotentialAmount === 'number' && comp.maxPotentialAmount > 0) ||
