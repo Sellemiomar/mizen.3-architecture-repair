@@ -705,6 +705,27 @@ assert(
   infiniteMappedAllocation.allocatedAmount === undefined,
   'Non-finite requested amount cannot become an infinite candidate allocation when the programme ceiling is unknown'
 );
+const unknownCeilingMappedAllocation = mapProgramToStackComponent(unknownCeilingProgram, {
+  financingRequested: 50000,
+  totalProjectCost: 100000
+});
+assert(
+  unknownCeilingMappedAllocation.allocatedAmount === undefined,
+  'Unknown programme amount and percentage ceilings do not inherit the applicant request as a candidate allocation'
+);
+const percentageCappedProgram = {
+  ...unknownCeilingProgram,
+  maxFinancingPercentage: 40,
+  maxAmount: 0
+};
+const percentageCappedAllocation = mapProgramToStackComponent(percentageCappedProgram, {
+  financingRequested: 50000,
+  totalProjectCost: 100000
+});
+assert(
+  percentageCappedAllocation.allocatedAmount === 40000,
+  'A documented financing percentage and project cost can provide a bounded candidate allocation even when the DT ceiling is unknown'
+);
 const infiniteDirectAllocation = createStackComponent({ program: unknownCeilingProgram } as any, Number.POSITIVE_INFINITY);
 assert(
   infiniteDirectAllocation.allocatedAmount === undefined,
