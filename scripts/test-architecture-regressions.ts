@@ -10,6 +10,7 @@ import {
   calculateFundingGap,
   generateFinancingStacks,
   mapProgramToStackComponent,
+  createStackComponent,
   evaluateStackCandidate,
   determineStackFundingRole
 } from '../src/engine/financingStackEngine';
