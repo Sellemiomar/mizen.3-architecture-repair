@@ -791,6 +791,23 @@ assert(
   percentageCeilingConflict.warnings.some(w => w.includes('dépasse le plafond publié')),
   'A committed amount above the known project-cost percentage cap is excluded from confirmed cash totals'
 );
+const percentageGuaranteeProgram = {
+  ...unknownCeilingProgram,
+  id: 'synthetic_guarantee_percentage',
+  category: 'guarantee',
+  maxAmount: 0,
+  maxFinancingPercentage: 75
+};
+const percentageGuaranteeComponent = mapProgramToStackComponent(percentageGuaranteeProgram, {
+  financingRequested: 90000,
+  totalProjectCost: 100000
+});
+assert(
+  percentageGuaranteeComponent.role === 'GUARANTEE' &&
+  percentageGuaranteeComponent.maxPotentialAmount === undefined &&
+  percentageGuaranteeComponent.coveragePercentage === 0.75,
+  'A guarantee coverage ratio is not misinterpreted as a cash-amount ceiling based on project cost'
+);
 const infiniteDirectAllocation = createStackComponent({ program: unknownCeilingProgram } as any, Number.POSITIVE_INFINITY);
 assert(
   infiniteDirectAllocation.allocatedAmount === undefined,
