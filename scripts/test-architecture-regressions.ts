@@ -698,6 +698,17 @@ assert(!badStack, 'UNKNOWN compatibility is excluded from viable financing stack
 // intake must prevent the UI from labelling the whole structure "Compatibilité confirmée".
 const bfpmeStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'bfpme_creation')!, { financingRequested: 50000, totalProjectCost: 100000 });
 const secondCashStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'banque_credit_auto')!, { financingRequested: 50000, totalProjectCost: 100000 });
+const unknownCeilingProgram = programs.find(p => p.id === 'leasing_vehicule_pro')!;
+const infiniteMappedAllocation = mapProgramToStackComponent(unknownCeilingProgram, { financingRequested: Number.POSITIVE_INFINITY });
+assert(
+  infiniteMappedAllocation.allocatedAmount === undefined,
+  'Non-finite requested amount cannot become an infinite candidate allocation when the programme ceiling is unknown'
+);
+const infiniteDirectAllocation = createStackComponent({ program: unknownCeilingProgram } as any, Number.POSITIVE_INFINITY);
+assert(
+  infiniteDirectAllocation.allocatedAmount === undefined,
+  'Direct stack-component creation rejects infinite allocated amounts'
+);
 assert(
   evaluateStackCandidate(
     [{ ...bfpmeStackBase, allocatedAmount: 25000 }, { ...secondCashStackBase, allocatedAmount: 25000 }],
