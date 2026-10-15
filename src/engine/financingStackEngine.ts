@@ -182,6 +182,10 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
 }
 
 export function evaluateStackCandidate(cashComponents: StackComponent[], supportComponents: StackComponent[], requiredFunding: number, userContribution?: number): FinancingStackCandidate | null {
+  // This exported boundary can be called independently of stack synthesis;
+  // reject invalid funding amounts before building any candidate or labels.
+  if (!Number.isFinite(requiredFunding) || requiredFunding < 0) return null;
+
   const allComponents = [...cashComponents, ...supportComponents];
   if (allComponents.length < 2) return null;
   const ids = allComponents.map(c => c.programId);
