@@ -587,6 +587,26 @@ assert(
   'Applicant-specific commitment exceeding a known programme ceiling is flagged and excluded pending documented reconciliation'
 );
 
+const guaranteeCoverageAboveCeiling = calculateFundingGap(100000, [{
+  programId: 'guarantee-ceiling-conflict',
+  programName: { fr: 'Garantie avec plafond', ar: 'ضمان بسقف' },
+  providerId: 'test-provider',
+  providerName: { fr: 'Test', ar: 'اختبار' },
+  role: 'GUARANTEE',
+  isCashFunding: false,
+  maxPotentialAmount: 100000,
+  confirmedGuaranteeCoverageAmount: 120000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  evidenceConfidence: 'HIGH',
+  operationalStatus: 'ACTIVE_CONFIRMED'
+}]);
+assert(
+  guaranteeCoverageAboveCeiling.guaranteeCoverageAmount === 0 &&
+  guaranteeCoverageAboveCeiling.verifiedCashFunding === 0 &&
+  guaranteeCoverageAboveCeiling.warnings.some(w => w.includes('dépasse le plafond publié')),
+  'Applicant-specific guarantee coverage above a known published ceiling is excluded and flagged pending documented reconciliation'
+);
+
 const activeProductWithoutApplicantCommitment = calculateFundingGap(100000, [{
   ...sotugarComponent,
   programId: 'active-but-not-approved-for-applicant',
