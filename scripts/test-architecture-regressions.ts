@@ -105,6 +105,22 @@ if (btsHonour && btsProvider) {
     nonFiniteBtsRequest.ruleEvaluations.some(rule => rule.ruleId === 'btsHonourLoanTierCap' && rule.status === 'UNKNOWN'),
     'Non-finite BTS financing request remains UNKNOWN and cannot fall through to a passing tier-cap comparison'
   );
+
+  const unknownBtsApplicantTier = evaluateProgramCompatibility(
+    {
+      purpose: 'equipment' as const,
+      sector: 'industry' as const,
+      location: 'Zaghouan',
+      financingRequested: 10000
+    },
+    btsHonour,
+    btsProvider
+  );
+  assert(
+    unknownBtsApplicantTier.financialEvaluation.amountStatus === 'UNKNOWN' &&
+    unknownBtsApplicantTier.ruleEvaluations.some(rule => rule.ruleId === 'btsHonourLoanTierCap' && rule.status === 'UNKNOWN'),
+    'BTS tier ceiling remains UNKNOWN when applicant stage and legal structure do not establish the applicable category'
+  );
 } else {
   assert(false, 'BTS Honour Loan and provider must exist for tier-cap regression');
 }
