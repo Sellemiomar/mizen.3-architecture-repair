@@ -794,7 +794,7 @@ assert(
 const percentageGuaranteeProgram = {
   ...unknownCeilingProgram,
   id: 'synthetic_guarantee_percentage',
-  category: 'guarantee',
+  category: 'guarantee' as const,
   maxAmount: 0,
   maxFinancingPercentage: 75
 };
