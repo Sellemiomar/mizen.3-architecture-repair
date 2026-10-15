@@ -38,7 +38,7 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
   const role = determineStackFundingRole(program);
   const requested = options?.financingRequested;
   let allocatedAmount: number | undefined;
-  if (isCashRole(role) && typeof requested === 'number' && requested > 0) {
+  if (isCashRole(role) && typeof requested === 'number' && Number.isFinite(requested) && requested > 0) {
     const cap = typeof program.maxAmount === 'number' && program.maxAmount > 0 ? program.maxAmount : requested;
     allocatedAmount = Math.min(cap, requested);
   }
@@ -162,7 +162,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
   const role = determineStackFundingRole(prog);
   const isCash = isCashRole(role);
   const ruleStatus = (prog as any).ruleStatus || prog.verification?.status || 'VERIFIED';
-  const validAllocatedAmount = isCash && typeof allocatedAmount === 'number' && allocatedAmount > 0 ? allocatedAmount : undefined;
+  const validAllocatedAmount = isCash && typeof allocatedAmount === 'number' && Number.isFinite(allocatedAmount) && allocatedAmount > 0 ? allocatedAmount : undefined;
   return {
     programId: prog.id,
     programName: prog.name,
