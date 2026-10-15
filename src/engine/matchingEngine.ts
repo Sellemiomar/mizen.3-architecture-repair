@@ -961,7 +961,7 @@ export function evaluateProgramCompatibility(
     const capClaim = getAuthoritativeClaim('bts_credit_sur_honneur', capField);
     const tierCap = typeof capClaim?.value === 'number' ? capClaim.value : undefined;
 
-    if (applicant.financingRequested === undefined || applicant.financingRequested <= 0 || tierCap === undefined) {
+    if (typeof applicant.financingRequested !== 'number' || !Number.isFinite(applicant.financingRequested) || applicant.financingRequested <= 0 || tierCap === undefined) {
       amountStatus = 'UNKNOWN';
       const detail = {
         fr: 'Le plafond applicable du Crédit sur l’honneur BTS doit être confirmé pour la catégorie du demandeur.',
