@@ -682,6 +682,22 @@ assert(!badStack, 'UNKNOWN compatibility is excluded from viable financing stack
 // intake must prevent the UI from labelling the whole structure "Compatibilité confirmée".
 const bfpmeStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'bfpme_creation')!, { financingRequested: 50000, totalProjectCost: 100000 });
 const secondCashStackBase = mapProgramToStackComponent(programs.find(p => p.id === 'banque_credit_auto')!, { financingRequested: 50000, totalProjectCost: 100000 });
+assert(
+  evaluateStackCandidate(
+    [{ ...bfpmeStackBase, allocatedAmount: 25000 }, { ...secondCashStackBase, allocatedAmount: 25000 }],
+    [],
+    Number.NaN
+  ) === null,
+  'Direct stack evaluation rejects NaN required funding rather than returning a candidate with invalid totals'
+);
+assert(
+  evaluateStackCandidate(
+    [{ ...bfpmeStackBase, allocatedAmount: 25000 }, { ...secondCashStackBase, allocatedAmount: 25000 }],
+    [],
+    -1
+  ) === null,
+  'Direct stack evaluation rejects negative required funding'
+);
 const intakePendingStack = evaluateStackCandidate(
   [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_NOT_CONFIRMED' },
    { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_CONFIRMED' }],
