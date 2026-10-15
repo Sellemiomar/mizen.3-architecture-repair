@@ -39,8 +39,22 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
   const requested = options?.financingRequested;
   let allocatedAmount: number | undefined;
   if (isCashRole(role) && typeof requested === 'number' && Number.isFinite(requested) && requested > 0) {
-    const cap = typeof program.maxAmount === 'number' && program.maxAmount > 0 ? program.maxAmount : requested;
-    allocatedAmount = Math.min(cap, requested);
+    const amountCaps: number[] = [];
+    if (typeof program.maxAmount === 'number' && Number.isFinite(program.maxAmount) && program.maxAmount > 0) {
+      amountCaps.push(program.maxAmount);
+    }
+    if (
+      typeof options?.totalProjectCost === 'number' &&
+      Number.isFinite(options.totalProjectCost) &&
+      options.totalProjectCost > 0 &&
+      typeof program.maxFinancingPercentage === 'number' &&
+      Number.isFinite(program.maxFinancingPercentage) &&
+      program.maxFinancingPercentage > 0
+    ) {
+      amountCaps.push(options.totalProjectCost * program.maxFinancingPercentage / 100);
+    }
+    // Do not invent a programme ceiling from the applicant's requested amount.
+    if (amountCaps.length > 0) allocatedAmount = Math.min(requested, ...amountCaps);
   }
   const ruleStatus = (program as any).ruleStatus || program.verification?.status || 'VERIFIED';
   const evidenceConfidence = ruleStatus === 'VERIFIED_HISTORICAL' || UNKNOWN_EVIDENCE.has(ruleStatus) ? 'LOW' : ruleStatus === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'HIGH';
@@ -360,10 +374,30 @@ export function generateFinancingStacks(
     else if (candidate.overallStatus === 'SUPPORTED' || candidate.overallStatus === 'POTENTIALLY_COMPATIBLE' || candidate.overallStatus === 'CONDITIONAL') stacks.push(candidate);
   };
 
+  const knownAmountCaps = (program: FinancingProgram): number[] => {
+    const caps: number[] = [];
+    if (typeof program.maxAmount === 'number' && Number.isFinite(program.maxAmount) && program.maxAmount > 0) {
+      caps.push(program.maxAmount);
+    }
+    if (
+      typeof profile.totalProjectCost === 'number' &&
+      Number.isFinite(profile.totalProjectCost) &&
+      profile.totalProjectCost > 0 &&
+      typeof program.maxFinancingPercentage === 'number' &&
+      Number.isFinite(program.maxFinancingPercentage) &&
+      program.maxFinancingPercentage > 0
+    ) {
+      caps.push(profile.totalProjectCost * program.maxFinancingPercentage / 100);
+    }
+    return caps;
+  };
+
   for (const cashMatch of cash) {
-    const cap = typeof cashMatch.program.maxAmount === 'number' && cashMatch.program.maxAmount > 0 ? cashMatch.program.maxAmount : requiredFunding;
-    const amount = Math.min(cap, requiredFunding);
-    if (amount <= 0) continue;
+    const caps = knownAmountCaps(cashMatch.program);
+    // A qualitative candidate may still be useful, but an unknown ceiling must
+    // never be turned into a made-up numeric allocation.
+    const amount = caps.length ? Math.min(requiredFunding, ...caps) : undefined;
+    if (typeof amount === 'number' && amount <= 0) continue;
     const cashComp = createStackComponent(cashMatch, amount);
     for (const supportMatch of support) addCandidate(evaluateStackCandidate([cashComp], [createStackComponent(supportMatch)], requiredFunding, profile.userContribution));
   }
@@ -373,15 +407,15 @@ export function generateFinancingStacks(
     const pair = getStackCompatibility(a.program.id, b.program.id);
     if (pair.compatibilityStatus === 'INCOMPATIBLE') continue;
 
-    const capA0 = typeof a.program.maxAmount === 'number' && a.program.maxAmount > 0 ? a.program.maxAmount : requiredFunding;
-    const pctA = a.program.maxFinancingPercentage && profile.totalProjectCost ? profile.totalProjectCost * a.program.maxFinancingPercentage / 100 : requiredFunding;
-    const amountA = Math.min(capA0, pctA, requiredFunding);
+    const capsA = knownAmountCaps(a.program);
+    if (capsA.length === 0) continue;
+    const amountA = Math.min(requiredFunding, ...capsA);
     const remaining = Math.max(0, requiredFunding - amountA);
     if (amountA <= 0 || remaining <= 0) continue;
 
-    const capB0 = typeof b.program.maxAmount === 'number' && b.program.maxAmount > 0 ? b.program.maxAmount : remaining;
-    const pctB = b.program.maxFinancingPercentage && profile.totalProjectCost ? profile.totalProjectCost * b.program.maxFinancingPercentage / 100 : remaining;
-    const amountB = Math.min(capB0, pctB, remaining);
+    const capsB = knownAmountCaps(b.program);
+    if (capsB.length === 0) continue;
+    const amountB = Math.min(remaining, ...capsB);
     if (amountB <= 0) continue;
 
     const ca = createStackComponent(a, amountA);
