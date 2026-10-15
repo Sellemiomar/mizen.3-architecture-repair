@@ -565,6 +565,27 @@ const fullyConfirmedGap = calculateFundingGap(100000, [{
   evidenceConfidence: 'HIGH'
 }]);
 assert(fullyConfirmedGap.verifiedCashFunding === 100000 && fullyConfirmedGap.remainingFundingGap === 0, 'Only current evidence, active program, and explicit applicant-specific commitment count as confirmed cash');
+const commitmentAbovePublishedCeiling = calculateFundingGap(100000, [{
+  programId: 'ceiling-conflict',
+  programName: { fr: 'Programme avec plafond', ar: 'برنامج بسقف' },
+  providerId: 'test-provider',
+  providerName: { fr: 'Test', ar: 'اختبار' },
+  role: 'DEBT',
+  isCashFunding: true,
+  allocatedAmount: 120000,
+  confirmedCommitmentAmount: 120000,
+  fundingCommitmentStatus: 'COMMITTED',
+  maxPotentialAmount: 100000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  evidenceConfidence: 'HIGH',
+  operationalStatus: 'ACTIVE_CONFIRMED'
+}]);
+assert(
+  commitmentAbovePublishedCeiling.verifiedCashFunding === 0 &&
+  commitmentAbovePublishedCeiling.remainingFundingGap === 100000 &&
+  commitmentAbovePublishedCeiling.warnings.some(w => w.includes('dépasse le plafond publié')),
+  'Applicant-specific commitment exceeding a known programme ceiling is flagged and excluded pending documented reconciliation'
+);
 
 const activeProductWithoutApplicantCommitment = calculateFundingGap(100000, [{
   ...sotugarComponent,
