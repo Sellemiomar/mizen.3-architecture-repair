@@ -955,10 +955,20 @@ export function evaluateProgramCompatibility(
     // when known so a large request cannot pass as merely "unknown".
     const isMicroProject = applicant.legalStructure === 'not_yet_created' ||
       applicant.businessStage === 'idea_project';
+    const isEstablishedBusiness =
+      ['established_under_2y', 'established_over_2y'].includes(String(applicant.businessStage)) &&
+      Boolean(applicant.legalStructure) &&
+      applicant.legalStructure !== 'not_yet_created';
+    // Do not default an unknown applicant category to the larger SME/community
+    // tier: missing stage/structure evidence must keep the applicable ceiling UNKNOWN.
     const capField = isMicroProject
       ? 'maxFinancingAmountMicroProject'
-      : 'maxFinancingAmountSmeCommunity';
-    const capClaim = getAuthoritativeClaim('bts_credit_sur_honneur', capField);
+      : isEstablishedBusiness
+        ? 'maxFinancingAmountSmeCommunity'
+        : undefined;
+    const capClaim = capField
+      ? getAuthoritativeClaim('bts_credit_sur_honneur', capField)
+      : undefined;
     const tierCap = typeof capClaim?.value === 'number' ? capClaim.value : undefined;
 
     if (typeof applicant.financingRequested !== 'number' || !Number.isFinite(applicant.financingRequested) || applicant.financingRequested <= 0 || tierCap === undefined) {
