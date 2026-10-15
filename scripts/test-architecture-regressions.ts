@@ -94,6 +94,17 @@ if (btsHonour && btsProvider) {
     btsHonourResult.status === 'NOT_MATCHED',
     'BTS Honour Loan request above the authoritative SME tier ceiling is blocked, not listed as an applicable candidate'
   );
+
+  const nonFiniteBtsRequest = evaluateProgramCompatibility(
+    { ...largeIndustrialSme, financingRequested: Number.NaN },
+    btsHonour,
+    btsProvider
+  );
+  assert(
+    nonFiniteBtsRequest.financialEvaluation.amountStatus === 'UNKNOWN' &&
+    nonFiniteBtsRequest.ruleEvaluations.some(rule => rule.ruleId === 'btsHonourLoanTierCap' && rule.status === 'UNKNOWN'),
+    'Non-finite BTS financing request remains UNKNOWN and cannot fall through to a passing tier-cap comparison'
+  );
 } else {
   assert(false, 'BTS Honour Loan and provider must exist for tier-cap regression');
 }
