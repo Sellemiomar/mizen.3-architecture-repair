@@ -34,12 +34,13 @@ export function determineStackFundingRole(program: FinancingProgram): StackFundi
   return 'CASH_FINANCING';
 }
 
-function knownProgramAmountCaps(program: FinancingProgram, totalProjectCost?: number): number[] {
+function knownProgramAmountCaps(program: FinancingProgram, totalProjectCost?: number, applyPercentageCap = true): number[] {
   const caps: number[] = [];
   if (typeof program.maxAmount === 'number' && Number.isFinite(program.maxAmount) && program.maxAmount > 0) {
     caps.push(program.maxAmount);
   }
   if (
+    applyPercentageCap &&
     typeof totalProjectCost === 'number' &&
     Number.isFinite(totalProjectCost) &&
     totalProjectCost > 0 &&
@@ -55,7 +56,7 @@ function knownProgramAmountCaps(program: FinancingProgram, totalProjectCost?: nu
 export function mapProgramToStackComponent(program: FinancingProgram, options?: { financingRequested?: number; totalProjectCost?: number }): StackComponent {
   const role = determineStackFundingRole(program);
   const requested = options?.financingRequested;
-  const amountCaps = knownProgramAmountCaps(program, options?.totalProjectCost);
+  const amountCaps = knownProgramAmountCaps(program, options?.totalProjectCost, isCashRole(role));
   let allocatedAmount: number | undefined;
   if (isCashRole(role) && typeof requested === 'number' && Number.isFinite(requested) && requested > 0) {
     // Do not invent a programme ceiling from the applicant's requested amount.
@@ -208,7 +209,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
   const prog = match.program;
   const role = determineStackFundingRole(prog);
   const isCash = isCashRole(role);
-  const amountCaps = knownProgramAmountCaps(prog, totalProjectCost);
+  const amountCaps = knownProgramAmountCaps(prog, totalProjectCost, isCash);
   const ruleStatus = (prog as any).ruleStatus || prog.verification?.status || 'VERIFIED';
   const validAllocatedAmount = isCash && typeof allocatedAmount === 'number' && Number.isFinite(allocatedAmount) && allocatedAmount > 0 ? allocatedAmount : undefined;
   return {
