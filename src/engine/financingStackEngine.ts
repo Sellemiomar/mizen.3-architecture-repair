@@ -34,25 +34,30 @@ export function determineStackFundingRole(program: FinancingProgram): StackFundi
   return 'CASH_FINANCING';
 }
 
+function knownProgramAmountCaps(program: FinancingProgram, totalProjectCost?: number): number[] {
+  const caps: number[] = [];
+  if (typeof program.maxAmount === 'number' && Number.isFinite(program.maxAmount) && program.maxAmount > 0) {
+    caps.push(program.maxAmount);
+  }
+  if (
+    typeof totalProjectCost === 'number' &&
+    Number.isFinite(totalProjectCost) &&
+    totalProjectCost > 0 &&
+    typeof program.maxFinancingPercentage === 'number' &&
+    Number.isFinite(program.maxFinancingPercentage) &&
+    program.maxFinancingPercentage > 0
+  ) {
+    caps.push(totalProjectCost * program.maxFinancingPercentage / 100);
+  }
+  return caps;
+}
+
 export function mapProgramToStackComponent(program: FinancingProgram, options?: { financingRequested?: number; totalProjectCost?: number }): StackComponent {
   const role = determineStackFundingRole(program);
   const requested = options?.financingRequested;
+  const amountCaps = knownProgramAmountCaps(program, options?.totalProjectCost);
   let allocatedAmount: number | undefined;
   if (isCashRole(role) && typeof requested === 'number' && Number.isFinite(requested) && requested > 0) {
-    const amountCaps: number[] = [];
-    if (typeof program.maxAmount === 'number' && Number.isFinite(program.maxAmount) && program.maxAmount > 0) {
-      amountCaps.push(program.maxAmount);
-    }
-    if (
-      typeof options?.totalProjectCost === 'number' &&
-      Number.isFinite(options.totalProjectCost) &&
-      options.totalProjectCost > 0 &&
-      typeof program.maxFinancingPercentage === 'number' &&
-      Number.isFinite(program.maxFinancingPercentage) &&
-      program.maxFinancingPercentage > 0
-    ) {
-      amountCaps.push(options.totalProjectCost * program.maxFinancingPercentage / 100);
-    }
     // Do not invent a programme ceiling from the applicant's requested amount.
     if (amountCaps.length > 0) allocatedAmount = Math.min(requested, ...amountCaps);
   }
@@ -66,7 +71,7 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
     role,
     isCashFunding: isCashRole(role),
     allocatedAmount,
-    maxPotentialAmount: program.maxAmount,
+    maxPotentialAmount: amountCaps.length > 0 ? Math.min(...amountCaps) : undefined,
     coveragePercentage: program.maxFinancingPercentage ? program.maxFinancingPercentage / 100 : undefined,
     rateType: program.rateType,
     evidenceStatus: ruleStatus,
@@ -199,10 +204,11 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
   };
 }
 
-export function createStackComponent(match: MatchResult, allocatedAmount?: number): StackComponent {
+export function createStackComponent(match: MatchResult, allocatedAmount?: number, totalProjectCost?: number): StackComponent {
   const prog = match.program;
   const role = determineStackFundingRole(prog);
   const isCash = isCashRole(role);
+  const amountCaps = knownProgramAmountCaps(prog, totalProjectCost);
   const ruleStatus = (prog as any).ruleStatus || prog.verification?.status || 'VERIFIED';
   const validAllocatedAmount = isCash && typeof allocatedAmount === 'number' && Number.isFinite(allocatedAmount) && allocatedAmount > 0 ? allocatedAmount : undefined;
   return {
@@ -213,7 +219,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
     role,
     isCashFunding: isCash,
     allocatedAmount: validAllocatedAmount,
-    maxPotentialAmount: prog.maxAmount,
+    maxPotentialAmount: amountCaps.length > 0 ? Math.min(...amountCaps) : undefined,
     coveragePercentage: prog.maxFinancingPercentage ? prog.maxFinancingPercentage / 100 : undefined,
     rateType: prog.rateType,
     evidenceStatus: ruleStatus,
@@ -426,8 +432,8 @@ export function generateFinancingStacks(
     // never be turned into a made-up numeric allocation.
     const amount = caps.length ? Math.min(requiredFunding, ...caps) : undefined;
     if (typeof amount === 'number' && amount <= 0) continue;
-    const cashComp = createStackComponent(cashMatch, amount);
-    for (const supportMatch of support) addCandidate(evaluateStackCandidate([cashComp], [createStackComponent(supportMatch)], requiredFunding, profile.userContribution));
+    const cashComp = createStackComponent(cashMatch, amount, profile.totalProjectCost);
+    for (const supportMatch of support) addCandidate(evaluateStackCandidate([cashComp], [createStackComponent(supportMatch, undefined, profile.totalProjectCost)], requiredFunding, profile.userContribution));
   }
 
   for (let i = 0; i < cash.length; i++) for (let j = i + 1; j < cash.length; j++) {
@@ -446,8 +452,8 @@ export function generateFinancingStacks(
     const amountB = Math.min(remaining, ...capsB);
     if (amountB <= 0) continue;
 
-    const ca = createStackComponent(a, amountA);
-    const cb = createStackComponent(b, amountB);
+    const ca = createStackComponent(a, amountA, profile.totalProjectCost);
+    const cb = createStackComponent(b, amountB, profile.totalProjectCost);
     addCandidate(evaluateStackCandidate([ca, cb], [], requiredFunding, profile.userContribution));
     for (const supportMatch of support) addCandidate(evaluateStackCandidate([ca, cb], [createStackComponent(supportMatch)], requiredFunding, profile.userContribution));
   }
