@@ -129,6 +129,18 @@ if (btsHonour && btsProvider) {
 // Small-ticket support must be visually separated from primary-gap financing.
 // This programme's detailed tier and current availability remain partly unverified,
 // so the UI must not imply that it can cover the full request.
+const questionnaireSource = readFileSync(join(process.cwd(), 'src/components/QuestionnaireFlow.tsx'), 'utf8');
+const financingTypesSource = readFileSync(join(process.cwd(), 'src/types/financing.ts'), 'utf8');
+assert(
+  questionnaireSource.includes('monthlyGrossHouseholdIncomeSmigMultiple') &&
+  questionnaireSource.includes('Revenu brut mensuel du ménage ÷ SMIG applicable') &&
+  financingTypesSource.includes('applicantOwnsDwelling?: boolean') &&
+  financingTypesSource.includes('spouseOwnsDwelling?: boolean') &&
+  questionnaireSource.includes('Possédez-vous actuellement un logement ?') &&
+  questionnaireSource.includes('Votre conjoint possède-t-il un logement ?'),
+  'FOPROLOS-relevant gross household income and applicant/spouse dwelling ownership are collected separately from net income and first-purchase status'
+);
+
 const resultsViewSource = readFileSync(join(process.cwd(), 'src/components/ResultsView.tsx'), 'utf8');
 assert(
   resultsViewSource.includes("program.id === 'bts_credit_sur_honneur'") &&
