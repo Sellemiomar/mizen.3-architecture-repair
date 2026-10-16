@@ -240,6 +240,24 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
   const ids = allComponents.map(c => c.programId);
   if (new Set(ids).size !== ids.length) return null;
 
+  // Keep the public candidate-evaluation boundary safe even when callers bypass
+  // createStackComponent: role buckets must agree with the component semantics.
+  if (cashComponents.some(c => !c.isCashFunding || !isCashRole(c.role))) return null;
+  if (supportComponents.some(c => c.isCashFunding || isCashRole(c.role))) return null;
+
+  // Candidate allocations are estimates, not commitments, but they still must
+  // be finite positive amounts and cannot exceed a known programme/project cap.
+  for (const comp of allComponents) {
+    if (comp.allocatedAmount !== undefined && (
+      !Number.isFinite(comp.allocatedAmount) ||
+      comp.allocatedAmount <= 0 ||
+      (typeof comp.maxPotentialAmount === 'number' &&
+        Number.isFinite(comp.maxPotentialAmount) &&
+        comp.maxPotentialAmount > 0 &&
+        comp.allocatedAmount > comp.maxPotentialAmount)
+    )) return null;
+  }
+
   if (cashComponents.length > 1 && cashComponents.some(c => !c.allocatedAmount || c.allocatedAmount <= 0)) return null;
 
   const compatibilityEvaluations: StackCompatibilityEvaluation[] = [];
