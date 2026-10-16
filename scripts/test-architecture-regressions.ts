@@ -872,6 +872,24 @@ assert(
   ),
   'Stack generation cannot use a financing percentage above 100% to allocate more than the project cost'
 );
+const zeroFundingStackResult = generateFinancingStacks({
+  profile: {
+    totalProjectCost: 100000,
+    financingRequested: 0,
+    userContribution: 100000,
+    purpose: 'creation'
+  } as any,
+  matchedPrograms: [
+    { program: unknownCeilingProgram, status: 'STRONG_ALIGNMENT', reasons: { alignmentLevel: 'strong_alignment' } },
+    { program: programs.find(p => p.id === 'sotugar_guarantee')!, status: 'STRONG_ALIGNMENT', reasons: { alignmentLevel: 'strong_alignment' } }
+  ] as any
+});
+assert(
+  zeroFundingStackResult.stacks.length === 0 &&
+  (zeroFundingStackResult.unverifiedCombinations || []).length === 0 &&
+  zeroFundingStackResult.evaluatedPairCount === 0,
+  'A fully self-funded project does not receive irrelevant financing-stack candidates'
+);
 const percentageCeilingComponent = createStackComponent(
   { program: percentageCappedProgram } as any,
   50000,
