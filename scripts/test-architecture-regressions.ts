@@ -860,7 +860,7 @@ const invalidPercentageStackResult = generateFinancingStacks({
     { program: programs.find(p => p.id === 'sotugar_guarantee')!, status: 'STRONG_ALIGNMENT', reasons: { alignmentLevel: 'strong_alignment' } }
   ] as any
 });
-const invalidPercentageCandidates = [...invalidPercentageStackResult.stacks, ...invalidPercentageStackResult.unverifiedCombinations];
+const invalidPercentageCandidates = [...invalidPercentageStackResult.stacks, ...(invalidPercentageStackResult.unverifiedCombinations || [])];
 assert(
   invalidPercentageCandidates.every(candidate =>
     candidate.components
