@@ -606,6 +606,23 @@ assert(
   guaranteeCoverageAboveCeiling.warnings.some(w => w.includes('dépasse le plafond publié')),
   'Applicant-specific guarantee coverage above a known published ceiling is excluded and flagged pending documented reconciliation'
 );
+const supportMislabelledAsCash = calculateFundingGap(50000, [{
+  ...sotugarComponent,
+  programId: 'support-mislabelled-as-cash',
+  role: 'TECHNICAL_ASSISTANCE',
+  isCashFunding: true,
+  allocatedAmount: 50000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED',
+  fundingCommitmentStatus: 'COMMITTED',
+  confirmedCommitmentAmount: 50000
+} as any]);
+assert(
+  supportMislabelledAsCash.verifiedCashFunding === 0 &&
+  supportMislabelledAsCash.remainingFundingGap === 50000 &&
+  supportMislabelledAsCash.warnings.some(w => w.includes('rôle') && w.includes('numéraire')),
+  'A non-cash support role cannot reduce the funding gap even if malformed input labels it as cash'
+);
 
 const activeProductWithoutApplicantCommitment = calculateFundingGap(100000, [{
   ...sotugarComponent,
