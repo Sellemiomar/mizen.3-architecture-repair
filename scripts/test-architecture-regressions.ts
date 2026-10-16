@@ -721,6 +721,36 @@ assert(
   ),
   'ACTIVE_CONFIRMED is rejected without fresh direct-primary intake evidence'
 );
+const invalidFinancingPercentageProduct = structuredClone(validationProducts[0]);
+invalidFinancingPercentageProduct.id = 'synthetic_invalid_financing_percentage';
+invalidFinancingPercentageProduct.financialTerms.maxFinancingPercentage = 150;
+const invalidFinancingPercentageValidation = validateKnowledgeCatalogue(
+  [...validationProducts, invalidFinancingPercentageProduct],
+  validationProviders
+);
+assert(
+  invalidFinancingPercentageValidation.errors.some(e =>
+    e.programId === invalidFinancingPercentageProduct.id && e.code === 'INVALID_FINANCING_PERCENTAGE'
+  ),
+  'Knowledge validation rejects project-cost financing percentages above 100%'
+);
+const invalidGuaranteeRangeProduct = structuredClone(validationProducts.find(p => p.id === 'sotugar_guarantee')!);
+invalidGuaranteeRangeProduct.id = 'synthetic_invalid_guarantee_range';
+invalidGuaranteeRangeProduct.financialTerms.guaranteeDetails = {
+  coveragePercentMin: 80,
+  coveragePercentMax: 120,
+  coverageBasis: 'PRINCIPAL'
+};
+const invalidGuaranteeRangeValidation = validateKnowledgeCatalogue(
+  [...validationProducts, invalidGuaranteeRangeProduct],
+  validationProviders
+);
+assert(
+  invalidGuaranteeRangeValidation.errors.some(e =>
+    e.programId === invalidGuaranteeRangeProduct.id && e.code === 'INVALID_GUARANTEE_COVERAGE_RANGE'
+  ),
+  'Knowledge validation rejects guarantee coverage percentages outside 0–100%'
+);
 const stackResult = generateFinancingStacks({
   profile: {
     journey: 'startup',
