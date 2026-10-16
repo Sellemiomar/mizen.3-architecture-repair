@@ -118,7 +118,14 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
     }
     seenIds.add(comp.programId);
 
-    if (comp.role === 'GUARANTEE' || !comp.isCashFunding) {
+    // The public gap calculator must enforce role semantics independently:
+    // a malformed support component marked as cash must never reduce the gap.
+    if (comp.role !== 'GUARANTEE' && comp.isCashFunding && !isCashRole(comp.role)) {
+      warnings.push(`Financement exclu du total confirmé : le rôle de ${comp.programName.fr} n'est pas un instrument de financement en numéraire.`);
+      continue;
+    }
+
+    if (comp.role === 'GUARANTEE' || !comp.isCashFunding || !isCashRole(comp.role)) {
       if (comp.role === 'GUARANTEE') {
         // A programme ceiling or generic coverage percentage is not the
         // applicant's approved guarantee amount. Count only an explicit
