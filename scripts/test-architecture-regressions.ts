@@ -862,6 +862,7 @@ const invalidPercentageStackResult = generateFinancingStacks({
 });
 const invalidPercentageCandidates = [...invalidPercentageStackResult.stacks, ...(invalidPercentageStackResult.unverifiedCombinations || [])];
 assert(
+  invalidPercentageCandidates.length > 0 &&
   invalidPercentageCandidates.every(candidate =>
     candidate.components
       .filter(component => component.programId === invalidPercentageProgram.id)
