@@ -148,9 +148,38 @@ export function validateKnowledgeCatalogue(
       }
     }
 
+    // Reject impossible percentages before they can be projected into runtime
+    // eligibility or financing calculations. Unknown values remain unknown; invalid
+    // numeric values are catalogue errors, not values to silently clamp.
+    const financingPercentage = prod.financialTerms.maxFinancingPercentage;
+    if (typeof financingPercentage === 'number' &&
+        (!Number.isFinite(financingPercentage) || financingPercentage < 0 || financingPercentage > 100)) {
+      errors.push({
+        severity: 'ERROR',
+        programId: prod.id,
+        field: 'financialTerms.maxFinancingPercentage',
+        message: 'Maximum project-cost financing percentage must be a finite value between 0 and 100.',
+        code: 'INVALID_FINANCING_PERCENTAGE'
+      });
+    }
+
     // 6. Guarantee percentage without basis
     if (prod.category === 'GUARANTEE' || prod.financingDomains.includes('GUARANTEE')) {
       const gDetails = prod.financialTerms.guaranteeDetails;
+      const coverageMin = gDetails?.coveragePercentMin;
+      const coverageMax = gDetails?.coveragePercentMax;
+      const invalidCoveragePercent = (value: number | undefined) =>
+        typeof value === 'number' && (!Number.isFinite(value) || value < 0 || value > 100);
+      if (invalidCoveragePercent(coverageMin) || invalidCoveragePercent(coverageMax) ||
+          (typeof coverageMin === 'number' && typeof coverageMax === 'number' && coverageMin > coverageMax)) {
+        errors.push({
+          severity: 'ERROR',
+          programId: prod.id,
+          field: 'financialTerms.guaranteeDetails',
+          message: 'Guarantee coverage percentages must be finite values between 0 and 100, with minimum no greater than maximum.',
+          code: 'INVALID_GUARANTEE_COVERAGE_RANGE'
+        });
+      }
       if (gDetails && (gDetails.coveragePercentMin || gDetails.coveragePercentMax)) {
         if (!gDetails.coverageBasis || gDetails.coverageBasis === 'UNKNOWN') {
           warnings.push({
