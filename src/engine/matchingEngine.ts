@@ -878,11 +878,22 @@ export function evaluateProgramCompatibility(
             ar: "مفهوم 'التمويل الشامل' لا يتوفر على سند رسمي موثق : حالة غير مؤكدة."
           }
         });
-      } else if (maxFinancingPercentage === undefined) {
+      } else if (
+        maxFinancingPercentage === undefined ||
+        !Number.isFinite(maxFinancingPercentage) ||
+        maxFinancingPercentage < 0 ||
+        maxFinancingPercentage > 100
+      ) {
         amountStatus = 'UNKNOWN';
+        const invalidPercentage = typeof maxFinancingPercentage === 'number' &&
+          (!Number.isFinite(maxFinancingPercentage) || maxFinancingPercentage < 0 || maxFinancingPercentage > 100);
         const detail = {
-          fr: "Quotité maximale de financement BFPME non établie par une revendication actuelle exploitable.",
-          ar: "النسبة القصوى لتمويل BFPME غير مثبتة بمعلومة حالية صالحة."
+          fr: invalidPercentage
+            ? "Quotité maximale de financement BFPME invalide : la valeur doit être comprise entre 0 et 100 %. Le contrôle d'éligibilité reste indéterminé."
+            : "Quotité maximale de financement BFPME non établie par une revendication actuelle exploitable.",
+          ar: invalidPercentage
+            ? "نسبة التمويل القصوى لـ BFPME غير صالحة؛ يجب أن تكون بين 0 و100%. تظل أهلية التمويل غير محسومة."
+            : "النسبة القصوى لتمويل BFPME غير مثبتة بمعلومة حالية صالحة."
         };
         ruleEvaluations.push({
           ruleId: 'bfpmeCmltRatioCeiling',
