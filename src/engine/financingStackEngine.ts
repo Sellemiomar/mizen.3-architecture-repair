@@ -446,7 +446,8 @@ export function generateFinancingStacks(
       profile.totalProjectCost > 0 &&
       typeof program.maxFinancingPercentage === 'number' &&
       Number.isFinite(program.maxFinancingPercentage) &&
-      program.maxFinancingPercentage > 0
+      program.maxFinancingPercentage > 0 &&
+      program.maxFinancingPercentage <= 100
     ) {
       caps.push(profile.totalProjectCost * program.maxFinancingPercentage / 100);
     }
