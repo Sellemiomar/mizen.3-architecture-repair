@@ -46,7 +46,8 @@ function knownProgramAmountCaps(program: FinancingProgram, totalProjectCost?: nu
     totalProjectCost > 0 &&
     typeof program.maxFinancingPercentage === 'number' &&
     Number.isFinite(program.maxFinancingPercentage) &&
-    program.maxFinancingPercentage > 0
+    program.maxFinancingPercentage > 0 &&
+    program.maxFinancingPercentage <= 100
   ) {
     caps.push(totalProjectCost * program.maxFinancingPercentage / 100);
   }
@@ -73,7 +74,7 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
     isCashFunding: isCashRole(role),
     allocatedAmount,
     maxPotentialAmount: amountCaps.length > 0 ? Math.min(...amountCaps) : undefined,
-    coveragePercentage: program.maxFinancingPercentage ? program.maxFinancingPercentage / 100 : undefined,
+    coveragePercentage: typeof program.maxFinancingPercentage === 'number' && Number.isFinite(program.maxFinancingPercentage) && program.maxFinancingPercentage > 0 && program.maxFinancingPercentage <= 100 ? program.maxFinancingPercentage / 100 : undefined,
     rateType: program.rateType,
     evidenceStatus: ruleStatus,
     evidenceConfidence,
@@ -221,7 +222,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
     isCashFunding: isCash,
     allocatedAmount: validAllocatedAmount,
     maxPotentialAmount: amountCaps.length > 0 ? Math.min(...amountCaps) : undefined,
-    coveragePercentage: prog.maxFinancingPercentage ? prog.maxFinancingPercentage / 100 : undefined,
+    coveragePercentage: typeof prog.maxFinancingPercentage === 'number' && Number.isFinite(prog.maxFinancingPercentage) && prog.maxFinancingPercentage > 0 && prog.maxFinancingPercentage <= 100 ? prog.maxFinancingPercentage / 100 : undefined,
     rateType: prog.rateType,
     evidenceStatus: ruleStatus,
     evidenceConfidence: match.evidenceEvaluation?.confidenceScore || (ruleStatus === 'VERIFIED_HISTORICAL' || UNKNOWN_EVIDENCE.has(ruleStatus) ? 'LOW' : 'MEDIUM'),
