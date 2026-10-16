@@ -410,6 +410,21 @@ export function generateFinancingStacks(
     };
   }
 
+  // No financing need means there is no gap to fill; don't manufacture a
+  // financing-stack candidate merely because two programmes matched.
+  if (requiredFunding === 0) {
+    return {
+      requiredFunding: 0,
+      totalProjectCost: profile.totalProjectCost,
+      userContribution: profile.userContribution,
+      stacks: [],
+      unverifiedCombinations: [],
+      unknownPairEvaluations: [],
+      evaluatedPairCount: 0,
+      evidenceSummary: { verifiedPairs: 0, potentialPairs: 0, unknownPairs: 0 }
+    };
+  }
+
   const eligible = matches.filter(m =>
     ['STRONG_ALIGNMENT', 'POTENTIAL_ALIGNMENT', 'REQUIRES_CONFIRMATION', 'ELIGIBLE', 'PARTIALLY_ELIGIBLE'].includes(m.status as string) ||
     ['strong_alignment', 'partial_alignment'].includes(m.reasons?.alignmentLevel)
