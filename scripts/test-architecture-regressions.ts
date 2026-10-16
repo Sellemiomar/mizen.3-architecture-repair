@@ -829,6 +829,22 @@ assert(
   ) === null,
   'Direct stack evaluation rejects negative required funding'
 );
+assert(
+  evaluateStackCandidate(
+    [{ ...percentageCeilingComponent, allocatedAmount: 50000 }, { ...secondCashStackBase, allocatedAmount: 10000 }],
+    [],
+    60000
+  ) === null,
+  'Direct stack evaluation rejects candidate allocations above a known programme/project ceiling'
+);
+assert(
+  evaluateStackCandidate(
+    [{ ...percentageGuaranteeComponent, allocatedAmount: 10000 }, { ...secondCashStackBase, allocatedAmount: 10000 }],
+    [],
+    20000
+  ) === null,
+  'Direct stack evaluation rejects guarantees incorrectly supplied in the cash-financing bucket'
+);
 const intakePendingStack = evaluateStackCandidate(
   [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_NOT_CONFIRMED' },
    { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_CONFIRMED' }],
