@@ -606,6 +606,24 @@ assert(
   guaranteeCoverageAboveCeiling.warnings.some(w => w.includes('dépasse le plafond publié')),
   'Applicant-specific guarantee coverage above a known published ceiling is excluded and flagged pending documented reconciliation'
 );
+const staleGuaranteeCoverage = calculateFundingGap(100000, [{
+  programId: 'stale-guarantee-commitment',
+  programName: { fr: 'Garantie ancienne', ar: 'ضمان قديم' },
+  providerId: 'test-provider',
+  providerName: { fr: 'Test', ar: 'اختبار' },
+  role: 'GUARANTEE',
+  isCashFunding: false,
+  confirmedGuaranteeCoverageAmount: 50000,
+  maxPotentialAmount: 100000,
+  evidenceStatus: 'VERIFIED_HISTORICAL',
+  evidenceConfidence: 'HIGH',
+  operationalStatus: 'ACTIVE_NOT_CONFIRMED'
+}]);
+assert(
+  staleGuaranteeCoverage.guaranteeCoverageAmount === 0 &&
+  staleGuaranteeCoverage.warnings.some(w => w.includes('preuve actuelle complète')),
+  'An applicant-specific guarantee amount is not counted without current evidence and confirmed operational availability'
+);
 const supportMislabelledAsCash = calculateFundingGap(50000, [{
   ...sotugarComponent,
   programId: 'support-mislabelled-as-cash',
