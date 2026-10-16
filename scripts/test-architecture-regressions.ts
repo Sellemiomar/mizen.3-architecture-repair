@@ -767,6 +767,22 @@ assert(
   percentageCappedAllocation.allocatedAmount === 40000,
   'A documented financing percentage and project cost can provide a bounded candidate allocation even when the DT ceiling is unknown'
 );
+const invalidPercentageProgram = {
+  ...unknownCeilingProgram,
+  id: 'synthetic_invalid_percentage_cap',
+  maxAmount: 0,
+  maxFinancingPercentage: 150
+};
+const invalidPercentageAllocation = mapProgramToStackComponent(invalidPercentageProgram, {
+  financingRequested: 50000,
+  totalProjectCost: 100000
+});
+assert(
+  invalidPercentageAllocation.allocatedAmount === undefined &&
+  invalidPercentageAllocation.maxPotentialAmount === undefined &&
+  invalidPercentageAllocation.coveragePercentage === undefined,
+  'A financing percentage above 100% cannot create an invalid cap, allocation, or coverage ratio'
+);
 const percentageCeilingComponent = createStackComponent(
   { program: percentageCappedProgram } as any,
   50000,
