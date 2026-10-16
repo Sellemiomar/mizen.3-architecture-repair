@@ -136,6 +136,13 @@ assert(
   resultsViewSource.includes('السقف يحتاج إلى تأكيد'),
   'BTS Crédit sur l’honneur is visibly labelled as supplementary small-ticket support with its ceiling unconfirmed'
 );
+assert(
+  resultsViewSource.includes('Montant indicatif — non confirmé') &&
+  resultsViewSource.includes('مبلغ تقديري — غير مؤكد') &&
+  resultsViewSource.includes('Montant non établi') &&
+  resultsViewSource.includes('المبلغ غير محدد'),
+  'Stack allocations are explicitly labelled indicative/unconfirmed and unknown ceilings are not described as known'
+);
 
 // 1. Required current mechanisms must exist.
 const foprolos = programs.find(p => p.id === 'foprolos_construction');
