@@ -161,6 +161,8 @@ export interface ApplicantProfile {
   monthlyIncomeRange?: MonthlyIncomeRange;
   monthlyNetIncome?: number;       // Net monthly personal/household income when relevant (TND)
   monthlyGrossHouseholdIncomeSmigMultiple?: number; // Gross household income, including spouse where applicable, divided by the applicable SMIG; do not infer from net income.
+  applicantOwnsDwelling?: boolean; // Whether the applicant currently owns a dwelling; distinct from first-purchase status.
+  spouseOwnsDwelling?: boolean; // Whether the spouse currently owns a dwelling, when applicable.
   monthlyDebtPayments?: number;    // Existing monthly debt/loan payments when disclosed (TND)
   employmentStatus?: EmploymentStatus;
   propertyType?: PropertyType;
