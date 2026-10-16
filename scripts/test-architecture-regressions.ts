@@ -381,6 +381,19 @@ assert(
   bfpmeUnknownLimitResult.ruleEvaluations.some(r => r.ruleId === 'bfpmeProjectCostRange' && r.status === 'UNKNOWN'),
   'Missing BFPME project-cost, loan and percentage ceilings cannot be converted into passing eligibility checks'
 );
+const bfpmeInvalidPercentage = structuredClone(bfpmeUnknownLimits);
+bfpmeInvalidPercentage.maxFinancingPercentage = 150;
+const bfpmeInvalidPercentageResult = evaluateProgramCompatibility(
+  bfpmeApplicant,
+  bfpmeInvalidPercentage,
+  bfpmeProvider
+);
+assert(
+  bfpmeInvalidPercentageResult.financialEvaluation.amountStatus === 'UNKNOWN' &&
+  bfpmeInvalidPercentageResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY' &&
+  bfpmeInvalidPercentageResult.ruleEvaluations.some(r => r.ruleId === 'bfpmeCmltRatioCeiling' && r.status === 'UNKNOWN'),
+  'An invalid BFPME percentage above 100% cannot produce a passing financing-eligibility result'
+);
 
 // Authoritative claims must not let expired/stale primary evidence or unresolved
 // conflicts override a current, non-conflicting claim.
