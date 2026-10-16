@@ -588,6 +588,24 @@ assert(
   commitmentAbovePublishedCeiling.warnings.some(w => w.includes('dépasse le plafond publié')),
   'Applicant-specific commitment exceeding a known programme ceiling is flagged and excluded pending documented reconciliation'
 );
+const invalidCeilingCommitment = calculateFundingGap(100000, [{
+  programId: 'invalid-infinite-ceiling',
+  programName: { fr: 'Plafond invalide', ar: 'سقف غير صالح' },
+  providerId: 'test-provider',
+  providerName: { fr: 'Test', ar: 'اختبار' },
+  role: 'DEBT',
+  isCashFunding: true,
+  maxPotentialAmount: Number.POSITIVE_INFINITY,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED',
+  fundingCommitmentStatus: 'COMMITTED',
+  confirmedCommitmentAmount: 50000
+}]);
+assert(
+  invalidCeilingCommitment.verifiedCashFunding === 0 &&
+  invalidCeilingCommitment.warnings.some(w => w.includes('plafond publié invalide')),
+  'A confirmed cash amount is withheld when its supplied ceiling is malformed rather than silently treated as unlimited'
+);
 
 const guaranteeCoverageAboveCeiling = calculateFundingGap(100000, [{
   programId: 'guarantee-ceiling-conflict',
@@ -625,6 +643,23 @@ assert(
   staleGuaranteeCoverage.guaranteeCoverageAmount === 0 &&
   staleGuaranteeCoverage.warnings.some(w => w.includes('preuve actuelle complète')),
   'An applicant-specific guarantee amount is not counted without current evidence and confirmed operational availability'
+);
+const invalidGuaranteeCeiling = calculateFundingGap(100000, [{
+  programId: 'invalid-guarantee-ceiling',
+  programName: { fr: 'Plafond de garantie invalide', ar: 'سقف ضمان غير صالح' },
+  providerId: 'test-provider',
+  providerName: { fr: 'Test', ar: 'اختبار' },
+  role: 'GUARANTEE',
+  isCashFunding: false,
+  confirmedGuaranteeCoverageAmount: 50000,
+  maxPotentialAmount: Number.NaN,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED'
+}]);
+assert(
+  invalidGuaranteeCeiling.guaranteeCoverageAmount === 0 &&
+  invalidGuaranteeCeiling.warnings.some(w => w.includes('plafond publié invalide')),
+  'A confirmed guarantee amount is withheld when the supplied ceiling is non-finite'
 );
 const supportMislabelledAsCash = calculateFundingGap(50000, [{
   ...sotugarComponent,
@@ -967,6 +1002,14 @@ assert(
     20000
   ) === null,
   'Direct stack evaluation rejects guarantees incorrectly supplied in the cash-financing bucket'
+);
+assert(
+  evaluateStackCandidate(
+    [{ ...bfpmeStackBase, maxPotentialAmount: Number.POSITIVE_INFINITY, allocatedAmount: 25000 }, { ...secondCashStackBase, allocatedAmount: 25000 }],
+    [],
+    50000
+  ) === null,
+  'Direct stack evaluation rejects non-finite published ceilings instead of treating them as unlimited'
 );
 const intakePendingStack = evaluateStackCandidate(
   [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_NOT_CONFIRMED' },
