@@ -507,7 +507,9 @@ const confirmedGuaranteeGap = calculateFundingGap(150000, [{
   ...sotugarComponent,
   maxPotentialAmount: 1000000,
   coveragePercentage: 0.75,
-  confirmedGuaranteeCoverageAmount: 60000
+  confirmedGuaranteeCoverageAmount: 60000,
+  evidenceStatus: 'VERIFIED_CURRENT',
+  operationalStatus: 'ACTIVE_CONFIRMED'
 }]);
 assert(
   confirmedGuaranteeGap.guaranteeCoverageAmount === 60000,
