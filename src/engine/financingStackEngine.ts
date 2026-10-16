@@ -133,6 +133,10 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
         const confirmedCoverage = comp.confirmedGuaranteeCoverageAmount;
         const knownGuaranteeCeiling = comp.maxPotentialAmount;
         if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0 &&
+            typeof knownGuaranteeCeiling === 'number' &&
+            (!Number.isFinite(knownGuaranteeCeiling) || knownGuaranteeCeiling < 0)) {
+          warnings.push(`Couverture de garantie exclue du montant confirmé : plafond publié invalide pour ${comp.programName.fr}.`);
+        } else if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0 &&
             !['VERIFIED', 'VERIFIED_CURRENT'].includes(String(comp.evidenceStatus))) {
           warnings.push(`Couverture de garantie exclue du montant confirmé : preuve actuelle complète non établie pour ${comp.programName.fr}.`);
         } else if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0 &&
@@ -185,6 +189,16 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
     // A signed applicant-specific amount must not silently override a known
     // programme-level ceiling. Treat the contradiction as unresolved until
     // an authorized exception or corrected source is recorded explicitly.
+    if (
+      typeof comp.maxPotentialAmount === 'number' &&
+      (!Number.isFinite(comp.maxPotentialAmount) || comp.maxPotentialAmount < 0)
+    ) {
+      warnings.push(
+        `Financement exclu du total confirmé : plafond publié invalide pour ${comp.programName.fr} ; vérifier les données avant réconciliation.`
+      );
+      continue;
+    }
+
     if (
       typeof comp.maxPotentialAmount === 'number' &&
       Number.isFinite(comp.maxPotentialAmount) &&
@@ -265,6 +279,8 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
     if (comp.allocatedAmount !== undefined && (
       !Number.isFinite(comp.allocatedAmount) ||
       comp.allocatedAmount <= 0 ||
+      (typeof comp.maxPotentialAmount === 'number' &&
+        (!Number.isFinite(comp.maxPotentialAmount) || comp.maxPotentialAmount < 0)) ||
       (typeof comp.maxPotentialAmount === 'number' &&
         Number.isFinite(comp.maxPotentialAmount) &&
         comp.maxPotentialAmount > 0 &&
