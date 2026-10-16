@@ -297,12 +297,17 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                           </span>
                         </div>
                         {comp.allocatedAmount !== undefined ? (
-                          <strong className="text-blue-700 font-bold text-xs shrink-0">
-                            {comp.allocatedAmount.toLocaleString('fr-FR')} DT
-                          </strong>
+                          <div className="text-right shrink-0">
+                            <strong className="text-blue-700 font-bold text-xs block">
+                              {comp.allocatedAmount.toLocaleString('fr-FR')} DT
+                            </strong>
+                            <span className="text-slate-500 text-[10px] block mt-0.5">
+                              {language === 'ar' ? 'مبلغ تقديري — غير مؤكد' : 'Montant indicatif — non confirmé'}
+                            </span>
+                          </div>
                         ) : (
                           <span className="text-slate-500 text-xs italic shrink-0">
-                            {language === 'ar' ? 'حسب السقف' : 'Selon plafond'}
+                            {language === 'ar' ? 'المبلغ غير محدد' : 'Montant non établi'}
                           </span>
                         )}
                       </div>
