@@ -800,6 +800,27 @@ assert(
   invalidPercentageAllocation.coveragePercentage === undefined,
   'A financing percentage above 100% cannot create an invalid cap, allocation, or coverage ratio'
 );
+const invalidPercentageStackResult = generateFinancingStacks({
+  profile: {
+    totalProjectCost: 100000,
+    financingRequested: 150000,
+    userContribution: 0,
+    purpose: 'creation'
+  } as any,
+  matchedPrograms: [
+    { program: invalidPercentageProgram, status: 'STRONG_ALIGNMENT', reasons: { alignmentLevel: 'strong_alignment' } },
+    { program: programs.find(p => p.id === 'sotugar_guarantee')!, status: 'STRONG_ALIGNMENT', reasons: { alignmentLevel: 'strong_alignment' } }
+  ] as any
+});
+const invalidPercentageCandidates = [...invalidPercentageStackResult.stacks, ...invalidPercentageStackResult.unverifiedCombinations];
+assert(
+  invalidPercentageCandidates.every(candidate =>
+    candidate.components
+      .filter(component => component.programId === invalidPercentageProgram.id)
+      .every(component => component.allocatedAmount === undefined || component.allocatedAmount <= 100000)
+  ),
+  'Stack generation cannot use a financing percentage above 100% to allocate more than the project cost'
+);
 const percentageCeilingComponent = createStackComponent(
   { program: percentageCappedProgram } as any,
   50000,
