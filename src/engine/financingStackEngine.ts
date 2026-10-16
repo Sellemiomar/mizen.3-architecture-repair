@@ -132,7 +132,13 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
         // applicant-specific guarantee commitment.
         const confirmedCoverage = comp.confirmedGuaranteeCoverageAmount;
         const knownGuaranteeCeiling = comp.maxPotentialAmount;
-        if (
+        if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0 &&
+            !['VERIFIED', 'VERIFIED_CURRENT'].includes(String(comp.evidenceStatus))) {
+          warnings.push(`Couverture de garantie exclue du montant confirmé : preuve actuelle complète non établie pour ${comp.programName.fr}.`);
+        } else if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0 &&
+                   comp.operationalStatus !== 'ACTIVE_CONFIRMED') {
+          warnings.push(`Couverture de garantie exclue du montant confirmé : disponibilité opérationnelle non confirmée pour ${comp.programName.fr}.`);
+        } else if (
           typeof confirmedCoverage === 'number' &&
           Number.isFinite(confirmedCoverage) &&
           confirmedCoverage > 0 &&
