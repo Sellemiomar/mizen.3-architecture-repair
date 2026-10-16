@@ -597,6 +597,7 @@ const invalidCeilingCommitment = calculateFundingGap(100000, [{
   isCashFunding: true,
   maxPotentialAmount: Number.POSITIVE_INFINITY,
   evidenceStatus: 'VERIFIED_CURRENT',
+  evidenceConfidence: 'HIGH',
   operationalStatus: 'ACTIVE_CONFIRMED',
   fundingCommitmentStatus: 'COMMITTED',
   confirmedCommitmentAmount: 50000
@@ -654,6 +655,7 @@ const invalidGuaranteeCeiling = calculateFundingGap(100000, [{
   confirmedGuaranteeCoverageAmount: 50000,
   maxPotentialAmount: Number.NaN,
   evidenceStatus: 'VERIFIED_CURRENT',
+  evidenceConfidence: 'HIGH',
   operationalStatus: 'ACTIVE_CONFIRMED'
 }]);
 assert(
