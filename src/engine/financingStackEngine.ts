@@ -63,7 +63,7 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
     // Do not invent a programme ceiling from the applicant's requested amount.
     if (amountCaps.length > 0) allocatedAmount = Math.min(requested, ...amountCaps);
   }
-  const ruleStatus = (program as any).ruleStatus || program.verification?.status || 'VERIFIED';
+  const ruleStatus = (program as any).ruleStatus || program.verification?.status || 'UNKNOWN';
   const evidenceConfidence = ruleStatus === 'VERIFIED_HISTORICAL' || UNKNOWN_EVIDENCE.has(ruleStatus) ? 'LOW' : ruleStatus === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'HIGH';
   return {
     programId: program.id,
@@ -238,7 +238,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
   const role = determineStackFundingRole(prog);
   const isCash = isCashRole(role);
   const amountCaps = knownProgramAmountCaps(prog, totalProjectCost, isCash);
-  const ruleStatus = (prog as any).ruleStatus || prog.verification?.status || 'VERIFIED';
+  const ruleStatus = (prog as any).ruleStatus || prog.verification?.status || 'UNKNOWN';
   const validAllocatedAmount = isCash && typeof allocatedAmount === 'number' && Number.isFinite(allocatedAmount) && allocatedAmount > 0 ? allocatedAmount : undefined;
   return {
     programId: prog.id,
