@@ -1107,6 +1107,33 @@ assert(foprolosCanonical?.criteria.some(c => c.id === 'crit_foprolos_household_o
 assert(foprolosCanonical?.financingPurposes.includes('LAND_ACQUISITION') === true && foprolosCanonical?.financingPurposes.includes('HOME_PURCHASE') === true, 'FOPROLOS includes land acquisition and new-home purchase purposes');
 assert(foprolosCanonical?.criteria.some(c => c.id === 'crit_foprolos_income' && c.operator === 'LTE' && c.expectedValue === 6) === true, 'FOPROLOS household gross income cap is encoded as six times SMIG, not UNKNOWN');
 
+assert((foprolosCanonical as any)?.id === 'foprolos_construction', 'FOPROLOS matcher fixture is present for applicant-fact regressions');
+const foprolosMissingHouseholdFacts = runMatchingEngine({
+  journey: 'home_construction' as const,
+  purpose: 'home_construction' as const,
+  constructionType: 'construction' as const,
+  employmentStatus: 'salaried_private' as const,
+  monthlyGrossHouseholdIncomeSmigMultiple: 3,
+  applicantOwnsDwelling: false
+}).find(m => m.program.id === 'foprolos_construction');
+const foprolosMissingOwnershipRule = foprolosMissingHouseholdFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_household_ownership');
+assert(foprolosMissingOwnershipRule?.status === 'UNKNOWN' && foprolosMissingOwnershipRule.explanation.fr.includes('présence ou non d’un conjoint'), 'FOPROLOS ownership gate identifies missing spouse applicability rather than treating it as no spouse');
+const foprolosExtensionFacts = runMatchingEngine({
+  journey: 'home_construction' as const,
+  purpose: 'home_construction' as const,
+  constructionType: 'extension' as const,
+  employmentStatus: 'salaried_private' as const,
+  monthlyGrossHouseholdIncomeSmigMultiple: 3,
+  applicantOwnsDwelling: false,
+  hasSpouse: true,
+  spouseOwnsDwelling: false
+}).find(m => m.program.id === 'foprolos_construction');
+const foprolosExtensionOwnershipRule = foprolosExtensionFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_household_ownership');
+assert(foprolosExtensionOwnershipRule?.status === 'UNKNOWN' && foprolosExtensionOwnershipRule.explanation.fr.includes('extension'), 'FOPROLOS extension exception remains UNKNOWN pending official confirmation even when self-reported facts are complete');
+const foprolosEmploymentRule = foprolosExtensionFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_salaried');
+assert(foprolosEmploymentRule?.status === 'UNKNOWN' && foprolosEmploymentRule.explanation.fr.includes('catégorie de salarié'), 'A salaried status does not falsely confirm the legally eligible FOPROLOS employee category');
+
+
 const anetiCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'aneti_cheque_entreprendre');
 assert(anetiCanonical?.status === 'UNKNOWN' && anetiCanonical?.operationalStatus === 'UNKNOWN', 'ANETI Chèque Entreprendre is not presented as operational without verified source evidence');
 assert(anetiCanonical?.applicantTypes.includes('BUSINESS') === true && anetiCanonical?.applicability.unverifiedApplicability === true && anetiCanonical?.status === 'UNKNOWN', 'ANETI audit placeholder remains structurally valid but eligibility/operational status are unverified');
