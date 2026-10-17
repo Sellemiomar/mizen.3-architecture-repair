@@ -1136,6 +1136,11 @@ const foprolosExtensionFacts = runMatchingEngine({
 const foprolosExtensionOwnershipRule = foprolosExtensionFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_household_ownership');
 assert(foprolosExtensionOwnershipRule?.status === 'UNKNOWN' && foprolosExtensionOwnershipRule.explanation.fr.includes('extension'), 'FOPROLOS extension exception remains UNKNOWN pending official confirmation even when self-reported facts are complete');
 
+assert(!foprolosExtensionFacts?.applicationReadiness.missingApplicantFields.some(f => f.key === 'catalogue_crit_foprolos_household_ownership'), 'Completed FOPROLOS household declarations are not mislabeled as missing applicant information');
+assert(foprolosExtensionFacts?.applicationReadiness.lenderConfirmationFields.some(f => f.key === 'catalogue_crit_foprolos_household_ownership'), 'FOPROLOS extension exception is routed to official confirmation when declarations are complete');
+assert(foprolosExtensionFacts?.applicationReadiness.lenderConfirmationFields.some(f => f.key === 'catalogue_crit_foprolos_salaried'), 'FOPROLOS legal employee-category gate is routed to official confirmation, not applicant omissions');
+
+
 assert(Boolean(foprolosExtensionFacts?.applicationReadiness.knownFields.some(f => f.key === 'monthlyGrossHouseholdIncomeSmigMultiple' && f.label.fr.includes('déclaré'))), 'Readiness summary shows gross household income as a declared SMIG multiple');
 assert(Boolean(foprolosExtensionFacts?.applicationReadiness.knownFields.some(f => f.key === 'applicantOwnsDwelling')), 'Readiness summary shows the applicant ownership declaration');
 assert(Boolean(foprolosExtensionFacts?.applicationReadiness.knownFields.some(f => f.key === 'spouseOwnsDwelling')), 'Readiness summary shows spouse ownership only when spouse applicability and answer are supplied');
