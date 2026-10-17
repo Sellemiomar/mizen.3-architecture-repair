@@ -1133,6 +1133,40 @@ assert(foprolosExtensionOwnershipRule?.status === 'UNKNOWN' && foprolosExtension
 const foprolosEmploymentRule = foprolosExtensionFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_salaried');
 assert(foprolosEmploymentRule?.status === 'UNKNOWN' && foprolosEmploymentRule.explanation.fr.includes('catégorie de salarié'), 'A salaried status does not falsely confirm the legally eligible FOPROLOS employee category');
 
+const foprolosIncomeAtCap = runMatchingEngine({
+  journey: 'home_construction' as const,
+  purpose: 'home_construction' as const,
+  constructionType: 'construction' as const,
+  employmentStatus: 'salaried_private' as const,
+  monthlyGrossHouseholdIncomeSmigMultiple: 6,
+  applicantOwnsDwelling: false,
+  hasSpouse: false
+}).find(m => m.program.id === 'foprolos_construction');
+const foprolosIncomeAtCapRule = foprolosIncomeAtCap?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_income');
+assert(foprolosIncomeAtCapRule?.status === 'PASS', 'FOPROLOS gross-household income at the verified six-SMIG ceiling passes the numeric criterion');
+const foprolosIncomeAboveCap = runMatchingEngine({
+  journey: 'home_construction' as const,
+  purpose: 'home_construction' as const,
+  constructionType: 'construction' as const,
+  employmentStatus: 'salaried_private' as const,
+  monthlyGrossHouseholdIncomeSmigMultiple: 6.01,
+  applicantOwnsDwelling: false,
+  hasSpouse: false
+}).find(m => m.program.id === 'foprolos_construction');
+const foprolosIncomeAboveCapRule = foprolosIncomeAboveCap?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_income');
+assert(foprolosIncomeAboveCapRule?.status === 'FAIL', 'FOPROLOS gross-household income above the verified six-SMIG ceiling fails the numeric criterion');
+const foprolosIncomeMissing = runMatchingEngine({
+  journey: 'home_construction' as const,
+  purpose: 'home_construction' as const,
+  constructionType: 'construction' as const,
+  employmentStatus: 'salaried_private' as const,
+  applicantOwnsDwelling: false,
+  hasSpouse: false
+}).find(m => m.program.id === 'foprolos_construction');
+const foprolosIncomeMissingRule = foprolosIncomeMissing?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_income');
+assert(foprolosIncomeMissingRule?.status === 'UNKNOWN', 'Missing gross-household income does not fall back to net income or become an automatic pass');
+
+
 
 const anetiCanonical = CANONICAL_PRODUCTS.find(p => p.id === 'aneti_cheque_entreprendre');
 assert(anetiCanonical?.status === 'UNKNOWN' && anetiCanonical?.operationalStatus === 'UNKNOWN', 'ANETI Chèque Entreprendre is not presented as operational without verified source evidence');
