@@ -292,8 +292,35 @@ function evaluateCatalogueCriteria(
     let explanationAr = '';
 
     if (criterion.operator === 'CUSTOM') {
-      explanationFr = explanationFr || 'Cette condition nécessite une vérification spécifique qui n’est pas encore automatisée.';
-      explanationAr = 'يتطلب هذا الشرط تحققاً خاصاً لم تتم أتمتته بعد.';
+      // FOPROLOS applicant answers make missing facts actionable, but do not
+      // convert self-declarations into documentary proof or legal eligibility.
+      if (program.id === 'foprolos_construction' && criterion.id === 'crit_foprolos_household_ownership') {
+        const missing: string[] = [];
+        if (applicant.applicantOwnsDwelling === undefined) missing.push('la propriété actuelle du demandeur');
+        if (applicant.hasSpouse === undefined) missing.push('la présence ou non d’un conjoint');
+        if (applicant.hasSpouse === true && applicant.spouseOwnsDwelling === undefined) missing.push('la propriété actuelle du conjoint');
+        if (applicant.journey === 'home_construction' && applicant.constructionType === undefined) missing.push('le type de travaux (construction, rénovation ou extension)');
+        if (missing.length) {
+          explanationFr = `Condition FOPROLOS non évaluée : information(s) manquante(s) — ${missing.join(', ')}. Les réponses déclaratives ne remplacent pas les justificatifs.`;
+        } else if (applicant.constructionType === 'extension') {
+          explanationFr = 'Réponses déclaratives recueillies. L’exception liée à l’extension et les justificatifs de propriété doivent être confirmés officiellement ; statut UNKNOWN.';
+        } else {
+          const householdOwns = applicant.applicantOwnsDwelling === true ||
+            (applicant.hasSpouse === true && applicant.spouseOwnsDwelling === true);
+          explanationFr = householdOwns
+            ? 'Le profil déclare une propriété dans le ménage : incompatibilité potentielle à examiner selon les règles FOPROLOS applicables et les justificatifs ; aucune exclusion automatique.'
+            : 'Le profil déclare ne pas avoir de logement dans le ménage. Les justificatifs et la règle juridique applicable doivent être vérifiés avant toute conclusion.';
+        }
+        explanationAr = 'تم جمع التصريحات الأولية فقط؛ يجب التثبت من الوثائق وقاعدة فوبرولوس والاستثناءات المعمول بها رسمياً. تبقى النتيجة غير محسومة (UNKNOWN).';
+      } else if (program.id === 'foprolos_construction' && criterion.id === 'crit_foprolos_salaried') {
+        explanationFr = applicant.employmentStatus
+          ? `Statut déclaré : ${applicant.employmentStatus}. Il faut vérifier la catégorie de salarié admissible et les justificatifs requis ; le seul statut professionnel ne suffit pas. Résultat UNKNOWN.`
+          : 'Statut professionnel manquant. Renseignez-le, puis vérifiez la catégorie de salarié admissible et les justificatifs requis ; résultat UNKNOWN en attendant.';
+        explanationAr = 'الوضعية المهنية المصرح بها لا تكفي وحدها؛ يجب التثبت من فئة الأجير المقبولة والوثائق المطلوبة. تبقى النتيجة غير محسومة.';
+      } else {
+        explanationFr = explanationFr || 'Cette condition nécessite une vérification spécifique qui n’est pas encore automatisée.';
+        explanationAr = 'يتطلب هذا الشرط تحققاً خاصاً لم تتم أتمتته بعد.';
+      }
     } else if (criterion.evidenceStatus !== 'VERIFIED' || !criterion.evidenceSourceIds?.length) {
       explanationFr = explanationFr || 'La preuve au niveau de ce critère n’est pas vérifiée : aucune conclusion automatique ne sera tirée.';
       explanationAr = 'الدليل الخاص بهذا الشرط غير مثبت؛ لن يتم استخلاص نتيجة آلية.';
