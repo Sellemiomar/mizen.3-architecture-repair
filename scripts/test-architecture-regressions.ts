@@ -1130,6 +1130,21 @@ const foprolosExtensionFacts = runMatchingEngine({
 }).find(m => m.program.id === 'foprolos_construction');
 const foprolosExtensionOwnershipRule = foprolosExtensionFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_household_ownership');
 assert(foprolosExtensionOwnershipRule?.status === 'UNKNOWN' && foprolosExtensionOwnershipRule.explanation.fr.includes('extension'), 'FOPROLOS extension exception remains UNKNOWN pending official confirmation even when self-reported facts are complete');
+
+assert(foprolosExtensionFacts?.applicationReadiness.knownFields.some(f => f.key === 'monthlyGrossHouseholdIncomeSmigMultiple' && f.label.fr.includes('déclaré')), 'Readiness summary shows gross household income as a declared SMIG multiple');
+assert(foprolosExtensionFacts?.applicationReadiness.knownFields.some(f => f.key === 'applicantOwnsDwelling'), 'Readiness summary shows the applicant ownership declaration');
+assert(foprolosExtensionFacts?.applicationReadiness.knownFields.some(f => f.key === 'spouseOwnsDwelling'), 'Readiness summary shows spouse ownership only when spouse applicability and answer are supplied');
+const foprolosNoSpouseFacts = runMatchingEngine({
+  journey: 'home_construction' as const,
+  purpose: 'home_construction' as const,
+  constructionType: 'construction' as const,
+  employmentStatus: 'salaried_private' as const,
+  monthlyGrossHouseholdIncomeSmigMultiple: 3,
+  applicantOwnsDwelling: false,
+  hasSpouse: false
+}).find(m => m.program.id === 'foprolos_construction');
+assert(!foprolosNoSpouseFacts?.applicationReadiness.knownFields.some(f => f.key === 'spouseOwnsDwelling'), 'Readiness summary does not display spouse ownership when applicant declares no spouse');
+
 const foprolosEmploymentRule = foprolosExtensionFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_salaried');
 assert(foprolosEmploymentRule?.status === 'UNKNOWN' && foprolosEmploymentRule.explanation.fr.includes('catégorie de salarié'), 'A salaried status does not falsely confirm the legally eligible FOPROLOS employee category');
 
