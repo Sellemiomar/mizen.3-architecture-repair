@@ -1203,6 +1203,20 @@ const anetiStackComponent = mapProgramToStackComponent(programs.find(p => p.id =
 assert(determineStackFundingRole(programs.find(p => p.id === 'aneti_cheque_entreprendre')!) === 'OTHER_SUPPORT', 'ANETI Chèque Entreprendre is not inferred to be a grant from its name');
 assert(anetiStackComponent.role === 'OTHER_SUPPORT' && anetiStackComponent.isCashFunding === false, 'Unverified ANETI support type is excluded from cash funding calculations');
 const foprodiStackComponent = mapProgramToStackComponent(foprodi!);
+
+// Missing evidence metadata must remain UNKNOWN in both stack conversion paths;
+// absence of verification is not evidence of verification.
+const noEvidenceProgram = {
+  ...programs.find(p => p.id === 'bfpme_creation')!,
+  ruleStatus: undefined,
+  verification: undefined
+} as any;
+const noEvidenceMapped = mapProgramToStackComponent(noEvidenceProgram);
+const noEvidenceCreated = createStackComponent({ program: noEvidenceProgram } as any, 10000);
+assert(
+  noEvidenceMapped.evidenceStatus === 'UNKNOWN' && noEvidenceCreated.evidenceStatus === 'UNKNOWN',
+  'Missing programme verification metadata defaults to UNKNOWN in both stack-component constructors'
+);
 assert(['ACTIVE_NOT_CONFIRMED', 'UNKNOWN'].includes(foprodiStackComponent.operationalStatus), 'Published FOPRODI terms do not imply current operational availability');
 assert(mapProgramToStackComponent(programs.find(p => p.id === 'bts_credit_sur_honneur')!).operationalStatus !== 'ACTIVE_CONFIRMED', 'BTS Crédit sur l’honneur keeps its explicit unconfirmed operational status');
 
