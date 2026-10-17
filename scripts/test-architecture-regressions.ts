@@ -1118,6 +1118,11 @@ const foprolosMissingHouseholdFacts = runMatchingEngine({
 }).find(m => m.program.id === 'foprolos_construction');
 const foprolosMissingOwnershipRule = foprolosMissingHouseholdFacts?.ruleEvaluations.find(r => r.ruleId === 'catalogue_crit_foprolos_household_ownership');
 assert(foprolosMissingOwnershipRule?.status === 'UNKNOWN' && foprolosMissingOwnershipRule.explanation.fr.includes('présence ou non d’un conjoint'), 'FOPROLOS ownership gate identifies missing spouse applicability rather than treating it as no spouse');
+
+assert(foprolosMissingHouseholdFacts?.status === 'REQUIRES_CONFIRMATION', 'A critical FOPROLOS ownership UNKNOWN cannot be surfaced as a strong match');
+assert(foprolosMissingHouseholdFacts?.eligibilityOutcome === 'UNKNOWN', 'A critical FOPROLOS ownership UNKNOWN preserves unknown eligibility outcome');
+assert(foprolosMissingHouseholdFacts?.criteriaFit === 'UNKNOWN', 'A critical FOPROLOS ownership UNKNOWN keeps criteria fit unknown');
+
 const foprolosExtensionFacts = runMatchingEngine({
   journey: 'home_construction' as const,
   purpose: 'home_construction' as const,
