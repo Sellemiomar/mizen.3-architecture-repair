@@ -255,14 +255,48 @@ export function evaluateApplicationReadiness(
     });
   }
 
-  // Missing fields from rules evaluated to UNKNOWN
+  // Separate facts the applicant can supply from rules that need an official
+  // interpretation. FOPROLOS' household-ownership exception and employee-category
+  // gate must not be presented as applicant omissions once the relevant declarations
+  // are present: those are legal/program confirmations, not missing form answers.
   for (const rule of ruleEvaluations) {
-    if (rule.status === 'UNKNOWN') {
-      missingApplicantFields.push({
-        key: rule.ruleId,
-        label: rule.label
-      });
+    if (rule.status !== 'UNKNOWN') continue;
+
+    if (program.id === 'foprolos_construction' &&
+        rule.ruleId === 'catalogue_crit_foprolos_household_ownership') {
+      const applicantFactsMissing =
+        applicant.applicantOwnsDwelling === undefined ||
+        applicant.hasSpouse === undefined ||
+        (applicant.hasSpouse === true && applicant.spouseOwnsDwelling === undefined);
+      if (!applicantFactsMissing) {
+        lenderConfirmationFields.push({
+          key: rule.ruleId,
+          label: {
+            fr: 'Confirmation officielle requise : exception applicable aux travaux d’extension',
+            ar: 'يلزم تأكيد رسمي: الاستثناء المطبق على أعمال التوسعة'
+          }
+        });
+        continue;
+      }
     }
+
+    if (program.id === 'foprolos_construction' &&
+        rule.ruleId === 'catalogue_crit_foprolos_salaried' &&
+        applicant.employmentStatus !== undefined) {
+      lenderConfirmationFields.push({
+        key: rule.ruleId,
+        label: {
+          fr: 'Confirmation officielle requise : catégorie de salarié admise',
+          ar: 'يلزم تأكيد رسمي: فئة الأجراء المقبولة'
+        }
+      });
+      continue;
+    }
+
+    missingApplicantFields.push({
+      key: rule.ruleId,
+      label: rule.label
+    });
   }
 
   // Unverified/Lender confirmation fields from program verification
