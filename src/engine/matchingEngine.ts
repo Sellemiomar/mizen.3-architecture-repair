@@ -219,6 +219,34 @@ export function evaluateApplicationReadiness(
       value: String(applicant.monthlyNetIncome.toLocaleString('fr-TN')) + ' TND'
     });
   }
+  if (applicant.monthlyGrossHouseholdIncomeSmigMultiple !== undefined) {
+    knownFields.push({
+      key: 'monthlyGrossHouseholdIncomeSmigMultiple',
+      label: { fr: 'Revenu brut du ménage (multiple du SMIG, déclaré)', ar: 'الدخل الخام للأسرة (مضاعف SMIG، تصريح)' },
+      value: `${applicant.monthlyGrossHouseholdIncomeSmigMultiple.toLocaleString('fr-TN')} × SMIG`
+    });
+  }
+  if (applicant.applicantOwnsDwelling !== undefined) {
+    knownFields.push({
+      key: 'applicantOwnsDwelling',
+      label: { fr: 'Propriété d’un logement par le demandeur (déclarée)', ar: 'امتلاك طالب التمويل لمسكن (تصريح)' },
+      value: applicant.applicantOwnsDwelling ? 'Oui / نعم' : 'Non / لا'
+    });
+  }
+  if (applicant.hasSpouse !== undefined) {
+    knownFields.push({
+      key: 'hasSpouse',
+      label: { fr: 'Présence d’un conjoint (déclarée)', ar: 'وجود زوج أو زوجة (تصريح)' },
+      value: applicant.hasSpouse ? 'Oui / نعم' : 'Non / لا'
+    });
+  }
+  if (applicant.hasSpouse === true && applicant.spouseOwnsDwelling !== undefined) {
+    knownFields.push({
+      key: 'spouseOwnsDwelling',
+      label: { fr: 'Propriété d’un logement par le conjoint (déclarée)', ar: 'امتلاك الزوج أو الزوجة لمسكن (تصريح)' },
+      value: applicant.spouseOwnsDwelling ? 'Oui / نعم' : 'Non / لا'
+    });
+  }
   if (applicant.monthlyDebtPayments !== undefined) {
     knownFields.push({
       key: 'monthlyDebtPayments',
