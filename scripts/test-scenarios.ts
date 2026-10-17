@@ -36,6 +36,7 @@ const profileA: ApplicantProfile = {
   businessStage: 'idea_project',
   legalStructure: 'suarl',
   hasHigherEducationDegree: true,
+  applicantAge: 25,
   hasStartupActLabel: false,
   isRegionalDevelopmentZone: false,
   structurePreference: 'any'
@@ -45,7 +46,7 @@ const resultsA = runMatchingEngine(profileA);
 assert(resultsA.length > 0, 'Scenario A matches programs');
 const btsDiplomesA = resultsA.find(r => r.program.id === 'bts_diplomes');
 assert(btsDiplomesA !== undefined, 'BTS Diplômés is evaluated');
-assert(btsDiplomesA?.reasons.alignmentLevel === 'strong_alignment', 'BTS Diplômés has strong alignment for graduate with 75k DT');
+assert(btsDiplomesA?.status === 'REQUIRES_CONFIRMATION', 'BTS Diplômés requires current-intake confirmation despite fitting the graduate financing criteria');
 assert(btsDiplomesA?.program.name.fr.includes('Crédit Professionnel'), 'BTS catalogue identity is the general Crédit Professionnel product, not a degree-only product');
 assert(!btsDiplomesA?.ruleEvaluations.some(r => r.ruleId === 'requiresDegree'), 'General BTS Crédit Professionnel does not invent a higher-education degree requirement');
 
@@ -71,12 +72,13 @@ const profileB: ApplicantProfile = {
 const resultsB = runMatchingEngine(profileB);
 const bfpmeB = resultsB.find(r => r.program.id === 'bfpme_creation');
 const sotugarB = resultsB.find(r => r.program.id === 'sotugar_guarantee');
-assert(bfpmeB !== undefined && bfpmeB.reasons.alignmentLevel === 'strong_alignment', 'BFPME matches 250k DT PME expansion with strong alignment');
+assert(bfpmeB !== undefined && bfpmeB.status === 'REQUIRES_CONFIRMATION', 'BFPME fits the 250k DT PME expansion criteria but current intake must be confirmed');
 assert(sotugarB !== undefined && sotugarB.status === 'REQUIRES_CONFIRMATION', 'SOTUGAR remains a candidate but requires confirmation because it guarantees lender credit rather than lending a project amount directly');
 const stackSeedMatchesB = resultsB.filter(r => r.program.id === 'bfpme_creation' || r.program.id === 'sotugar_guarantee').map(r => JSON.parse(JSON.stringify(r)));
 // BTS cap is 150k DT and doesn't cover expansion
 const btsB = resultsB.find(r => r.program.id === 'bts_diplomes');
 assert(Boolean(btsB?.reasons.potentialIssues.some(p => p.fr.includes('dépasse le plafond') || p.fr.includes('Non applicable'))), 'BTS flags non-applicability or amount exceeding cap');
+assert(btsB?.status === 'NOT_MATCHED', 'A BTS option exceeding its documented ceiling is a blocker, not an applicable financing candidate');
 
 // -------------------------------------------------------------
 // Scenario C: Innovative startup, 30,000 DT R&D/Tech in Tunis
@@ -437,7 +439,7 @@ const homeProfile: ApplicantProfile = {
 const homeResults = runMatchingEngine(homeProfile);
 const premierLogement = homeResults.find(r => r.program.id === 'premier_logement');
 assert(premierLogement !== undefined, 'Premier Logement is evaluated');
-assert(premierLogement?.reasons.alignmentLevel === 'strong_alignment', 'Premier Logement matches middle-class primo-accédant');
+assert(premierLogement?.status === 'REQUIRES_CONFIRMATION', 'Premier Logement fits the middle-class first-home criteria but current intake must be confirmed');
 assert(Boolean(premierLogement?.reasons.matchedBecause.some(m => m.fr.includes('classe moyenne'))), 'Validates income scale');
 
 // -------------------------------------------------------------
@@ -508,8 +510,8 @@ const homeConstructUser: ApplicantProfile = {
 const homeConstructResults = runMatchingEngine(homeConstructUser);
 const foprolosForHome = homeConstructResults.find(r => r.program.id === 'foprolos_construction');
 assert(foprolosForHome !== undefined, 'FOPROLOS must be present for the home-construction regression scenario');
-assert(foprolosForHome?.applicabilityStatus === 'APPLICABLE', 'FOPROLOS is APPLICABLE for home construction');
-assert(foprolosForHome?.status === 'REQUIRES_CONFIRMATION' && foprolosForHome.financialEvaluation.amountStatus === 'UNKNOWN', 'FOPROLOS remains applicable but its SMIG-linked ceiling is not fabricated as a fixed TND amount');
+assert(foprolosForHome?.applicabilityStatus === 'UNKNOWN', 'FOPROLOS home-construction applicability remains review-gated until its full conditions are verified');
+assert(foprolosForHome?.status === 'REQUIRES_CONFIRMATION' && foprolosForHome.financialEvaluation.amountStatus === 'UNKNOWN', 'FOPROLOS remains confirmation-required and its SMIG-linked ceiling is not fabricated as a fixed TND amount');
 
 const carCreditForHome = homeConstructResults.find(r => r.program.id === 'banque_credit_auto');
 assert(carCreditForHome?.status === 'NOT_APPLICABLE', 'Crédit auto is NOT_APPLICABLE for home construction');
@@ -1108,7 +1110,10 @@ assert(compatStartupBank.compatibilityStatus === 'UNKNOWN', 'AA.4. Startup Guara
 const compBfpmeDebt = {
   ...mapProgramToStackComponent(authoritativeBfpme, { financingRequested: 650000, totalProjectCost: 1000000 }),
   evidenceStatus: 'VERIFIED_CURRENT' as const,
-  operationalStatus: 'ACTIVE_CONFIRMED' as const
+  operationalStatus: 'ACTIVE_CONFIRMED' as const,
+  // This test models an actual applicant-level commitment, not merely an active program.
+  fundingCommitmentStatus: 'COMMITTED' as const,
+  confirmedCommitmentAmount: 650000
 };
 const sotugarProgramObj = FINANCING_PROGRAMS.find(p => p.id === 'sotugar_guarantee')!;
 const compSotugar = mapProgramToStackComponent(sotugarProgramObj, { financingRequested: 650000, totalProjectCost: 1000000 });
@@ -1164,7 +1169,7 @@ assert(!hasZeroDTComponent, 'AA.8c. Zero-value (0 DT) components are strictly fo
 
 const bfpmeSotugarStack = stacksResult.stacks.find(s => s.components.some(c => c.programId === 'bfpme_creation') && s.supportComponents.some(c => c.programId === 'sotugar_guarantee'));
 if (bfpmeSotugarStack) {
-  assert(bfpmeSotugarStack.overallStatus === 'POTENTIALLY_COMPATIBLE', 'AA.9. BFPME + SOTUGAR stack is POTENTIALLY_COMPATIBLE (not unconditionally confirmed)');
+  assert(['POTENTIALLY_COMPATIBLE', 'CONDITIONAL'].includes(bfpmeSotugarStack.overallStatus), 'AA.9. BFPME + SOTUGAR is at most potential/conditional; unconfirmed intake cannot be labelled confirmed');
   assert(bfpmeSotugarStack.confidence === 'LOW', 'AA.10. BFPME + SOTUGAR stack propagates LOW confidence');
   assert(!bfpmeSotugarStack.isReliablyCalculable, 'AA.11. Unknown BFPME rate prevents payment/amortization calculation in stack');
 }

@@ -489,7 +489,8 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
       operator: 'BETWEEN',
       expectedValue: [20, 60],
       critical: true,
-      description: { fr: 'Âge de 20 à 60 ans selon la page officielle du Crédit Professionnel BTS.', ar: 'العمر من 20 إلى 60 سنة وفق الصفحة الرسمية للقرض المهني.' }
+      description: { fr: 'Âge de 20 à 60 ans selon la page officielle du Crédit Professionnel BTS.', ar: 'العمر من 20 إلى 60 سنة وفق الصفحة الرسمية للقرض المهني.' },
+      evidence: { field: 'applicantAge', status: 'VERIFIED', sourceIds: ['src_bts_official'] }
     }],
     financialTerms: {
       amount: { max: 200000, currency: 'TND' },
@@ -1095,6 +1096,12 @@ export const CANONICAL_PRODUCTS: FinancingProduct[] = [
         operator: 'LTE',
         expectedValue: 6,
         critical: true,
+        evidence: {
+          field: 'monthlyGrossHouseholdIncomeSmigMultiple',
+          status: 'VERIFIED',
+          sourceIds: ['src_mehat_foprolos'],
+          unknownReason: 'Le multiplicateur du SMIG est documenté, mais le revenu brut du ménage et le SMIG applicable doivent être fournis/vérifiés.'
+        },
         description: {
           fr: 'Revenu mensuel brut du ménage, conjoint inclus le cas échéant, ne dépassant pas six fois le SMIG selon la page officielle actuelle.',
           ar: 'الدخل الشهري الخام للأسرة لا يتجاوز ست مرات الأجر الأدنى المهني المضمون وفق الصفحة الرسمية الحالية.'

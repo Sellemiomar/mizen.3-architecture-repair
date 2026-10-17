@@ -100,15 +100,35 @@ export function validateKnowledgeCatalogue(
       }
     }
 
-    // 4. Current operational status inferred without evidence
-    if (prod.operationalStatus === 'ACTIVE_CONFIRMED' && prod.sources.length === 0) {
-      errors.push({
-        severity: 'ERROR',
-        programId: prod.id,
-        field: 'operationalStatus',
-        message: `Operational status ACTIVE_CONFIRMED requires explicit current intake evidence`,
-        code: 'UNSUPPORTED_OPERATIONAL_STATUS'
-      });
+    // 4. Operational status must be established by a current, direct primary claim.
+    // A product page proves that a product exists; it does not by itself prove that
+    // applications are currently being accepted. A non-empty sources array is not
+    // sufficient evidence for ACTIVE_CONFIRMED.
+    if (prod.operationalStatus === 'ACTIVE_CONFIRMED') {
+      const operationalClaim = getAuthoritativeClaim(prod.id, 'operationalStatus');
+      const verifiedAt = operationalClaim?.source.lastVerifiedAt || operationalClaim?.source.retrievedAt;
+      const verifiedAtMs = verifiedAt ? Date.parse(verifiedAt) : Number.NaN;
+      const isFresh = Number.isFinite(verifiedAtMs) &&
+        verifiedAtMs <= Date.now() &&
+        Date.now() - verifiedAtMs <= 180 * 24 * 60 * 60 * 1000;
+      const hasDirectCurrentIntakeEvidence =
+        operationalClaim?.value === 'ACTIVE_CONFIRMED' &&
+        operationalClaim.ruleStatus === 'VERIFIED_CURRENT' &&
+        operationalClaim.operationalStatus === 'ACTIVE_CONFIRMED' &&
+        operationalClaim.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' &&
+        operationalClaim.source.evidenceStatus === 'VERIFIED' &&
+        isFresh &&
+        (!operationalClaim.expiryDate || Date.parse(operationalClaim.expiryDate) >= Date.now());
+
+      if (!hasDirectCurrentIntakeEvidence) {
+        errors.push({
+          severity: 'ERROR',
+          programId: prod.id,
+          field: 'operationalStatus',
+          message: 'ACTIVE_CONFIRMED requires a fresh, direct-primary operational-status claim confirming current intake; a general product page is not enough.',
+          code: 'UNSUPPORTED_OPERATIONAL_STATUS'
+        });
+      }
     }
 
     // 5. Payment-calculation-enabled rate without current evidence
@@ -128,9 +148,38 @@ export function validateKnowledgeCatalogue(
       }
     }
 
+    // Reject impossible percentages before they can be projected into runtime
+    // eligibility or financing calculations. Unknown values remain unknown; invalid
+    // numeric values are catalogue errors, not values to silently clamp.
+    const financingPercentage = prod.financialTerms.maxFinancingPercentage;
+    if (typeof financingPercentage === 'number' &&
+        (!Number.isFinite(financingPercentage) || financingPercentage < 0 || financingPercentage > 100)) {
+      errors.push({
+        severity: 'ERROR',
+        programId: prod.id,
+        field: 'financialTerms.maxFinancingPercentage',
+        message: 'Maximum project-cost financing percentage must be a finite value between 0 and 100.',
+        code: 'INVALID_FINANCING_PERCENTAGE'
+      });
+    }
+
     // 6. Guarantee percentage without basis
     if (prod.category === 'GUARANTEE' || prod.financingDomains.includes('GUARANTEE')) {
       const gDetails = prod.financialTerms.guaranteeDetails;
+      const coverageMin = gDetails?.coveragePercentMin;
+      const coverageMax = gDetails?.coveragePercentMax;
+      const invalidCoveragePercent = (value: number | undefined) =>
+        typeof value === 'number' && (!Number.isFinite(value) || value < 0 || value > 100);
+      if (invalidCoveragePercent(coverageMin) || invalidCoveragePercent(coverageMax) ||
+          (typeof coverageMin === 'number' && typeof coverageMax === 'number' && coverageMin > coverageMax)) {
+        errors.push({
+          severity: 'ERROR',
+          programId: prod.id,
+          field: 'financialTerms.guaranteeDetails',
+          message: 'Guarantee coverage percentages must be finite values between 0 and 100, with minimum no greater than maximum.',
+          code: 'INVALID_GUARANTEE_COVERAGE_RANGE'
+        });
+      }
       if (gDetails && (gDetails.coveragePercentMin || gDetails.coveragePercentMax)) {
         if (!gDetails.coverageBasis || gDetails.coverageBasis === 'UNKNOWN') {
           warnings.push({
