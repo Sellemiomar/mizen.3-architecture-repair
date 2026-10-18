@@ -1199,6 +1199,25 @@ assert(anetiCanonical?.applicantTypes.includes('BUSINESS') === true && anetiCano
 assert(anetiCanonical?.financialTerms.amount === undefined, 'ANETI unknown amount is omitted rather than fabricated');
 assert(anetiCanonical?.verification.status === 'SOURCE_UNAVAILABLE', 'ANETI source availability is explicitly recorded');
 
+const anetiSourceUnavailableMatch = runMatchingEngine({
+  journey: 'startup' as const,
+  purpose: 'creation' as const,
+  generalApplicantType: 'business' as const,
+  businessStage: 'idea_project' as const,
+  legalStructure: 'suarl' as const,
+  totalProjectCost: 100000,
+  userContribution: 20000,
+  financingRequested: 80000,
+  sector: 'industry' as const,
+  location: 'Sousse'
+}).find(m => m.program.id === 'aneti_cheque_entreprendre');
+assert(
+  anetiSourceUnavailableMatch !== undefined &&
+  anetiSourceUnavailableMatch.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY' &&
+  anetiSourceUnavailableMatch.evidenceEvaluation?.confidenceScore !== 'HIGH',
+  'A source-unavailable financing mechanism cannot be presented as documented eligibility or high-confidence evidence'
+);
+
 const anetiStackComponent = mapProgramToStackComponent(programs.find(p => p.id === 'aneti_cheque_entreprendre')!);
 assert(determineStackFundingRole(programs.find(p => p.id === 'aneti_cheque_entreprendre')!) === 'OTHER_SUPPORT', 'ANETI Chèque Entreprendre is not inferred to be a grant from its name');
 assert(anetiStackComponent.role === 'OTHER_SUPPORT' && anetiStackComponent.isCashFunding === false, 'Unverified ANETI support type is excluded from cash funding calculations');
