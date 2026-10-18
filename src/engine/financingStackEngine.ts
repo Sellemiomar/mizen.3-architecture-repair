@@ -64,7 +64,7 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
     if (amountCaps.length > 0) allocatedAmount = Math.min(requested, ...amountCaps);
   }
   const ruleStatus = (program as any).ruleStatus || program.verification?.status || 'UNKNOWN';
-  const evidenceConfidence = ruleStatus === 'VERIFIED_HISTORICAL' || UNKNOWN_EVIDENCE.has(ruleStatus) ? 'LOW' : ruleStatus === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'HIGH';
+  const evidenceConfidence = ['VERIFIED', 'VERIFIED_CURRENT'].includes(String(ruleStatus)) ? 'HIGH' : ruleStatus === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'LOW';
   return {
     programId: program.id,
     programName: program.name,
@@ -252,7 +252,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
     coveragePercentage: typeof prog.maxFinancingPercentage === 'number' && Number.isFinite(prog.maxFinancingPercentage) && prog.maxFinancingPercentage > 0 && prog.maxFinancingPercentage <= 100 ? prog.maxFinancingPercentage / 100 : undefined,
     rateType: prog.rateType,
     evidenceStatus: ruleStatus,
-    evidenceConfidence: match.evidenceEvaluation?.confidenceScore || (ruleStatus === 'VERIFIED_HISTORICAL' || UNKNOWN_EVIDENCE.has(ruleStatus) ? 'LOW' : 'MEDIUM'),
+    evidenceConfidence: match.evidenceEvaluation?.confidenceScore || (['VERIFIED', 'VERIFIED_CURRENT'].includes(String(ruleStatus)) ? 'HIGH' : ruleStatus === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'LOW'),
     operationalStatus: (match.evidenceEvaluation as any)?.operationalStatus || (prog as any).operationalStatus || 'ACTIVE_NOT_CONFIRMED',
     caveats: prog.importantCaveats
   };
