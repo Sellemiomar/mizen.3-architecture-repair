@@ -1212,7 +1212,7 @@ export function evaluateProgramCompatibility(
   // DIMENSION 4 — EVIDENCE CONFIDENCE & UNVERIFIED PARAMETERS
   // =========================================================================
   const isOutdated = program.verification.status === 'OUTDATED';
-  const isUnverifiedEvidence = program.verification.status === 'UNVERIFIED';
+  const isUnverifiedEvidence = ['UNVERIFIED', 'SOURCE_UNAVAILABLE'].includes(String(program.verification.status));
 
   if (program.verification.unverifiedFields && program.verification.unverifiedFields.length > 0) {
     needsVerification.push({
