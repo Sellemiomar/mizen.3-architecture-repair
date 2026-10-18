@@ -1217,6 +1217,18 @@ assert(
   noEvidenceMapped.evidenceStatus === 'UNKNOWN' && noEvidenceCreated.evidenceStatus === 'UNKNOWN',
   'Missing programme verification metadata defaults to UNKNOWN in both stack-component constructors'
 );
+
+const unavailableEvidenceProgram = {
+  ...programs.find(p => p.id === 'bfpme_creation')!,
+  ruleStatus: 'SOURCE_UNAVAILABLE',
+  verification: { status: 'SOURCE_UNAVAILABLE', unverifiedFields: ['amount'] }
+} as any;
+const unavailableEvidenceMapped = mapProgramToStackComponent(unavailableEvidenceProgram);
+const unavailableEvidenceCreated = createStackComponent({ program: unavailableEvidenceProgram } as any, 10000);
+assert(
+  unavailableEvidenceMapped.evidenceConfidence === 'LOW' && unavailableEvidenceCreated.evidenceConfidence === 'LOW',
+  'Unavailable programme evidence cannot receive HIGH or MEDIUM confidence in stack components'
+);
 assert(['ACTIVE_NOT_CONFIRMED', 'UNKNOWN'].includes(foprodiStackComponent.operationalStatus), 'Published FOPRODI terms do not imply current operational availability');
 assert(mapProgramToStackComponent(programs.find(p => p.id === 'bts_credit_sur_honneur')!).operationalStatus !== 'ACTIVE_CONFIRMED', 'BTS Crédit sur l’honneur keeps its explicit unconfirmed operational status');
 
