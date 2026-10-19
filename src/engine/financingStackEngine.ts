@@ -31,7 +31,9 @@ export function determineStackFundingRole(program: FinancingProgram): StackFundi
   if (id === 'foprodi_dotation' || category === 'quasi_equity' || category === 'equity_quasi_equity' || category === 'equity' || type === 'quasi_equity' || type === 'equity' || id.includes('capital') || id.includes('fond') || id.includes('equity') || id.includes('venture')) return id === 'foprodi_dotation' || category === 'quasi_equity' || type === 'quasi_equity' ? 'QUASI_EQUITY' : 'EQUITY';
   if (category === 'leasing' || type === 'leasing' || id.includes('leasing') || id.includes('ijara')) return 'LEASING';
   if (category === 'bank_loan' || category === 'subsidized_loan' || category === 'credit' || category === 'debt' || type === 'debt' || id.includes('cmlt') || id.includes('bank') || id.includes('credit') || id.includes('mourabaha')) return 'DEBT';
-  return 'CASH_FINANCING';
+  // Unknown programme types are not evidence that a mechanism provides cash.
+  // Keep them as non-cash support until their role is explicitly classified.
+  return 'OTHER_SUPPORT';
 }
 
 function knownProgramAmountCaps(program: FinancingProgram, totalProjectCost?: number, applyPercentageCap = true): number[] {
