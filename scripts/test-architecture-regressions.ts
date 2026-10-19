@@ -55,6 +55,12 @@ assert(legacyImports.length === 0, 'Deprecated financingData fixture must never 
 const programs = getAuthoritativeFinancingPrograms();
 const providers = getAuthoritativeProviders();
 
+// Missing product-type evidence must not silently classify an unknown mechanism as cash.
+assert(
+  determineStackFundingRole({ id: 'unclassified_support_mechanism', category: 'unknown_category', name: 'Synthetic unknown', providerId: 'test' } as any) === 'OTHER_SUPPORT',
+  'An unclassified financing mechanism is treated as non-cash support until its funding role is established'
+);
+
 // Stack synthesis must reject invalid required amounts at its own boundary,
 // not merely rely on calculateFundingGap to sanitize a later calculation.
 const negativeFundingStack = generateFinancingStacks({
