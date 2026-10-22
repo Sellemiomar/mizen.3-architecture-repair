@@ -18,6 +18,15 @@ function evidenceConfidenceForStatus(status: unknown): 'HIGH' | 'MEDIUM' | 'LOW'
   return 'LOW';
 }
 
+function resolveStackEvidenceStatus(verificationStatus: unknown, ruleStatus: unknown): unknown {
+  if (verificationStatus == null || verificationStatus === '') return ruleStatus || 'UNKNOWN';
+  if (ruleStatus == null || ruleStatus === '') return verificationStatus;
+  const rank = { LOW: 0, MEDIUM: 1, HIGH: 2 } as const;
+  const verificationConfidence = evidenceConfidenceForStatus(verificationStatus);
+  const ruleConfidence = evidenceConfidenceForStatus(ruleStatus);
+  return rank[ruleConfidence] < rank[verificationConfidence] ? ruleStatus : verificationStatus;
+}
+
 function lowerConfidence(
   statusConfidence: 'HIGH' | 'MEDIUM' | 'LOW',
   evaluatedConfidence?: 'HIGH' | 'MEDIUM' | 'LOW'
@@ -80,7 +89,7 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
     // Do not invent a programme ceiling from the applicant's requested amount.
     if (amountCaps.length > 0) allocatedAmount = Math.min(requested, ...amountCaps);
   }
-  const ruleStatus = program.verification?.status || (program as any).ruleStatus || 'UNKNOWN';
+  const ruleStatus = resolveStackEvidenceStatus(program.verification?.status, (program as any).ruleStatus);
   const evidenceConfidence = evidenceConfidenceForStatus(ruleStatus);
   return {
     programId: program.id,
@@ -255,7 +264,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
   const role = determineStackFundingRole(prog);
   const isCash = isCashRole(role);
   const amountCaps = knownProgramAmountCaps(prog, totalProjectCost, isCash);
-  const ruleStatus = prog.verification?.status || (prog as any).ruleStatus || 'UNKNOWN';
+  const ruleStatus = resolveStackEvidenceStatus(prog.verification?.status, (prog as any).ruleStatus);
   const validAllocatedAmount = isCash && typeof allocatedAmount === 'number' && Number.isFinite(allocatedAmount) && allocatedAmount > 0 ? allocatedAmount : undefined;
   return {
     programId: prog.id,
