@@ -1,24 +1,9 @@
 import { CANONICAL_PRODUCTS, CANONICAL_PROVIDERS } from './canonicalCatalogue';
 import { CLAIMS_REPOSITORY } from './claimsRepository';
+import { getAuthoritativeClaim, isClaimSafeToProject } from './authoritativeProjection';
 import { FinancingClaim } from '../types/claims';
+export { getAuthoritativeClaim };
 import { FinancingProduct } from '../types/knowledge';
-
-function rank(c: FinancingClaim): number {
-  if (c.ruleStatus === 'VERIFIED_HISTORICAL' || c.operationalStatus === 'HISTORICAL_ONLY') return -100;
-  if (c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' && c.ruleStatus === 'VERIFIED_CURRENT') return 100;
-  if (c.ruleStatus === 'UNKNOWN') return 80;
-  if (c.ruleStatus === 'PARTIALLY_VERIFIED') return 60;
-  if (c.evidenceStrength === 'OFFICIAL_SECONDARY') return 40;
-  if (c.evidenceStrength === 'SECONDARY') return 20;
-  return 0;
-}
-
-export function getAuthoritativeClaim(entityId: string, field: string): FinancingClaim | undefined {
-  return CLAIMS_REPOSITORY.getAllClaims(entityId)
-    .filter(c => c.field === field && c.conflictStatus !== 'SUPERSEDED')
-    .filter(c => c.ruleStatus !== 'VERIFIED_HISTORICAL' && c.operationalStatus !== 'HISTORICAL_ONLY')
-    .sort((a,b) => rank(b)-rank(a) || String(b.retrievalDate).localeCompare(String(a.retrievalDate)))[0];
-}
 
 function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
   const updateCriterion = (field: string, operator: string, expectedValue: unknown) => {
@@ -27,6 +12,11 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
   };
 
   switch (claim.field) {
+    case 'operationalStatus':
+      if (['ACTIVE_CONFIRMED', 'ACTIVE_NOT_CONFIRMED', 'UNKNOWN', 'INACTIVE_CONFIRMED', 'HISTORICAL_ONLY'].includes(String(claim.value))) {
+        product.operationalStatus = claim.value as FinancingProduct['operationalStatus'];
+      }
+      break;
     case 'minProjectCost':
       if (typeof claim.value === 'number') { product.financialTerms.projectCost = { ...product.financialTerms.projectCost, min: claim.value, currency: 'TND' }; updateCriterion('totalProjectCost', 'GTE', claim.value); }
       break;
@@ -35,6 +25,11 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
       break;
     case 'maxFinancingAmount':
       if (typeof claim.value === 'number') { product.financialTerms.amount = { ...product.financialTerms.amount, max: claim.value, currency: 'TND' }; updateCriterion('financingRequested', 'LTE', claim.value); }
+      break;
+    case 'incomeCapSmigMultiple':
+      if (typeof claim.value === 'number' && Number.isFinite(claim.value) && claim.value >= 0) {
+        updateCriterion('monthlyGrossHouseholdIncomeSmigMultiple', 'LTE', claim.value);
+      }
       break;
     case 'publishedMarginRange': {
       const v = claim.value as { min?: number; max?: number };
@@ -88,13 +83,93 @@ function applyClaim(product: FinancingProduct, claim: FinancingClaim): void {
   }
 }
 
+function clearUnsupportedLegacyValue(product: FinancingProduct, field: string): void {
+  const reason = 'Prior claim exists, but no current, non-conflicting, in-date claim is usable.';
+  const notes = {
+    fr: 'Valeur héritée masquée : la revendication disponible est périmée, expirée ou en conflit et doit être revérifiée.',
+    ar: 'تم إخفاء القيمة القديمة: المعطى المتاح متقادم أو منتهي الصلاحية أو متعارض ويجب التثبت منه.'
+  };
+  const matchingEvidence = [
+    ...product.verification.fields.filter(item => item.field === field),
+    ...product.financialTerms.verification.filter(item => item.field === field)
+  ];
+  for (const evidence of matchingEvidence) {
+    evidence.status = 'UNVERIFIED';
+    evidence.unknownReason = reason;
+    evidence.notes = notes;
+  }
+  if (!product.financialTerms.verification.some(item => item.field === field)) {
+    product.financialTerms.verification.push({
+      field,
+      status: 'UNVERIFIED',
+      sourceIds: [],
+      unknownReason: reason,
+      notes
+    });
+  }
+
+  switch (field) {
+    case 'operationalStatus':
+      product.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
+      break;
+    case 'minProjectCost':
+      if (product.financialTerms.projectCost) product.financialTerms.projectCost.min = undefined;
+      break;
+    case 'maxProjectCost':
+      if (product.financialTerms.projectCost) product.financialTerms.projectCost.max = undefined;
+      break;
+    case 'maxFinancingAmount':
+      if (product.financialTerms.amount) product.financialTerms.amount.max = undefined;
+      break;
+    case 'publishedMarginRange':
+    case 'pricingRelationship':
+      product.financialTerms.rate = {
+        ...product.financialTerms.rate,
+        type: 'UNKNOWN',
+        value: undefined,
+        margin: undefined,
+        referenceIndex: undefined,
+        min: undefined,
+        max: undefined,
+        ruleStatus: 'UNKNOWN',
+        explanation: {
+          fr: 'Tarification masquée : aucune revendication actuelle exploitable ne permet un calcul fiable.',
+          ar: 'تم إخفاء شروط التسعير: لا توجد معلومة حالية صالحة تسمح باحتساب موثوق.'
+        }
+      };
+      break;
+    case 'coverageBasis':
+      if (product.financialTerms.guaranteeDetails) product.financialTerms.guaranteeDetails.coverageBasis = 'UNKNOWN';
+      break;
+    case 'governorates':
+      if (product.financialTerms.guaranteeDetails) product.financialTerms.guaranteeDetails.governorates = undefined;
+      break;
+  }
+}
+
 export function getAuthoritativeCatalogueProducts(): FinancingProduct[] {
   return CANONICAL_PRODUCTS.map(base => {
     const product = structuredClone(base) as FinancingProduct;
-    const fields = new Set(CLAIMS_REPOSITORY.getAllClaims(base.id).map(c => c.field));
+    const claims = CLAIMS_REPOSITORY.getAllClaims(base.id);
+    const fields = new Set(claims.map(claim => claim.field));
     for (const field of fields) {
       const claim = getAuthoritativeClaim(base.id, field);
-      if (claim) applyClaim(product, claim);
+      if (claim && isClaimSafeToProject(claim)) applyClaim(product, claim);
+      else clearUnsupportedLegacyValue(product, field);
+    }
+
+    // Never present a canonical ACTIVE_CONFIRMED flag without a usable
+    // applicant-intake claim, even if no operational-status claim was recorded.
+    const operationalClaim = getAuthoritativeClaim(base.id, 'operationalStatus');
+    const hasConfirmedIntakeEvidence =
+      operationalClaim?.value === 'ACTIVE_CONFIRMED' &&
+      operationalClaim.ruleStatus === 'VERIFIED_CURRENT' &&
+      operationalClaim.operationalStatus === 'ACTIVE_CONFIRMED' &&
+      operationalClaim.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' &&
+      operationalClaim.source.evidenceStatus === 'VERIFIED' &&
+      (!operationalClaim.expiryDate || Date.parse(operationalClaim.expiryDate) >= Date.now());
+    if (product.operationalStatus === 'ACTIVE_CONFIRMED' && !hasConfirmedIntakeEvidence) {
+      product.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
     }
     return product;
   });

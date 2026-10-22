@@ -55,12 +55,17 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
   const [showInapplicableAudit, setShowInapplicableAudit] = useState(false);
   const [handoffTarget, setHandoffTarget] = useState<{ program: FinancingProgram; provider: Provider; result: MatchResult } | null>(null);
 
-  const applicableResults = results.filter(r => r.status !== 'NOT_APPLICABLE');
+  // Keep hard-blocked mechanisms available under "Points d’attention", but
+  // never count or present them as applicable financing candidates by default.
+  const candidateResults = results.filter(r => r.status !== 'NOT_APPLICABLE');
+  const applicableResults = candidateResults.filter(r => r.status !== 'NOT_MATCHED');
   const nonApplicableResults = results.filter(r => r.status === 'NOT_APPLICABLE');
 
-  const filteredResults = applicableResults.filter(r => {
-    if (filterLevel === 'all') return true;
-    return r.reasons.alignmentLevel === filterLevel;
+  const filteredResults = candidateResults.filter(r => {
+    if (filterLevel === 'all') return r.status !== 'NOT_MATCHED';
+    if (filterLevel === 'potential_blockers') return r.reasons.alignmentLevel === 'potential_blockers';
+    if (filterLevel === 'strong_alignment') return r.status !== 'NOT_MATCHED' && r.criteriaFit === 'STRONG';
+    return r.status !== 'NOT_MATCHED' && r.reasons.alignmentLevel === filterLevel;
   });
 
   const isProfileEmpty = !applicantProfile.financingRequested && 
@@ -292,12 +297,17 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                           </span>
                         </div>
                         {comp.allocatedAmount !== undefined ? (
-                          <strong className="text-blue-700 font-bold text-xs shrink-0">
-                            {comp.allocatedAmount.toLocaleString('fr-FR')} DT
-                          </strong>
+                          <div className="text-right shrink-0">
+                            <strong className="text-blue-700 font-bold text-xs block">
+                              {comp.allocatedAmount.toLocaleString('fr-FR')} DT
+                            </strong>
+                            <span className="text-slate-500 text-[10px] block mt-0.5">
+                              {language === 'ar' ? 'مبلغ تقديري — غير مؤكد' : 'Montant indicatif — non confirmé'}
+                            </span>
+                          </div>
                         ) : (
                           <span className="text-slate-500 text-xs italic shrink-0">
-                            {language === 'ar' ? 'حسب السقف' : 'Selon plafond'}
+                            {language === 'ar' ? 'المبلغ غير محدد' : 'Montant non établi'}
                           </span>
                         )}
                       </div>
@@ -463,7 +473,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
           }`}
         >
-          {language === 'ar' ? 'توافق قوي' : 'Forte adéquation'} ({applicableResults.filter(r => r.reasons.alignmentLevel === 'strong_alignment').length})
+          {language === 'ar' ? 'المعايير متوافقة' : 'Critères compatibles'} ({applicableResults.filter(r => r.criteriaFit === 'STRONG').length})
         </button>
 
         <button
@@ -487,7 +497,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
               : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
           }`}
         >
-          {language === 'ar' ? 'شروط تتطلب المراجعة' : 'Points d’attention'} ({applicableResults.filter(r => r.reasons.alignmentLevel === 'potential_blockers').length})
+          {language === 'ar' ? 'شروط تتطلب المراجعة' : 'Points d’attention'} ({candidateResults.filter(r => r.reasons.alignmentLevel === 'potential_blockers').length})
         </button>
       </div>
 
@@ -506,6 +516,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         {filteredResults.map((item) => {
           const { program, provider, reasons, costEstimate } = item;
           const isCompared = comparedProgramIds.includes(program.id);
+          const criteriaFitNeedsIntakeConfirmation = item.criteriaFit === 'STRONG' && item.status === 'REQUIRES_CONFIRMATION' && ['ACTIVE_NOT_CONFIRMED', 'UNKNOWN'].includes(String(program.operationalStatus));
 
           return (
             <div
@@ -529,6 +540,16 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                         {program.category.replace('_', ' ').toUpperCase()}
                       </span>
                       <VerificationBadge verification={program.verification} language={language} />
+                      {program.id === 'bts_credit_sur_honneur' && (
+                        <span
+                          title={language === 'ar'
+                            ? 'الدعم محدود حسب الفئة؛ يجب تأكيد السقف الحالي وإمكانية الجمع.'
+                            : 'Soutien potentiellement complémentaire : plafond par catégorie, disponibilité et cumul à confirmer.'}
+                          className="px-2 py-0.5 rounded-md bg-violet-50 text-violet-800 border border-violet-200 text-[10px] font-bold"
+                        >
+                          {language === 'ar' ? 'دعم تكميلي محتمل · السقف يحتاج إلى تأكيد' : 'Petit ticket / complément — plafond à confirmer'}
+                        </span>
+                      )}
                     </div>
 
                     <h3
@@ -545,19 +566,21 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   {/* Alignment Level Badge */}
                   <div className="shrink-0 self-start sm:self-auto">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${
-                      reasons.alignmentLevel === 'strong_alignment'
+                      criteriaFitNeedsIntakeConfirmation || reasons.alignmentLevel === 'strong_alignment'
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                         : reasons.alignmentLevel === 'partial_alignment'
                         ? 'bg-amber-50 text-amber-800 border border-amber-200'
                         : 'bg-rose-50 text-rose-800 border border-rose-200'
                     }`}>
-                      {reasons.alignmentLevel === 'strong_alignment' ? (
+                      {criteriaFitNeedsIntakeConfirmation || reasons.alignmentLevel === 'strong_alignment' ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                       ) : (
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
                       )}
                       <span>
-                        {reasons.alignmentLevel === 'strong_alignment'
+                        {criteriaFitNeedsIntakeConfirmation
+                          ? (language === 'ar' ? 'المعايير متوافقة · تأكيد توفر التقديم مطلوب' : 'Critères compatibles · disponibilité à confirmer')
+                          : reasons.alignmentLevel === 'strong_alignment'
                           ? t.alignmentStrong
                           : reasons.alignmentLevel === 'partial_alignment'
                           ? t.alignmentPartial
