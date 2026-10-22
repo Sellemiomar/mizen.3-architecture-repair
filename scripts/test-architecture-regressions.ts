@@ -1269,6 +1269,24 @@ assert(
   unavailableEvidenceMapped.evidenceConfidence === 'LOW' && unavailableEvidenceCreated.evidenceConfidence === 'LOW',
   'Unavailable programme evidence cannot receive HIGH or MEDIUM confidence in stack components'
 );
+
+const contradictoryEvidenceProgram = {
+  ...programs.find(p => p.id === 'bfpme_creation')!,
+  ruleStatus: 'VERIFIED',
+  verification: { status: 'PARTIALLY_VERIFIED', unverifiedFields: [] }
+} as any;
+const contradictoryEvidenceMapped = mapProgramToStackComponent(contradictoryEvidenceProgram);
+const contradictoryEvidenceCreated = createStackComponent({
+  program: contradictoryEvidenceProgram,
+  evidenceEvaluation: { confidenceScore: 'HIGH' }
+} as any, 10000);
+assert(
+  contradictoryEvidenceMapped.evidenceStatus === 'PARTIALLY_VERIFIED' &&
+  contradictoryEvidenceMapped.evidenceConfidence === 'MEDIUM' &&
+  contradictoryEvidenceCreated.evidenceStatus === 'PARTIALLY_VERIFIED' &&
+  contradictoryEvidenceCreated.evidenceConfidence === 'MEDIUM',
+  'Specific partial verification and lower evidence confidence cannot be overridden by a generic VERIFIED rule status or HIGH match confidence'
+);
 assert(['ACTIVE_NOT_CONFIRMED', 'UNKNOWN'].includes(foprodiStackComponent.operationalStatus), 'Published FOPRODI terms do not imply current operational availability');
 assert(mapProgramToStackComponent(programs.find(p => p.id === 'bts_credit_sur_honneur')!).operationalStatus !== 'ACTIVE_CONFIRMED', 'BTS Crédit sur l’honneur keeps its explicit unconfirmed operational status');
 
