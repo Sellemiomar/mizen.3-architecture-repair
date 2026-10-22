@@ -12,6 +12,21 @@ import { getStackCompatibility } from '../knowledge/stackCompatibility';
 
 const UNKNOWN_EVIDENCE = new Set(['UNKNOWN', 'CONFLICTING', 'OUTDATED']);
 
+function evidenceConfidenceForStatus(status: unknown): 'HIGH' | 'MEDIUM' | 'LOW' {
+  if (['VERIFIED', 'VERIFIED_CURRENT'].includes(String(status))) return 'HIGH';
+  if (status === 'PARTIALLY_VERIFIED') return 'MEDIUM';
+  return 'LOW';
+}
+
+function lowerConfidence(
+  statusConfidence: 'HIGH' | 'MEDIUM' | 'LOW',
+  evaluatedConfidence?: 'HIGH' | 'MEDIUM' | 'LOW'
+): 'HIGH' | 'MEDIUM' | 'LOW' {
+  const rank = { LOW: 0, MEDIUM: 1, HIGH: 2 } as const;
+  if (!evaluatedConfidence) return statusConfidence;
+  return rank[evaluatedConfidence] < rank[statusConfidence] ? evaluatedConfidence : statusConfidence;
+}
+
 /** Direct cash roles. Guarantees and support instruments are never cash. */
 export function isCashRole(role: StackFundingRole): boolean {
   return role === 'CASH_FINANCING' || role === 'DEBT' || role === 'EQUITY' ||
@@ -65,8 +80,8 @@ export function mapProgramToStackComponent(program: FinancingProgram, options?: 
     // Do not invent a programme ceiling from the applicant's requested amount.
     if (amountCaps.length > 0) allocatedAmount = Math.min(requested, ...amountCaps);
   }
-  const ruleStatus = (program as any).ruleStatus || program.verification?.status || 'UNKNOWN';
-  const evidenceConfidence = ['VERIFIED', 'VERIFIED_CURRENT'].includes(String(ruleStatus)) ? 'HIGH' : ruleStatus === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'LOW';
+  const ruleStatus = program.verification?.status || (program as any).ruleStatus || 'UNKNOWN';
+  const evidenceConfidence = evidenceConfidenceForStatus(ruleStatus);
   return {
     programId: program.id,
     programName: program.name,
@@ -240,7 +255,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
   const role = determineStackFundingRole(prog);
   const isCash = isCashRole(role);
   const amountCaps = knownProgramAmountCaps(prog, totalProjectCost, isCash);
-  const ruleStatus = (prog as any).ruleStatus || prog.verification?.status || 'UNKNOWN';
+  const ruleStatus = prog.verification?.status || (prog as any).ruleStatus || 'UNKNOWN';
   const validAllocatedAmount = isCash && typeof allocatedAmount === 'number' && Number.isFinite(allocatedAmount) && allocatedAmount > 0 ? allocatedAmount : undefined;
   return {
     programId: prog.id,
@@ -254,7 +269,7 @@ export function createStackComponent(match: MatchResult, allocatedAmount?: numbe
     coveragePercentage: typeof prog.maxFinancingPercentage === 'number' && Number.isFinite(prog.maxFinancingPercentage) && prog.maxFinancingPercentage > 0 && prog.maxFinancingPercentage <= 100 ? prog.maxFinancingPercentage / 100 : undefined,
     rateType: prog.rateType,
     evidenceStatus: ruleStatus,
-    evidenceConfidence: match.evidenceEvaluation?.confidenceScore || (['VERIFIED', 'VERIFIED_CURRENT'].includes(String(ruleStatus)) ? 'HIGH' : ruleStatus === 'PARTIALLY_VERIFIED' ? 'MEDIUM' : 'LOW'),
+    evidenceConfidence: lowerConfidence(evidenceConfidenceForStatus(ruleStatus), match.evidenceEvaluation?.confidenceScore),
     operationalStatus: (match.evidenceEvaluation as any)?.operationalStatus || (prog as any).operationalStatus || 'ACTIVE_NOT_CONFIRMED',
     caveats: prog.importantCaveats
   };
