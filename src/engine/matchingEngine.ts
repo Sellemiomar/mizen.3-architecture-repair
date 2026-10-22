@@ -1297,6 +1297,7 @@ export function evaluateProgramCompatibility(
     amountStatus === 'UNKNOWN' ||
     isOutdated ||
     isUnverifiedEvidence ||
+    isPartiallyVerified ||
     operationalStatusNeedsConfirmation
   ) {
     // 3. Critical information unknown or evidence outdated
