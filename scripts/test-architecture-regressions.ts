@@ -320,6 +320,21 @@ assert(
   'Criteria fit is evaluated independently from current intake status'
 );
 
+const partiallyVerifiedProgramme = structuredClone(sameProgrammeWithConfirmedIntake);
+partiallyVerifiedProgramme.verification.status = 'PARTIALLY_VERIFIED';
+partiallyVerifiedProgramme.verification.unverifiedFields = [];
+const partiallyVerifiedResult = evaluateProgramCompatibility(
+  foprolosCriteriaApplicant,
+  partiallyVerifiedProgramme,
+  foprolosCriteriaProvider
+);
+assert(
+  partiallyVerifiedResult.status === 'REQUIRES_CONFIRMATION' &&
+  partiallyVerifiedResult.eligibilityOutcome !== 'DOCUMENTED_ELIGIBILITY' &&
+  partiallyVerifiedResult.evidenceEvaluation.confidenceScore !== 'HIGH',
+  'A programme with only partially verified evidence cannot be labelled documented eligibility even when no individual missing field is enumerated'
+);
+
 const sameProgrammeWithUnverifiedCommercialTerms = structuredClone(intakeUnconfirmedProgram);
 sameProgrammeWithUnverifiedCommercialTerms.verification.status = 'UNVERIFIED';
 const sameProgrammeUnverifiedTermsResult = evaluateProgramCompatibility(
