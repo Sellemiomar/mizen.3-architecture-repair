@@ -1073,8 +1073,9 @@ const intakePendingStack = evaluateStackCandidate(
   50000
 );
 assert(
-  intakePendingStack?.overallStatus === 'CONDITIONAL',
-  'A verified-compatible pair with unconfirmed current intake is conditional, never confirmed'
+  intakePendingStack?.overallStatus === 'CONDITIONAL' &&
+  intakePendingStack.confidence !== 'HIGH',
+  'A verified-compatible pair with unconfirmed current intake is conditional and cannot retain high overall confidence'
 );
 
 const invalidOperationalStack = evaluateStackCandidate(
