@@ -18,13 +18,13 @@ function evidenceConfidenceForStatus(status: unknown): 'HIGH' | 'MEDIUM' | 'LOW'
   return 'LOW';
 }
 
-function resolveStackEvidenceStatus(verificationStatus: unknown, ruleStatus: unknown): unknown {
-  if (verificationStatus == null || verificationStatus === '') return ruleStatus || 'UNKNOWN';
-  if (ruleStatus == null || ruleStatus === '') return verificationStatus;
+function resolveStackEvidenceStatus(verificationStatus: unknown, ruleStatus: unknown): StackComponent['evidenceStatus'] {
+  if (verificationStatus == null || verificationStatus === '') return (ruleStatus || 'UNKNOWN') as StackComponent['evidenceStatus'];
+  if (ruleStatus == null || ruleStatus === '') return verificationStatus as StackComponent['evidenceStatus'];
   const rank = { LOW: 0, MEDIUM: 1, HIGH: 2 } as const;
   const verificationConfidence = evidenceConfidenceForStatus(verificationStatus);
   const ruleConfidence = evidenceConfidenceForStatus(ruleStatus);
-  return rank[ruleConfidence] < rank[verificationConfidence] ? ruleStatus : verificationStatus;
+  return (rank[ruleConfidence] < rank[verificationConfidence] ? ruleStatus : verificationStatus) as StackComponent['evidenceStatus'];
 }
 
 function lowerConfidence(
