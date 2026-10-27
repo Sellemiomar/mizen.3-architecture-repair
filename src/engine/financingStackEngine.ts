@@ -357,7 +357,7 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
       });
     }
 
-    if (comp.operationalStatus === 'ACTIVE_NOT_CONFIRMED' || comp.operationalStatus === 'UNKNOWN') {
+    if (comp.operationalStatus !== 'ACTIVE_CONFIRMED') {
       // Current intake must be confirmed before the whole structure can be
       // labelled as confirmed compatibility.
       if (overallStatus === 'SUPPORTED') overallStatus = 'CONDITIONAL';
