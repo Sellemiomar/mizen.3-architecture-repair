@@ -1087,6 +1087,18 @@ assert(
   'A verified-compatible pair with partially verified terms is conditional, never confirmed'
 );
 
+const forgedConfidenceStack = evaluateStackCandidate(
+  [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'PARTIALLY_VERIFIED', evidenceConfidence: 'HIGH', operationalStatus: 'ACTIVE_CONFIRMED' },
+   { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', evidenceConfidence: 'HIGH', operationalStatus: 'ACTIVE_CONFIRMED' }],
+  [],
+  50000
+);
+assert(
+  forgedConfidenceStack?.overallStatus === 'CONDITIONAL' &&
+  forgedConfidenceStack.confidence !== 'HIGH',
+  'Direct stack evaluation derives a confidence ceiling from evidence status instead of trusting forged HIGH component confidence'
+);
+
 
 // 8. High-risk legacy financial literals must not leak back into runtime.
 const bfpme = programs.find(p => p.id === 'bfpme_creation');
