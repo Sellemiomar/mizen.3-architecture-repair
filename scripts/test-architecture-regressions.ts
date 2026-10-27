@@ -1076,6 +1076,18 @@ assert(
   intakePendingStack?.overallStatus === 'CONDITIONAL',
   'A verified-compatible pair with unconfirmed current intake is conditional, never confirmed'
 );
+
+const invalidOperationalStack = evaluateStackCandidate(
+  [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', evidenceConfidence: 'HIGH', operationalStatus: 'ACTIVE_CONFIRMED' },
+   { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', evidenceConfidence: 'HIGH', operationalStatus: 'INVALID_STATUS' as any }],
+  [],
+  50000
+);
+assert(
+  invalidOperationalStack?.overallStatus === 'CONDITIONAL' &&
+  invalidOperationalStack.confidence !== 'HIGH',
+  'Unknown or malformed operational statuses cannot bypass current-intake confirmation in direct stack evaluation'
+);
 const evidencePendingStack = evaluateStackCandidate(
   [{ ...bfpmeStackBase, allocatedAmount: 25000, evidenceStatus: 'PARTIALLY_VERIFIED', operationalStatus: 'ACTIVE_CONFIRMED' },
    { ...secondCashStackBase, allocatedAmount: 25000, evidenceStatus: 'VERIFIED_CURRENT', operationalStatus: 'ACTIVE_CONFIRMED' }],
