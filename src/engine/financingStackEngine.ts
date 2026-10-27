@@ -325,8 +325,15 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
   let isReliablyCalculable = true;
 
   for (const comp of allComponents) {
-    if (comp.evidenceConfidence === 'LOW' || UNKNOWN_EVIDENCE.has(String(comp.evidenceStatus))) overallConfidence = 'LOW';
-    else if (comp.evidenceConfidence === 'MEDIUM' && overallConfidence !== 'LOW') overallConfidence = 'MEDIUM';
+    // This public boundary can receive hand-built components. Derive the
+    // maximum confidence from the evidence status rather than trusting a
+    // caller-supplied HIGH confidence value.
+    const componentConfidence = lowerConfidence(
+      evidenceConfidenceForStatus(comp.evidenceStatus),
+      comp.evidenceConfidence
+    );
+    if (componentConfidence === 'LOW' || UNKNOWN_EVIDENCE.has(String(comp.evidenceStatus))) overallConfidence = 'LOW';
+    else if (componentConfidence === 'MEDIUM' && overallConfidence !== 'LOW') overallConfidence = 'MEDIUM';
 
     if (UNKNOWN_EVIDENCE.has(String(comp.evidenceStatus))) {
       overallStatus = 'UNKNOWN';
