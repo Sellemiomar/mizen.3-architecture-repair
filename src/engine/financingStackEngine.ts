@@ -358,6 +358,9 @@ export function evaluateStackCandidate(cashComponents: StackComponent[], support
     }
 
     if (comp.operationalStatus !== 'ACTIVE_CONFIRMED') {
+      // Unconfirmed current intake limits confidence in the practical stack,
+      // even when the underlying programme terms and pair fit are well evidenced.
+      if (overallConfidence === 'HIGH') overallConfidence = 'MEDIUM';
       // Current intake must be confirmed before the whole structure can be
       // labelled as confirmed compatibility.
       if (overallStatus === 'SUPPORTED') overallStatus = 'CONDITIONAL';
