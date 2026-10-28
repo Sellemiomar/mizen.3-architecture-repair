@@ -181,7 +181,12 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
             `Couverture de garantie exclue du montant confirmé : l'engagement individuel pour ${comp.programName.fr} (${confirmedCoverage} DT) dépasse le plafond publié (${knownGuaranteeCeiling} DT) ; vérifier une éventuelle dérogation documentée.`
           );
         } else if (typeof confirmedCoverage === 'number' && Number.isFinite(confirmedCoverage) && confirmedCoverage > 0) {
-          guaranteeCoverageAmount += confirmedCoverage;
+          const nextCoverage = guaranteeCoverageAmount + confirmedCoverage;
+          if (!Number.isFinite(nextCoverage)) {
+            warnings.push(`Couverture de garantie exclue du total confirmé : dépassement de capacité numérique lors de l'addition pour ${comp.programName.fr}.`);
+          } else {
+            guaranteeCoverageAmount = nextCoverage;
+          }
         } else if (
           (typeof comp.maxPotentialAmount === 'number' && comp.maxPotentialAmount > 0) ||
           (typeof comp.coveragePercentage === 'number' && comp.coveragePercentage > 0)
@@ -237,7 +242,12 @@ export function calculateFundingGap(requiredFunding: number, components: StackCo
       continue;
     }
 
-    verifiedCashFunding += commitment;
+    const nextVerifiedCashFunding = verifiedCashFunding + commitment;
+    if (!Number.isFinite(nextVerifiedCashFunding)) {
+      warnings.push(`Financement exclu du total confirmé : dépassement de capacité numérique lors de l'addition pour ${comp.programName.fr}.`);
+      continue;
+    }
+    verifiedCashFunding = nextVerifiedCashFunding;
   }
 
   // Keep the actual confirmed sum. Capping it at the requirement concealed
