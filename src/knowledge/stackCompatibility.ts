@@ -82,10 +82,10 @@ const DOCUMENTED_COMPATIBILITY_RULES: StackCompatibilityEvaluation[] = [
     compatibilityStatus: 'POTENTIALLY_COMPATIBLE',
     confidence: 'LOW',
     rationale: {
-      fr: "Couverture SOTUGAR des opérations de crédit-bail mobilier éligibles : prévue par convention cadre mais soumise à agrément du matériel.",
-      ar: "تغطية سوتوغار لعمليات الإيجار المالي المنقول : منصوص عليها باتفاقية إطارية وتخضع للموافقة على المعدات."
+      fr: "Une couverture peut exister pour certaines opérations de leasing mobilier éligibles. Le mécanisme actif, le matériel, le bailleur et l'accord du partenaire doivent être confirmés pour le dossier.",
+      ar: "قد تتوفر تغطية لبعض عمليات الإيجار المالي المنقول المؤهلة. يجب تأكيد الآلية السارية والمعدات وشركة الإيجار وموافقة الشريك للملف المحدد."
     },
-    isHistoricalOnly: true
+    isHistoricalOnly: false
   },
 
   // 6. Startup Act Guarantee Fund + Venture Capital / Seed Fund (Historical)
@@ -114,26 +114,29 @@ const DOCUMENTED_COMPATIBILITY_RULES: StackCompatibilityEvaluation[] = [
     isHistoricalOnly: false
   },
 
-  // 8. BTS Diplômés + Commercial Bank Loan (Incompatible on same project)
+  // 8. BTS Diplômés + Commercial Bank Loan / BFPME CMLT
+  // No direct primary rule is recorded that establishes either combination
+  // as universally prohibited. Keep both UNKNOWN until the exact programme
+  // conventions and same-project financing rules are verified.
   {
     programAId: 'bts_diplomes',
     programBId: 'bh_bank_loan',
-    compatibilityStatus: 'INCOMPATIBLE',
-    confidence: 'HIGH',
+    compatibilityStatus: 'UNKNOWN',
+    confidence: 'LOW',
     rationale: {
-      fr: "Le régime des crédits bonifiés BTS pour diplômés interdit le cumul de dettes bancaires concurrentes sur le même investissement sans dérogation expresse.",
-      ar: "نظام قروض BTS المدعومة لأصحاب الشهادات يمنع الجمع بين ديون بنكية متزامنة على نفس كلفة المشروع."
+      fr: "Aucune règle primaire directe enregistrée ne confirme une interdiction générale ni n'autorise le cumul sur le même investissement. Vérification écrite auprès de la BTS et du prêteur requise.",
+      ar: "لا توجد قاعدة أولية مباشرة مسجلة تؤكد منعاً عاماً أو تجيز الجمع في الاستثمار نفسه. يلزم التثبت كتابياً لدى BTS والممول."
     },
     isHistoricalOnly: false
   },
   {
     programAId: 'bts_diplomes',
     programBId: 'bfpme_creation',
-    compatibilityStatus: 'INCOMPATIBLE',
-    confidence: 'HIGH',
+    compatibilityStatus: 'UNKNOWN',
+    confidence: 'LOW',
     rationale: {
-      fr: "Les dispositifs BTS (micro-financement) et BFPME (PME > 150k TND) s'adressent à des échelles de projet mutuellement exclusives.",
-      ar: "برامج BTS (التمويل الصغير) و BFPME (المؤسسات الصغرى والمتوسطة > 150 ألف د) موجهة لنطاقات استثمارية غير متطابقة."
+      fr: "Les seuils de coût de projet publiés se chevauchent entre 150 000 et 200 000 TND selon le profil et le dispositif. L'échelle du projet ne prouve donc pas une incompatibilité; le cumul sur un même investissement reste à confirmer.",
+      ar: "تتداخل حدود كلفة المشروع المنشورة بين 150 ألفاً و200 ألف دينار حسب الملف والبرنامج. لذلك لا يثبت حجم المشروع عدم التوافق؛ ويجب تأكيد الجمع في الاستثمار نفسه."
     },
     isHistoricalOnly: false
   },

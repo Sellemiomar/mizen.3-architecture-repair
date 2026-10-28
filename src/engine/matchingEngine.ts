@@ -10,12 +10,14 @@ import {
   EvidenceEvaluation,
   MatchStatus,
   ApplicationReadiness,
-  EligibilityOutcome
+  EligibilityOutcome,
+  CriteriaFit
 } from '../types/financing';
 import { 
   getAuthoritativeFinancingPrograms, 
   getAuthoritativeProviders, 
-  getAuthoritativeRegionalDevelopmentZones 
+  getAuthoritativeRegionalDevelopmentZones,
+  getAuthoritativeClaim
 } from '../knowledge/authoritativeProjection';
 import { calculateFinancingCost } from './financialCalculations';
 import { formatVerificationNeed, getFieldLabel } from '../utils/verificationLabels';
@@ -31,17 +33,6 @@ export function evaluateApplicability(
   applicant: ApplicantProfile,
   program: FinancingProgram
 ): { status: ApplicabilityStatus; reason: { fr: string; ar: string } } {
-  // Check if program applicability is explicitly marked unverified
-  if (program.applicability?.unverifiedApplicability) {
-    return {
-      status: 'UNKNOWN',
-      reason: {
-        fr: "Applicabilité du mécanisme non vérifiée auprès des sources officielles.",
-        ar: "مجال تطبيق هذه الآلية غير مؤكد استناداً للمصادر الرسمية."
-      }
-    };
-  }
-
   const journey = applicant.journey;
   const purpose = applicant.purpose;
 
@@ -162,6 +153,19 @@ export function evaluateApplicability(
     }
   }
 
+  // Only after checking clear purpose/journey exclusions do we apply the
+  // unresolved-applicability gate. Known mismatches remain NOT_APPLICABLE;
+  // an otherwise plausible case stays UNKNOWN until its rules are verified.
+  if (program.applicability?.unverifiedApplicability) {
+    return {
+      status: 'UNKNOWN',
+      reason: {
+        fr: "Applicabilité du mécanisme non vérifiée auprès des sources officielles.",
+        ar: "مجال تطبيق هذه الآلية غير مؤكد استناداً للمصادر الرسمية."
+      }
+    };
+  }
+
   return {
     status: 'APPLICABLE',
     reason: {
@@ -215,6 +219,34 @@ export function evaluateApplicationReadiness(
       value: String(applicant.monthlyNetIncome.toLocaleString('fr-TN')) + ' TND'
     });
   }
+  if (applicant.monthlyGrossHouseholdIncomeSmigMultiple !== undefined) {
+    knownFields.push({
+      key: 'monthlyGrossHouseholdIncomeSmigMultiple',
+      label: { fr: 'Revenu brut du ménage (multiple du SMIG, déclaré)', ar: 'الدخل الخام للأسرة (مضاعف SMIG، تصريح)' },
+      value: `${applicant.monthlyGrossHouseholdIncomeSmigMultiple.toLocaleString('fr-TN')} × SMIG`
+    });
+  }
+  if (applicant.applicantOwnsDwelling !== undefined) {
+    knownFields.push({
+      key: 'applicantOwnsDwelling',
+      label: { fr: 'Propriété d’un logement par le demandeur (déclarée)', ar: 'امتلاك طالب التمويل لمسكن (تصريح)' },
+      value: applicant.applicantOwnsDwelling ? 'Oui / نعم' : 'Non / لا'
+    });
+  }
+  if (applicant.hasSpouse !== undefined) {
+    knownFields.push({
+      key: 'hasSpouse',
+      label: { fr: 'Présence d’un conjoint (déclarée)', ar: 'وجود زوج أو زوجة (تصريح)' },
+      value: applicant.hasSpouse ? 'Oui / نعم' : 'Non / لا'
+    });
+  }
+  if (applicant.hasSpouse === true && applicant.spouseOwnsDwelling !== undefined) {
+    knownFields.push({
+      key: 'spouseOwnsDwelling',
+      label: { fr: 'Propriété d’un logement par le conjoint (déclarée)', ar: 'امتلاك الزوج أو الزوجة لمسكن (تصريح)' },
+      value: applicant.spouseOwnsDwelling ? 'Oui / نعم' : 'Non / لا'
+    });
+  }
   if (applicant.monthlyDebtPayments !== undefined) {
     knownFields.push({
       key: 'monthlyDebtPayments',
@@ -223,14 +255,48 @@ export function evaluateApplicationReadiness(
     });
   }
 
-  // Missing fields from rules evaluated to UNKNOWN
+  // Separate facts the applicant can supply from rules that need an official
+  // interpretation. FOPROLOS' household-ownership exception and employee-category
+  // gate must not be presented as applicant omissions once the relevant declarations
+  // are present: those are legal/program confirmations, not missing form answers.
   for (const rule of ruleEvaluations) {
-    if (rule.status === 'UNKNOWN') {
-      missingApplicantFields.push({
-        key: rule.ruleId,
-        label: rule.label
-      });
+    if (rule.status !== 'UNKNOWN') continue;
+
+    if (program.id === 'foprolos_construction' &&
+        rule.ruleId === 'catalogue_crit_foprolos_household_ownership') {
+      const applicantFactsMissing =
+        applicant.applicantOwnsDwelling === undefined ||
+        applicant.hasSpouse === undefined ||
+        (applicant.hasSpouse === true && applicant.spouseOwnsDwelling === undefined);
+      if (!applicantFactsMissing) {
+        lenderConfirmationFields.push({
+          key: rule.ruleId,
+          label: {
+            fr: 'Confirmation officielle requise : exception applicable aux travaux d’extension',
+            ar: 'يلزم تأكيد رسمي: الاستثناء المطبق على أعمال التوسعة'
+          }
+        });
+        continue;
+      }
     }
+
+    if (program.id === 'foprolos_construction' &&
+        rule.ruleId === 'catalogue_crit_foprolos_salaried' &&
+        applicant.employmentStatus !== undefined) {
+      lenderConfirmationFields.push({
+        key: rule.ruleId,
+        label: {
+          fr: 'Confirmation officielle requise : catégorie de salarié admise',
+          ar: 'يلزم تأكيد رسمي: فئة الأجراء المقبولة'
+        }
+      });
+      continue;
+    }
+
+    missingApplicantFields.push({
+      key: rule.ruleId,
+      label: rule.label
+    });
   }
 
   // Unverified/Lender confirmation fields from program verification
@@ -266,6 +332,110 @@ export function evaluateApplicationReadiness(
  * 3. Financial Compatibility
  * 4. Evidence Confidence
  */
+function evaluateCatalogueCriteria(
+  applicant: ApplicantProfile,
+  program: FinancingProgram,
+  ruleEvaluations: RuleEvaluation[],
+  matchedBecause: MatchReason['matchedBecause'],
+  potentialIssues: MatchReason['potentialIssues'],
+  needsVerification: MatchReason['needsVerification']
+): void {
+  for (const criterion of program.criteria || []) {
+    // These constraints already have specialized, user-facing evaluators below.
+    if (criterion.field === 'financingRequested') continue;
+    if (criterion.field === 'totalProjectCost' && ['bfpme_creation', 'premier_logement'].includes(program.id)) continue;
+    if (criterion.field === 'hasStartupActLabel' && program.eligibilityCriteria.requiresStartupLabel) continue;
+    if (criterion.field === 'isFirstPropertyPurchase' && program.applicability?.isFirstPropertyOnly) continue;
+
+    const rawValue = (applicant as unknown as Record<string, unknown>)[criterion.field];
+    const expected = criterion.expectedValue;
+    let status: RuleEvaluation['status'] = 'UNKNOWN';
+    let explanationFr = criterion.unknownReason || '';
+    let explanationAr = '';
+
+    if (criterion.operator === 'CUSTOM') {
+      // FOPROLOS applicant answers make missing facts actionable, but do not
+      // convert self-declarations into documentary proof or legal eligibility.
+      if (program.id === 'foprolos_construction' && criterion.id === 'crit_foprolos_household_ownership') {
+        const missing: string[] = [];
+        if (applicant.applicantOwnsDwelling === undefined) missing.push('la propriété actuelle du demandeur');
+        if (applicant.hasSpouse === undefined) missing.push('la présence ou non d’un conjoint');
+        if (applicant.hasSpouse === true && applicant.spouseOwnsDwelling === undefined) missing.push('la propriété actuelle du conjoint');
+        if (applicant.journey === 'home_construction' && applicant.constructionType === undefined) missing.push('le type de travaux (construction, rénovation ou extension)');
+        if (missing.length) {
+          explanationFr = `Condition FOPROLOS non évaluée : information(s) manquante(s) — ${missing.join(', ')}. Les réponses déclaratives ne remplacent pas les justificatifs.`;
+        } else if (applicant.constructionType === 'extension') {
+          explanationFr = 'Réponses déclaratives recueillies. L’exception liée à l’extension et les justificatifs de propriété doivent être confirmés officiellement ; statut UNKNOWN.';
+        } else {
+          const householdOwns = applicant.applicantOwnsDwelling === true ||
+            (applicant.hasSpouse === true && applicant.spouseOwnsDwelling === true);
+          explanationFr = householdOwns
+            ? 'Le profil déclare une propriété dans le ménage : incompatibilité potentielle à examiner selon les règles FOPROLOS applicables et les justificatifs ; aucune exclusion automatique.'
+            : 'Le profil déclare ne pas avoir de logement dans le ménage. Les justificatifs et la règle juridique applicable doivent être vérifiés avant toute conclusion.';
+        }
+        explanationAr = 'تم جمع التصريحات الأولية فقط؛ يجب التثبت من الوثائق وقاعدة فوبرولوس والاستثناءات المعمول بها رسمياً. تبقى النتيجة غير محسومة (UNKNOWN).';
+      } else if (program.id === 'foprolos_construction' && criterion.id === 'crit_foprolos_salaried') {
+        explanationFr = applicant.employmentStatus
+          ? `Statut déclaré : ${applicant.employmentStatus}. Il faut vérifier la catégorie de salarié admissible et les justificatifs requis ; le seul statut professionnel ne suffit pas. Résultat UNKNOWN.`
+          : 'Statut professionnel manquant. Renseignez-le, puis vérifiez la catégorie de salarié admissible et les justificatifs requis ; résultat UNKNOWN en attendant.';
+        explanationAr = 'الوضعية المهنية المصرح بها لا تكفي وحدها؛ يجب التثبت من فئة الأجير المقبولة والوثائق المطلوبة. تبقى النتيجة غير محسومة.';
+      } else {
+        explanationFr = explanationFr || 'Cette condition nécessite une vérification spécifique qui n’est pas encore automatisée.';
+        explanationAr = 'يتطلب هذا الشرط تحققاً خاصاً لم تتم أتمتته بعد.';
+      }
+    } else if (criterion.evidenceStatus !== 'VERIFIED' || !criterion.evidenceSourceIds?.length) {
+      explanationFr = explanationFr || 'La preuve au niveau de ce critère n’est pas vérifiée : aucune conclusion automatique ne sera tirée.';
+      explanationAr = 'الدليل الخاص بهذا الشرط غير مثبت؛ لن يتم استخلاص نتيجة آلية.';
+    } else if (rawValue === undefined || rawValue === null || (expected === undefined && criterion.operator !== 'REQUIRED')) {
+      explanationFr = explanationFr || 'Une information nécessaire au contrôle de cette condition manque dans le profil.';
+      explanationAr = 'تنقص الملف معلومة ضرورية للتحقق من هذا الشرط.';
+    } else {
+      const value = rawValue;
+      switch (criterion.operator) {
+        case 'EQ': status = value === expected ? 'PASS' : 'FAIL'; break;
+        case 'NEQ': status = value !== expected ? 'PASS' : 'FAIL'; break;
+        case 'GT': status = typeof value === 'number' && typeof expected === 'number' ? (value > expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'GTE': status = typeof value === 'number' && typeof expected === 'number' ? (value >= expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'LT': status = typeof value === 'number' && typeof expected === 'number' ? (value < expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'LTE': status = typeof value === 'number' && typeof expected === 'number' ? (value <= expected ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'IN': status = Array.isArray(expected) ? (expected.includes(value) ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'NOT_IN': status = Array.isArray(expected) ? (!expected.includes(value) ? 'PASS' : 'FAIL') : 'UNKNOWN'; break;
+        case 'BETWEEN': {
+          const range = Array.isArray(expected) ? expected : [];
+          status = typeof value === 'number' && range.length === 2 &&
+            typeof range[0] === 'number' && typeof range[1] === 'number'
+            ? (value >= range[0] && value <= range[1] ? 'PASS' : 'FAIL')
+            : 'UNKNOWN';
+          break;
+        }
+        case 'REQUIRED': status = value ? 'PASS' : 'FAIL'; break;
+      }
+      if (status === 'UNKNOWN') {
+        explanationFr = explanationFr || 'La condition ne peut pas être évaluée avec les données disponibles.';
+        explanationAr = explanationAr || 'لا يمكن تقييم الشرط بالمعطيات المتاحة.';
+      } else if (status === 'PASS') {
+        explanationFr = `Condition vérifiée : ${criterion.description.fr}`;
+        explanationAr = `تم التحقق من الشرط: ${criterion.description.ar}`;
+      } else {
+        explanationFr = `Condition non satisfaite : ${criterion.description.fr}`;
+        explanationAr = `الشرط غير مستوفى: ${criterion.description.ar}`;
+      }
+    }
+
+    ruleEvaluations.push({
+      ruleId: `catalogue_${criterion.id}`,
+      label: criterion.description,
+      criticality: criterion.critical ? 'CRITICAL' : 'IMPORTANT',
+      status,
+      explanation: { fr: explanationFr, ar: explanationAr || explanationFr }
+    });
+
+    if (status === 'PASS') matchedBecause.push(criterion.description);
+    else if (status === 'FAIL') potentialIssues.push({ fr: explanationFr, ar: explanationAr || explanationFr });
+    else needsVerification.push({ fr: explanationFr, ar: explanationAr || explanationFr });
+  }
+}
+
 export function evaluateProgramCompatibility(
   applicant: ApplicantProfile,
   program: FinancingProgram,
@@ -275,6 +445,10 @@ export function evaluateProgramCompatibility(
   const potentialIssues: MatchReason['potentialIssues'] = [];
   const needsVerification: MatchReason['needsVerification'] = [];
   const ruleEvaluations: RuleEvaluation[] = [];
+
+  // Source-tracked catalogue criteria must be evaluated; missing or unverified
+  // critical criteria remain UNKNOWN instead of disappearing from matching.
+  evaluateCatalogueCriteria(applicant, program, ruleEvaluations, matchedBecause, potentialIssues, needsVerification);
 
   // =========================================================================
   // DIMENSION 1 — APPLICABILITY GATE
@@ -676,7 +850,22 @@ export function evaluateProgramCompatibility(
   if (program.id === 'bfpme_creation') {
     // 1. Min project cost boundary check: 150,000 TND
     if (applicant.totalProjectCost !== undefined) {
-      if (program.projectCostMin !== undefined && applicant.totalProjectCost < program.projectCostMin) {
+      if (program.projectCostMin === undefined || program.projectCostMax === undefined) {
+        amountStatus = 'UNKNOWN';
+        const detail = {
+          fr: "Fourchette actuelle du coût de projet BFPME incomplète : les seuils minimum et maximum doivent être confirmés avant de conclure à l'adéquation.",
+          ar: "نطاق كلفة المشروع الحالي لدى BFPME غير مكتمل: يجب تأكيد الحدين الأدنى والأقصى قبل استنتاج التوافق."
+        };
+        ruleEvaluations.push({
+          ruleId: 'bfpmeProjectCostRange',
+          label: { fr: "Fourchette d'investissement BFPME", ar: "نطاق الاستثمار BFPME" },
+          criticality: 'CRITICAL',
+          status: 'UNKNOWN',
+          explanation: detail
+        });
+        financialDetails.push(detail);
+        needsVerification.push(detail);
+      } else if (applicant.totalProjectCost < program.projectCostMin) {
         amountStatus = 'FAIL';
         const detail = {
           fr: `Coût total du projet (${applicant.totalProjectCost.toLocaleString('fr-TN')} TND) inférieur au seuil minimum d'investissement de ${program.projectCostMin?.toLocaleString('fr-TN')} TND.`,
@@ -691,7 +880,7 @@ export function evaluateProgramCompatibility(
         });
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else if (program.projectCostMax !== undefined && applicant.totalProjectCost > program.projectCostMax) {
+      } else if (applicant.totalProjectCost > program.projectCostMax) {
         // 2. Max project cost boundary check: 15,000,000 TND
         amountStatus = 'FAIL';
         const detail = {
@@ -726,7 +915,22 @@ export function evaluateProgramCompatibility(
     }
 
     // 3. Absolute CMLT Ceiling: 2,500,000 TND
-    if (applicant.financingRequested !== undefined && program.maxAmount > 0 && applicant.financingRequested > program.maxAmount) {
+    if (applicant.financingRequested !== undefined && program.maxAmount <= 0) {
+      amountStatus = 'UNKNOWN';
+      const detail = {
+        fr: "Plafond actuel du montant de crédit CMLT BFPME non établi : ne pas conclure à l'adéquation sans vérifier le plafond applicable.",
+        ar: "السقف الحالي لمبلغ قرض BFPME غير مثبت: لا يمكن تأكيد التوافق دون التثبت من السقف المعمول به."
+      };
+      ruleEvaluations.push({
+        ruleId: 'bfpmeMaxCmltCeiling',
+        label: { fr: "Plafond CMLT BFPME", ar: "سقف قرض CMLT BFPME" },
+        criticality: 'CRITICAL',
+        status: 'UNKNOWN',
+        explanation: detail
+      });
+      financialDetails.push(detail);
+      needsVerification.push(detail);
+    } else if (applicant.financingRequested !== undefined && applicant.financingRequested > program.maxAmount) {
       amountStatus = 'FAIL';
       const detail = {
         fr: `Montant CMLT demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) dépasse le plafond de ${program.maxAmount.toLocaleString('fr-TN')} TND.`,
@@ -763,7 +967,33 @@ export function evaluateProgramCompatibility(
             ar: "مفهوم 'التمويل الشامل' لا يتوفر على سند رسمي موثق : حالة غير مؤكدة."
           }
         });
-      } else if (maxFinancingPercentage !== undefined && financingRatio > maxFinancingPercentage + 0.01) {
+      } else if (
+        maxFinancingPercentage === undefined ||
+        !Number.isFinite(maxFinancingPercentage) ||
+        maxFinancingPercentage < 0 ||
+        maxFinancingPercentage > 100
+      ) {
+        amountStatus = 'UNKNOWN';
+        const invalidPercentage = typeof maxFinancingPercentage === 'number' &&
+          (!Number.isFinite(maxFinancingPercentage) || maxFinancingPercentage < 0 || maxFinancingPercentage > 100);
+        const detail = {
+          fr: invalidPercentage
+            ? "Quotité maximale de financement BFPME invalide : la valeur doit être comprise entre 0 et 100 %. Le contrôle d'éligibilité reste indéterminé."
+            : "Quotité maximale de financement BFPME non établie par une revendication actuelle exploitable.",
+          ar: invalidPercentage
+            ? "نسبة التمويل القصوى لـ BFPME غير صالحة؛ يجب أن تكون بين 0 و100%. تظل أهلية التمويل غير محسومة."
+            : "النسبة القصوى لتمويل BFPME غير مثبتة بمعلومة حالية صالحة."
+        };
+        ruleEvaluations.push({
+          ruleId: 'bfpmeCmltRatioCeiling',
+          label: { fr: "Quotité maximale CMLT BFPME", ar: "النسبة القصوى لقرض CMLT BFPME" },
+          criticality: 'CRITICAL',
+          status: 'UNKNOWN',
+          explanation: detail
+        });
+        financialDetails.push(detail);
+        needsVerification.push(detail);
+      } else if (financingRatio > maxFinancingPercentage + 0.01) {
         amountStatus = 'FAIL';
         const detail = {
           fr: `Quotité de crédit CMLT demandée (${Math.round(financingRatio)}%) dépasse le plafond publié de ${maxFinancingPercentage}%.`,
@@ -778,11 +1008,7 @@ export function evaluateProgramCompatibility(
         });
         financialDetails.push(detail);
         potentialIssues.push(detail);
-      } else if (
-        (program.maxAmount <= 0 || applicant.financingRequested <= program.maxAmount) &&
-        (program.projectCostMin === undefined || applicant.totalProjectCost >= program.projectCostMin) &&
-        (program.projectCostMax === undefined || applicant.totalProjectCost <= program.projectCostMax)
-      ) {
+      } else {
         ruleEvaluations.push({
           ruleId: 'bfpmeCmltRatioCeiling',
           label: { fr: "Plafond CMLT 65% de l'investissement", ar: "سقف التمويل 65% من كلفة الاستثمار" },
@@ -822,6 +1048,70 @@ export function evaluateProgramCompatibility(
       };
       financialDetails.push(detail);
       potentialIssues.push(detail);
+    }
+  } else if (program.id === 'bts_credit_sur_honneur') {
+    // The Honour Loan has category-specific maxima stored as authoritative claims,
+    // not as one generic product.maxAmount. Use the applicable published tier
+    // when known so a large request cannot pass as merely "unknown".
+    const isMicroProject = applicant.legalStructure === 'not_yet_created' ||
+      applicant.businessStage === 'idea_project';
+    const isEstablishedBusiness =
+      ['established_under_2y', 'established_over_2y'].includes(String(applicant.businessStage)) &&
+      Boolean(applicant.legalStructure) &&
+      applicant.legalStructure !== 'not_yet_created';
+    // Do not default an unknown applicant category to the larger SME/community
+    // tier: missing stage/structure evidence must keep the applicable ceiling UNKNOWN.
+    const capField = isMicroProject
+      ? 'maxFinancingAmountMicroProject'
+      : isEstablishedBusiness
+        ? 'maxFinancingAmountSmeCommunity'
+        : undefined;
+    const capClaim = capField
+      ? getAuthoritativeClaim('bts_credit_sur_honneur', capField)
+      : undefined;
+    const tierCap = typeof capClaim?.value === 'number' ? capClaim.value : undefined;
+
+    if (typeof applicant.financingRequested !== 'number' || !Number.isFinite(applicant.financingRequested) || applicant.financingRequested <= 0 || tierCap === undefined) {
+      amountStatus = 'UNKNOWN';
+      const detail = {
+        fr: 'Le plafond applicable du Crédit sur l’honneur BTS doit être confirmé pour la catégorie du demandeur.',
+        ar: 'يجب تأكيد السقف المطبق لقرض الشرف من BTS حسب فئة طالب التمويل.'
+      };
+      ruleEvaluations.push({
+        ruleId: 'btsHonourLoanTierCap',
+        label: { fr: 'Plafond par catégorie — Crédit sur l’honneur BTS', ar: 'السقف حسب الفئة — قرض الشرف BTS' },
+        criticality: 'CRITICAL',
+        status: 'UNKNOWN',
+        explanation: detail
+      });
+      financialDetails.push(detail);
+      needsVerification.push(detail);
+    } else if (applicant.financingRequested > tierCap) {
+      amountStatus = 'FAIL';
+      const detail = {
+        fr: `Montant demandé (${applicant.financingRequested.toLocaleString('fr-TN')} TND) supérieur au plafond annoncé de ${tierCap.toLocaleString('fr-TN')} TND pour cette catégorie.`,
+        ar: `المبلغ المطلوب (${applicant.financingRequested.toLocaleString('fr-TN')} د) يتجاوز السقف المعلن لهذه الفئة وهو ${tierCap.toLocaleString('fr-TN')} د.`
+      };
+      ruleEvaluations.push({
+        ruleId: 'btsHonourLoanTierCap',
+        label: { fr: 'Plafond par catégorie — Crédit sur l’honneur BTS', ar: 'السقف حسب الفئة — قرض الشرف BTS' },
+        criticality: 'CRITICAL',
+        status: 'FAIL',
+        explanation: detail
+      });
+      financialDetails.push(detail);
+      potentialIssues.push(detail);
+    } else {
+      ruleEvaluations.push({
+        ruleId: 'btsHonourLoanTierCap',
+        label: { fr: 'Plafond par catégorie — Crédit sur l’honneur BTS', ar: 'السقف حسب الفئة — قرض الشرف BTS' },
+        criticality: 'CRITICAL',
+        status: 'PASS',
+        explanation: {
+          fr: `Montant demandé compatible avec le plafond annoncé de ${tierCap.toLocaleString('fr-TN')} TND; conditions détaillées et ouverture des dépôts à confirmer.`,
+          ar: `المبلغ المطلوب ضمن السقف المعلن ${tierCap.toLocaleString('fr-TN')} د؛ يجب تأكيد الشروط التفصيلية وفتح قبول الملفات.`
+        }
+      });
     }
   } else if (program.category === 'guarantee' || program.id === 'startup_act_bourse') {
     // These mechanisms do not provide a project-loan amount: SOTUGAR guarantees a lender's credit,
@@ -922,7 +1212,7 @@ export function evaluateProgramCompatibility(
   // DIMENSION 4 — EVIDENCE CONFIDENCE & UNVERIFIED PARAMETERS
   // =========================================================================
   const isOutdated = program.verification.status === 'OUTDATED';
-  const isUnverifiedEvidence = program.verification.status === 'UNVERIFIED';
+  const isUnverifiedEvidence = ['UNVERIFIED', 'SOURCE_UNAVAILABLE'].includes(String(program.verification.status));
 
   if (program.verification.unverifiedFields && program.verification.unverifiedFields.length > 0) {
     needsVerification.push({
@@ -935,6 +1225,8 @@ export function evaluateProgramCompatibility(
     (program as any).operationalStatus === 'HISTORICAL_ONLY' || 
     program.verification.status === 'OUTDATED' ||
     (program.verification.status as string) === 'HISTORICAL';
+  const operationalStatusNeedsConfirmation =
+    ['ACTIVE_NOT_CONFIRMED', 'UNKNOWN'].includes(String((program as any).operationalStatus));
 
   const hasUnverified = program.verification.unverifiedFields && program.verification.unverifiedFields.length > 0;
   const isPartiallyVerified = program.verification.status === 'PARTIALLY_VERIFIED' || hasUnverified;
@@ -964,6 +1256,20 @@ export function evaluateProgramCompatibility(
   const failedRules = ruleEvaluations.filter(r => r.status === 'FAIL');
   const unknownRules = ruleEvaluations.filter(r => r.status === 'UNKNOWN');
 
+  // Keep documented criteria fit independent from operational availability. A
+  // programme can fit the published rules while current intake remains unconfirmed.
+  const criteriaFit: CriteriaFit =
+    criticalFailures.length > 0 || amountStatus === 'FAIL'
+      ? 'BLOCKED'
+      : applicability.status === 'UNKNOWN' ||
+        criticalUnknowns.length > 0 ||
+        amountStatus === 'UNKNOWN' ||
+        isOutdated
+        ? 'UNKNOWN'
+        : failedRules.length > 0 || unknownRules.length > 1 || contributionStatus === 'FAIL'
+          ? 'POTENTIAL'
+          : 'STRONG';
+
   let status: MatchStatus = 'STRONG_ALIGNMENT';
   let alignmentLevel: MatchReason['alignmentLevel'] = 'strong_alignment';
   let eligibilityOutcome: EligibilityOutcome = 'DOCUMENTED_ELIGIBILITY';
@@ -985,12 +1291,26 @@ export function evaluateProgramCompatibility(
       fr: "Mention 'Financement intégral' non assimilable à 100% sans apport sans confirmation directe de l'agence bancaire.",
       ar: "عبارة 'تمويل شامل' لا تعني 100% قرضاً بدون تمويل ذاتي دون تأكيد مباشر من الفرع البنكي."
     });
-  } else if (criticalUnknowns.length > 0 || amountStatus === 'UNKNOWN' || isOutdated || isUnverifiedEvidence) {
+  } else if (
+    applicability.status === 'UNKNOWN' ||
+    criticalUnknowns.length > 0 ||
+    amountStatus === 'UNKNOWN' ||
+    isOutdated ||
+    isUnverifiedEvidence ||
+    isPartiallyVerified ||
+    operationalStatusNeedsConfirmation
+  ) {
     // 3. Critical information unknown or evidence outdated
     status = 'REQUIRES_CONFIRMATION';
     alignmentLevel = 'partial_alignment';
     eligibilityOutcome = 'UNKNOWN';
     scoreWeight = 400 + (passedRules.length * 10) - (unknownRules.length * 5);
+    if (operationalStatusNeedsConfirmation) {
+      needsVerification.push({
+        fr: "Les critères publics peuvent correspondre, mais l'ouverture actuelle des dépôts doit être confirmée auprès de l'organisme.",
+        ar: "قد تتوافق المعايير المنشورة، لكن يجب التأكد من الجهة المعنية من أن قبول الملفات متاح حالياً."
+      });
+    }
   } else if (failedRules.length > 0 || unknownRules.length > 1 || contributionStatus === 'FAIL') {
     // 4. Potential alignment: main criteria fit, minor points to adjust
     status = 'POTENTIAL_ALIGNMENT';
@@ -1032,7 +1352,8 @@ export function evaluateProgramCompatibility(
     provider,
     status,
     eligibilityOutcome,
-    applicabilityStatus: 'APPLICABLE',
+    criteriaFit,
+    applicabilityStatus: applicability.status,
     applicabilityReason: applicability.reason,
     ruleEvaluations,
     financialEvaluation,
