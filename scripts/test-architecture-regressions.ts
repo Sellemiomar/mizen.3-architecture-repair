@@ -620,6 +620,36 @@ const fullyConfirmedGap = calculateFundingGap(100000, [{
   evidenceConfidence: 'HIGH'
 }]);
 assert(fullyConfirmedGap.verifiedCashFunding === 100000 && fullyConfirmedGap.remainingFundingGap === 0, 'Only current evidence, active program, and explicit applicant-specific commitment count as confirmed cash');
+
+const overflowCashGap = calculateFundingGap(100, [
+  {
+    ...sotugarComponent,
+    programId: 'overflow-cash-a',
+    role: 'DEBT',
+    isCashFunding: true,
+    evidenceStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_CONFIRMED',
+    fundingCommitmentStatus: 'COMMITTED',
+    confirmedCommitmentAmount: Number.MAX_VALUE,
+    maxPotentialAmount: undefined
+  },
+  {
+    ...sotugarComponent,
+    programId: 'overflow-cash-b',
+    role: 'DEBT',
+    isCashFunding: true,
+    evidenceStatus: 'VERIFIED_CURRENT',
+    operationalStatus: 'ACTIVE_CONFIRMED',
+    fundingCommitmentStatus: 'COMMITTED',
+    confirmedCommitmentAmount: Number.MAX_VALUE,
+    maxPotentialAmount: undefined
+  }
+]);
+assert(
+  Number.isFinite(overflowCashGap.verifiedCashFunding) &&
+  overflowCashGap.warnings.some(w => w.includes('dépassement de capacité numérique')),
+  'Confirmed cash accumulation must not overflow into Infinity'
+);
 const commitmentAbovePublishedCeiling = calculateFundingGap(100000, [{
   programId: 'ceiling-conflict',
   programName: { fr: 'Programme avec plafond', ar: 'برنامج بسقف' },
