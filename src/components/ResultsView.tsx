@@ -759,15 +759,29 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Handoff CTA */}
-                    <button
-                      type="button"
-                      onClick={() => setHandoffTarget({ program, provider, result: item })}
-                      className="min-h-[44px] px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
-                    >
-                      <Send className="w-3.5 h-3.5 rtl:rotate-180" />
-                      <span>{t.lenderHandoffBtn}</span>
-                    </button>
+                    {/* Never expose a lender handoff from synthetic demo profiles. */}
+                    {applicantProfile.isDemoCase ? (
+                      <button
+                        type="button"
+                        disabled
+                        title={language === 'ar'
+                          ? 'الإحالة إلى المموّل غير متاحة في الحالة التجريبية'
+                          : 'La transmission au prêteur est désactivée pour les cas de démonstration'}
+                        className="min-h-[44px] px-4 py-2 rounded-xl bg-slate-100 text-slate-500 text-xs font-semibold border border-slate-200 cursor-not-allowed flex items-center gap-1.5"
+                      >
+                        <Shield className="w-3.5 h-3.5" />
+                        <span>{language === 'ar' ? 'إحالة معطّلة في العرض التجريبي' : 'Transmission désactivée en démo'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setHandoffTarget({ program, provider, result: item })}
+                        className="min-h-[44px] px-4 py-2 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold transition-all shadow-xs flex items-center gap-1.5"
+                      >
+                        <Send className="w-3.5 h-3.5 rtl:rotate-180" />
+                        <span>{t.lenderHandoffBtn}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
