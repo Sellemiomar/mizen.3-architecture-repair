@@ -30,6 +30,10 @@ export const LenderHandoffModal: React.FC<LenderHandoffModalProps> = ({
     setIsSimulatedSubmitted(true);
   };
 
+  // Defense in depth: even if a future caller bypasses ResultsView's disabled
+  // demo CTA, synthetic profiles must never open the lender handoff flow.
+  if (applicantProfile.isDemoCase) return null;
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
       <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-6 max-h-[92vh] flex flex-col">
