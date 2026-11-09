@@ -1138,8 +1138,8 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     {language === 'ar'
-                      ? 'الدخل الشهري الخام للأسرة ÷ الأجر الأدنى المضمون (SMIG)'
-                      : 'Revenu brut mensuel du ménage ÷ SMIG applicable'}
+                      ? 'مضاعف SMIG للدخل الشهري الخام للأسرة (اختياري)'
+                      : 'Multiple du SMIG pour le revenu brut du ménage (facultatif)'}
                   </label>
                   <input
                     type="number"
@@ -1153,8 +1153,8 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
                   />
                   <p className="text-[11px] text-slate-500 mt-1">
                     {language === 'ar'
-                      ? 'للتوجيه فقط: يشمل دخل الزوج/الزوجة والمنح عند الاقتضاء. لا يُستنتج من الدخل الصافي.'
-                      : 'À renseigner en multiple du SMIG, avec le revenu du conjoint et les primes applicables. Ne pas déduire du revenu net.'}
+                      ? 'أدخل النسبة فقط إذا كنت تعرفها بالفعل، مع احتساب دخل الزوج/الزوجة والمنح عند الاقتضاء. إذا لم تكن متأكداً، اترك الخانة فارغة؛ لن يستنتج ميزان النسبة من الدخل الصافي أو يخمّنها.'
+                      : 'À remplir uniquement si vous connaissez déjà ce ratio, en tenant compte du revenu du conjoint et des primes applicables. En cas de doute, laissez vide : Mizen ne le déduira pas du revenu net et ne l’estimera pas.'}
                   </p>
                 </div>
 
