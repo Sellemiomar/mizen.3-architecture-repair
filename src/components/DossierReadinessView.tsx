@@ -78,9 +78,10 @@ export const DossierReadinessView: React.FC<DossierReadinessViewProps> = ({
     ...customaryDocuments.filter(c => !programDocuments.some(p => p.id === c.id)).map(c => ({ ...c, isProgramSpecific: false }))
   ];
 
-  const totalMandatory = allDocumentsList.filter(d => d.mandatory).length;
-  const completedMandatory = allDocumentsList.filter(d => d.mandatory && completedDocs[d.id]).length;
-  const readinessPercent = totalMandatory > 0 ? Math.round((completedMandatory / totalMandatory) * 100) : 0;
+  // This checklist is a preparation aid, not an institutional completeness decision.
+  // Generic documents are commonly useful but are not confirmed requirements for every lender.
+  const totalChecklistItems = allDocumentsList.length;
+  const completedChecklistItems = allDocumentsList.filter(d => completedDocs[d.id]).length;
 
   const handlePrint = () => {
     window.print();
@@ -194,12 +195,18 @@ export const DossierReadinessView: React.FC<DossierReadinessViewProps> = ({
             <div>
               <h3 className="text-base font-bold text-slate-900 font-display flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-600" />
-                <span>{language === 'ar' ? 'الوثائق المطلوبة بنكياً' : 'Justificatifs exigés par l’organisme'}</span>
+                <span>{language === 'ar' ? 'قائمة وثائق للتحضير' : 'Liste de préparation des justificatifs'}</span>
               </h3>
             </div>
             <span className="text-xs font-bold text-slate-700">
-              {completedMandatory}/{totalMandatory} {language === 'ar' ? 'جاهزة' : 'cochées'}
+              {completedChecklistItems}/{totalChecklistItems} {language === 'ar' ? 'تم تحديدها' : 'éléments cochés'}
             </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] leading-relaxed text-amber-900">
+            {language === 'ar'
+              ? 'هذه قائمة مساعدة للتحضير وليست قائمة رسمية أو نهائية من المؤسسة. الوثائق العامة أدناه إرشادية فقط، ويجب تأكيد الوثائق المطلوبة والنسخ والصيغ والآجال مباشرة مع المؤسسة المعنية.'
+              : 'Cette liste est un outil de préparation, pas une liste officielle ou exhaustive de l’établissement. Les pièces générales ci-dessous sont indicatives : confirmez les justificatifs, formats et délais exigés directement auprès de l’organisme concerné.'}
           </div>
 
           <div className="space-y-2.5 text-xs max-h-[380px] overflow-y-auto pr-1">
@@ -225,11 +232,11 @@ export const DossierReadinessView: React.FC<DossierReadinessViewProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold text-slate-900 leading-snug">{doc.name[language]}</span>
-                      {doc.isProgramSpecific && (
-                        <span className="px-1.5 py-0.2 rounded text-[10px] bg-blue-50 text-blue-700 font-bold border border-blue-200 shrink-0">
-                          {language === 'ar' ? 'خاص بالبرنامج' : 'Spécifique'}
-                        </span>
-                      )}
+                      <span className={`px-1.5 py-0.2 rounded text-[10px] font-bold border shrink-0 ${doc.isProgramSpecific ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>
+                        {doc.isProgramSpecific
+                          ? (language === 'ar' ? 'مرتبط بالبرنامج' : 'Spécifique au programme')
+                          : (language === 'ar' ? 'إرشادي' : 'Indicatif')}
+                      </span>
                     </div>
                   </div>
                 </div>

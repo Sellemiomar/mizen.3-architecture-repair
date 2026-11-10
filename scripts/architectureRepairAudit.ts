@@ -43,7 +43,7 @@ assert(unknownGap.verifiedCashFunding === 0, 'UNKNOWN cash amount contributes ze
 assert(unknownGap.remainingFundingGap === 150000, 'UNKNOWN cash amount leaves the full cash gap open');
 
 // 3. Guarantees never become cash.
-const guarantee = component({ programId: 'sotugar_guarantee', role: 'GUARANTEE', isCashFunding: false, maxPotentialAmount: 112500, coveragePercentage: 0.75 });
+const guarantee = component({ programId: 'sotugar_guarantee', role: 'GUARANTEE', isCashFunding: false, maxPotentialAmount: 112500, coveragePercentage: 0.75, confirmedGuaranteeCoverageAmount: 112500 });
 const guaranteeGap = calculateFundingGap(150000, [guarantee]);
 assert(guaranteeGap.verifiedCashFunding === 0, 'SOTUGAR guarantee contributes no cash');
 assert(guaranteeGap.guaranteeCoverageAmount > 0, 'SOTUGAR guarantee remains separately measurable as risk coverage');

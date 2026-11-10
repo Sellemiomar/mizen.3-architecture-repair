@@ -1001,13 +1001,13 @@ export const INITIAL_COMPATIBILITY_CLAIMS: CompatibilityClaim[] = [
     id: 'compat_sotugar_leasing',
     sourceEntityId: 'sotugar_guarantee',
     targetEntityId: 'leasing_vehicule_pro',
-    compatibilityStatus: 'VERIFIED_COMPATIBLE',
-    confidence: 'HIGH',
+    compatibilityStatus: 'POTENTIALLY_COMPATIBLE',
+    confidence: 'LOW',
     evidence: [CANONICAL_SOURCES.sotugar_official_bareme],
-    ruleStatus: 'VERIFIED_CURRENT',
+    ruleStatus: 'PARTIALLY_VERIFIED',
     notes: {
-      fr: "Garantie SOTUGAR applicable aux opérations de leasing mobilier et équipements professionnels.",
-      ar: "ضمان سوتوغار يشمل عقود الإيجار المالي للمعدات والآليات المهنية."
+      fr: "Une couverture SOTUGAR peut concerner certaines opérations de leasing éligibles, sous réserve du mécanisme en vigueur, du matériel, du bailleur et de l'accord du partenaire. Ne pas généraliser à tous les contrats.",
+      ar: "قد يشمل ضمان سوتوغار بعض عمليات الإيجار المالي المؤهلة، حسب الآلية السارية والمعدات وشركة الإيجار وموافقة الشريك. لا يُعمم على جميع العقود."
     }
   },
   {

@@ -27,7 +27,14 @@ export interface StackComponent {
   providerName: LocalizedText;
   role: StackFundingRole;
   isCashFunding: boolean;
+  /** Amount proposed for this candidate stack; not proof that the applicant has secured it. */
   allocatedAmount?: number;
+  /** Explicit applicant-specific commitment, backed by an approval/offer/contract record. */
+  confirmedCommitmentAmount?: number;
+  /** Applicant-specific status; product operational status is not a funding commitment. */
+  fundingCommitmentStatus?: 'NOT_REQUESTED' | 'APPLIED' | 'OFFERED' | 'COMMITTED' | 'UNKNOWN';
+  /** Actual applicant-specific guarantee amount confirmed by the guarantee provider; not a programme ceiling. */
+  confirmedGuaranteeCoverageAmount?: number;
   maxPotentialAmount?: number;
   coveragePercentage?: number;
   rateType?: string;
@@ -48,9 +55,14 @@ export interface StackCompatibilityEvaluation {
 }
 
 export interface FundingGapResult {
+  /** False when the requested funding amount is missing, negative, or non-finite. */
+  inputValid: boolean;
   requiredFunding: number;
+  /** Sum of explicitly confirmed sources before comparing it with the requirement. */
   verifiedCashFunding: number;
   remainingFundingGap: number;
+  /** Confirmed funding in excess of the requirement; never silently discarded. */
+  fundingSurplus: number;
   cashCoverageRatio: number;
   guaranteeCoverageAmount: number;
   hasDoubleCounting: boolean;
@@ -66,6 +78,7 @@ export interface FinancingStackCandidate {
   requiredFunding: number;
   verifiedCashFunding: number;
   remainingFundingGap: number;
+  fundingSurplus: number;
   cashCoverageRatio: number;
   promoterContribution?: number;
   components: StackComponent[];

@@ -11,7 +11,7 @@ const REGIONAL_DEVELOPMENT_ZONES = [
 
 function rank(c: FinancingClaim): number {
   if (c.ruleStatus === 'VERIFIED_HISTORICAL' || c.operationalStatus === 'HISTORICAL_ONLY') return -100;
-  if (c.ruleStatus === 'UNKNOWN' && c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT') return 110;
+  if (c.ruleStatus === 'UNKNOWN' && c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT') return 95;
   if (c.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' && c.ruleStatus === 'VERIFIED_CURRENT') return 100;
   if (c.ruleStatus === 'UNKNOWN') return 80;
   if (c.ruleStatus === 'PARTIALLY_VERIFIED') return 60;
@@ -20,11 +20,65 @@ function rank(c: FinancingClaim): number {
   return 0;
 }
 
+const CLAIM_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
+
+/**
+ * A high-confidence label is not enough to make a claim safe to project.
+ * Exclude claims with unresolved conflicts, explicit stale/unavailable source
+ * status, invalid/future timestamps, expired validity, or no recent verification.
+ */
+function isClaimCurrentAndUsable(claim: FinancingClaim, now = Date.now()): boolean {
+  if (
+    claim.conflictStatus === 'SUPERSEDED' ||
+    claim.conflictStatus === 'CONFLICT_DETECTED' ||
+    claim.ruleStatus === 'VERIFIED_HISTORICAL' ||
+    claim.ruleStatus === 'CONFLICTING' ||
+    claim.ruleStatus === 'OUTDATED' ||
+    claim.operationalStatus === 'HISTORICAL_ONLY' ||
+    claim.source.evidenceStatus === 'OUTDATED' ||
+    claim.source.evidenceStatus === 'SOURCE_UNAVAILABLE'
+  ) return false;
+
+  const retrievedAt = Date.parse(claim.retrievalDate);
+  if (!Number.isFinite(retrievedAt) || retrievedAt > now || now - retrievedAt > CLAIM_MAX_AGE_MS) return false;
+
+  const verifiedAt = claim.source.lastVerifiedAt
+    ? Date.parse(claim.source.lastVerifiedAt)
+    : retrievedAt;
+  if (!Number.isFinite(verifiedAt) || verifiedAt > now || now - verifiedAt > CLAIM_MAX_AGE_MS) return false;
+
+  if (claim.effectiveDate) {
+    const effectiveAt = Date.parse(claim.effectiveDate);
+    if (!Number.isFinite(effectiveAt) || effectiveAt > now) return false;
+  }
+  if (claim.expiryDate) {
+    const expiresAt = Date.parse(claim.expiryDate);
+    if (!Number.isFinite(expiresAt) || expiresAt < now) return false;
+  }
+
+  return true;
+}
+
 export function getAuthoritativeClaim(entityId: string, field: string): FinancingClaim | undefined {
-  return CLAIMS_REPOSITORY.getAllClaims(entityId)
-    .filter(c => c.field === field && c.conflictStatus !== 'SUPERSEDED')
-    .filter(c => c.ruleStatus !== 'VERIFIED_HISTORICAL' && c.operationalStatus !== 'HISTORICAL_ONLY')
+  const candidates = CLAIMS_REPOSITORY.getAllClaims(entityId)
+    .filter(c => c.field === field && isClaimCurrentAndUsable(c) && isClaimSafeToProject(c));
+
+  // An explicit current UNKNOWN can block an unsupported legacy projection,
+  // but it must not outrank a fresh, verified current primary claim.
+  return candidates
     .sort((a, b) => rank(b) - rank(a) || String(b.retrievalDate).localeCompare(String(a.retrievalDate)))[0];
+}
+
+/**
+ * Projection policy is stricter than retrieval: partially verified numeric
+ * terms must never become hard limits simply because no stronger claim exists.
+ * An explicit UNKNOWN may be projected only as an unknown, not as a number.
+ */
+export function isClaimSafeToProject(claim: FinancingClaim): boolean {
+  if (claim.ruleStatus === 'VERIFIED_CURRENT' && claim.source.evidenceStatus === 'VERIFIED') return true;
+  if (claim.ruleStatus === 'UNKNOWN' && claim.value === 'UNKNOWN') return true;
+  if (claim.field === 'publishedMarginRange' && claim.ruleStatus === 'PARTIALLY_VERIFIED') return true;
+  return false;
 }
 
 function mapCategory(product: FinancingProduct): FinancingCategory {
@@ -90,6 +144,10 @@ function mapRateType(rate: FinancingProduct['financialTerms']['rate']): Financin
 
 function productToProgram(product: FinancingProduct): FinancingProgram {
   const verification = product.verification ?? { status: 'UNVERIFIED' as const, fields: [] };
+  const registeredSourceIds = new Set([
+    ...product.sources,
+    ...(CANONICAL_PROVIDERS.find(provider => provider.id === product.providerId)?.sources || [])
+  ].map(source => source.id));
   const termVerificationFields = ((product.financialTerms as any).verification || []) as Array<{
     field: string;
     status: string;
@@ -137,7 +195,42 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     name: product.name as { fr: string; ar: string },
     tagline: product.shortDescription as { fr: string; ar: string },
     category: mapCategory(product),
+    operationalStatus: product.operationalStatus || 'UNKNOWN',
     purposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
+    criteria: product.criteria.map(criterion => ({
+      id: criterion.id,
+      field: criterion.field,
+      operator: criterion.operator,
+      expectedValue: (() => {
+        // FOPROLOS's gross-household-income ceiling is canonicalized in the
+        // claims repository under incomeCapSmigMultiple. Do not let the
+        // catalogue's legacy literal survive a changed, stale, or unknown claim.
+        if (criterion.field !== 'monthlyGrossHouseholdIncomeSmigMultiple') {
+          return criterion.expectedValue;
+        }
+        const claimField = 'incomeCapSmigMultiple';
+        const hasCanonicalClaim = CLAIMS_REPOSITORY.getAllClaims(product.id)
+          .some(claim => claim.field === claimField);
+        if (!hasCanonicalClaim) return criterion.expectedValue;
+        const incomeCapClaim = getAuthoritativeClaim(product.id, claimField);
+        return incomeCapClaim && isClaimSafeToProject(incomeCapClaim)
+          ? incomeCapClaim.value
+          : undefined;
+      })(),
+      critical: criterion.critical,
+      description: { fr: criterion.description?.fr || criterion.field, ar: criterion.description?.ar || criterion.field },
+      evidenceStatus: criterion.evidence?.status ||
+        product.verification.fields.find(field => field.field === criterion.field)?.status,
+      evidenceSourceIds: (
+        criterion.evidence?.sourceIds ||
+        product.verification.fields.find(field => field.field === criterion.field)?.sourceIds ||
+        []
+      ).filter(sourceId => registeredSourceIds.has(sourceId)),
+      unknownReason: criterion.evidence?.unknownReason ||
+        (criterion.evidence?.status && criterion.evidence.status !== 'VERIFIED'
+          ? criterion.evidence.unknownReason || `Criterion evidence status is ${criterion.evidence.status}`
+          : undefined)
+    })),
     minAmount: amount?.min ?? 0,
     maxAmount: amount?.max ?? 0,
     minContributionPercent: contribution?.min ?? 0,
@@ -186,8 +279,8 @@ function productToProgram(product: FinancingProduct): FinancingProgram {
     applicability: {
       supportedPurposes: product.financingPurposes.map(mapPurpose).filter(Boolean) as FinancingPurpose[],
       requiresBusinessEntity: product.applicability.requiresBusinessEntity,
-      isFirstPropertyOnly: false,
-      unverifiedApplicability: verification.status === 'UNVERIFIED'
+      isFirstPropertyOnly: Boolean(product.applicability.isFirstPropertyOnly),
+      unverifiedApplicability: Boolean(product.applicability.unverifiedApplicability || verification.status === 'UNVERIFIED')
     },
     verification: {
       status: verification.status === 'UNVERIFIED' && !verificationFields.some(f => f.status === 'VERIFIED')
@@ -294,13 +387,40 @@ function project(base: FinancingProduct): FinancingProgram {
   const claims = CLAIMS_REPOSITORY.getAllClaims(base.id);
   const claimedFields = new Set(claims.map(c => c.field));
 
+  // If a field has entered the claims layer, never fall back silently to
+  // its older catalogue literal when every claim is stale, expired or conflicted.
   if (claimedFields.has('minProjectCost')) program.projectCostMin = undefined;
   if (claimedFields.has('maxProjectCost')) program.projectCostMax = undefined;
+  if (claimedFields.has('maxFinancingAmount')) program.maxAmount = 0;
+  if (claimedFields.has('minFinancingAmount')) program.minAmount = 0;
   if (claimedFields.has('maxFinancingPercentage')) program.maxFinancingPercentage = undefined;
+  if (claimedFields.has('publishedMarginRange') || claimedFields.has('pricingRelationship')) {
+    program.rateType = 'unknown';
+    program.estimatedRateAnnual = undefined;
+    program.rateDescription = {
+      fr: 'Conditions tarifaires non confirmées par une revendication actuelle exploitable.',
+      ar: 'شروط التسعير غير مؤكدة بمعلومة حالية صالحة.'
+    };
+  }
 
   for (const field of claimedFields) {
     const claim = getAuthoritativeClaim(base.id, field);
-    if (claim) applyClaim(program, claim);
+    if (claim && isClaimSafeToProject(claim)) applyClaim(program, claim);
+  }
+
+  const operationalClaim = getAuthoritativeClaim(base.id, 'operationalStatus');
+  const operationalClaimIsConfirmedIntake =
+    operationalClaim?.value === 'ACTIVE_CONFIRMED' &&
+    operationalClaim.ruleStatus === 'VERIFIED_CURRENT' &&
+    operationalClaim.operationalStatus === 'ACTIVE_CONFIRMED' &&
+    operationalClaim.evidenceStrength === 'DIRECT_PRIMARY_CURRENT' &&
+    operationalClaim.source.evidenceStatus === 'VERIFIED' &&
+    (!operationalClaim.expiryDate || Date.parse(operationalClaim.expiryDate) >= Date.now());
+  if (operationalClaim && isClaimSafeToProject(operationalClaim)) {
+    program.operationalStatus = operationalClaim.value as FinancingProgram['operationalStatus'];
+  }
+  if (program.operationalStatus === 'ACTIVE_CONFIRMED' && !operationalClaimIsConfirmedIntake) {
+    program.operationalStatus = 'ACTIVE_NOT_CONFIRMED';
   }
 
   const pricingClaim = getAuthoritativeClaim(base.id, 'pricingRelationship');

@@ -21,6 +21,7 @@ import { ApplicantProfile, FinancingProgram, Provider } from '../src/types/finan
 import { getAuthoritativeFinancingPrograms, getAuthoritativeProviders } from '../src/knowledge/authoritativeProjection';
 import { CLAIMS_REPOSITORY } from '../src/knowledge/claimsRepository';
 import { generateFinancingStacks } from '../src/engine/financingStackEngine';
+import { getStackCompatibility } from '../src/knowledge/stackCompatibility';
 const PROVIDERS = getAuthoritativeProviders();
 const FINANCING_PROGRAMS = getAuthoritativeFinancingPrograms();
 
@@ -246,6 +247,40 @@ export function runKnowledgeIntegrityTests(): { passed: number; failed: number; 
 
   const validation = validateKnowledgeCatalogue(CANONICAL_PRODUCTS, CANONICAL_PROVIDERS);
   assert(validation.valid, 'validateKnowledgeCatalogue passes with 0 critical errors');
+
+  // A generic product-page source must not be enough to claim that applications
+  // are currently open. The validator requires a fresh, direct-primary intake claim.
+  const unsupportedActiveProduct = structuredClone(CANONICAL_PRODUCTS[0]);
+  unsupportedActiveProduct.id = 'synthetic_active_without_intake_claim';
+  unsupportedActiveProduct.operationalStatus = 'ACTIVE_CONFIRMED';
+  const unsupportedActiveValidation = validateKnowledgeCatalogue(
+    [...CANONICAL_PRODUCTS, unsupportedActiveProduct],
+    CANONICAL_PROVIDERS
+  );
+  assert(
+    unsupportedActiveValidation.errors.some(e =>
+      e.programId === unsupportedActiveProduct.id &&
+      e.code === 'UNSUPPORTED_OPERATIONAL_STATUS'
+    ),
+    'Operational status: ACTIVE_CONFIRMED is rejected without fresh direct-primary intake evidence'
+  );
+
+  // Do not convert an absence of stacking evidence into a hard incompatibility.
+  const btsBankCompatibility = getStackCompatibility('bts_diplomes', 'bh_bank_loan');
+  const btsBfpmeCompatibility = getStackCompatibility('bts_diplomes', 'bfpme_creation');
+  const sotugarLeasingCompatibility = getStackCompatibility('sotugar_guarantee', 'leasing_vehicule_pro');
+  assert(
+    btsBankCompatibility.compatibilityStatus === 'UNKNOWN',
+    'Stacking: BTS diplômés + commercial bank stays UNKNOWN without direct prohibition evidence'
+  );
+  assert(
+    btsBfpmeCompatibility.compatibilityStatus === 'UNKNOWN',
+    'Stacking: BTS + BFPME is not declared incompatible based on non-exclusive project-cost thresholds'
+  );
+  assert(
+    sotugarLeasingCompatibility.compatibilityStatus === 'POTENTIALLY_COMPATIBLE',
+    'Stacking: SOTUGAR + leasing remains conditional on eligible mechanism and asset'
+  );
 
   const pipeline = new ResearchImportPipeline();
   const importResult = pipeline.processResearchBatch([

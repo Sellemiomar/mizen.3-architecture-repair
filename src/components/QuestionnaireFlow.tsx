@@ -951,6 +951,64 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
         )}
 
         {/* ========================================================================= */}
+            {(['home_purchase', 'home_construction'] as const).includes(selectedJourney as 'home_purchase' | 'home_construction') && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl border border-amber-200 bg-amber-50/50">
+                <p className="sm:col-span-2 text-xs text-slate-600">
+                  {language === 'ar'
+                    ? 'هذه الأسئلة منفصلة عن كون المسكن أول اقتناء. في حالات التوسعة قد تنطبق استثناءات؛ لا تؤكد هذه الإجابات الأهلية وحدها.'
+                    : 'Ces questions sont distinctes du statut de primo-acquéreur. Des exceptions existent notamment pour certaines extensions ; ces réponses ne suffisent pas à confirmer l’éligibilité.'}
+                </p>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    {language === 'ar' ? 'هل تملك حالياً مسكناً؟' : 'Possédez-vous actuellement un logement ?'}
+                  </label>
+                  <select
+                    value={profile.applicantOwnsDwelling === undefined ? '' : String(profile.applicantOwnsDwelling)}
+                    onChange={(e) => setProfile(p => ({ ...p, applicantOwnsDwelling: e.target.value === '' ? undefined : e.target.value === 'true' }))}
+                    className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white"
+                  >
+                    <option value="">{language === 'ar' ? 'غير محدد' : 'Non renseigné'}</option>
+                    <option value="false">{language === 'ar' ? 'لا' : 'Non'}</option>
+                    <option value="true">{language === 'ar' ? 'نعم' : 'Oui'}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    {language === 'ar' ? 'هل لديك زوج/زوجة؟' : 'Avez-vous un conjoint ?'}
+                  </label>
+                  <select
+                    value={profile.hasSpouse === undefined ? '' : String(profile.hasSpouse)}
+                    onChange={(e) => setProfile(p => ({
+                      ...p,
+                      hasSpouse: e.target.value === '' ? undefined : e.target.value === 'true',
+                      spouseOwnsDwelling: e.target.value === 'true' ? p.spouseOwnsDwelling : undefined
+                    }))}
+                    className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white"
+                  >
+                    <option value="">{language === 'ar' ? 'غير محدد' : 'Non renseigné'}</option>
+                    <option value="false">{language === 'ar' ? 'لا' : 'Non'}</option>
+                    <option value="true">{language === 'ar' ? 'نعم' : 'Oui'}</option>
+                  </select>
+                </div>
+                {profile.hasSpouse === true && (
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      {language === 'ar' ? 'هل يملك الزوج/الزوجة مسكناً؟' : 'Votre conjoint possède-t-il un logement ?'}
+                    </label>
+                    <select
+                      value={profile.spouseOwnsDwelling === undefined ? '' : String(profile.spouseOwnsDwelling)}
+                      onChange={(e) => setProfile(p => ({ ...p, spouseOwnsDwelling: e.target.value === '' ? undefined : e.target.value === 'true' }))}
+                      className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white"
+                    >
+                      <option value="">{language === 'ar' ? 'غير محدد' : 'Non renseigné'}</option>
+                      <option value="false">{language === 'ar' ? 'لا' : 'Non'}</option>
+                      <option value="true">{language === 'ar' ? 'نعم' : 'Oui'}</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
+
         {/* STEP 3: FINANCIAL FIGURES & CAPACITY */}
         {/* ========================================================================= */}
         {currentStep === 3 && selectedJourney && (
@@ -1075,6 +1133,29 @@ export const QuestionnaireFlow: React.FC<QuestionnaireFlowProps> = ({
                     placeholder={language === 'ar' ? 'مثال: 2500 د' : 'Ex. 2500 DT'}
                     className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    {language === 'ar'
+                      ? 'مضاعف SMIG للدخل الشهري الخام للأسرة (اختياري)'
+                      : 'Multiple du SMIG pour le revenu brut du ménage (facultatif)'}
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    inputMode="decimal"
+                    value={profile.monthlyGrossHouseholdIncomeSmigMultiple ?? ''}
+                    onChange={(e) => setProfile(p => ({ ...p, monthlyGrossHouseholdIncomeSmigMultiple: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value)) }))}
+                    placeholder={language === 'ar' ? 'مثال: 3.2 (ليس الدخل الصافي)' : 'Ex. 3,2 (revenu brut, pas net)'}
+                    className="w-full min-h-[44px] px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    {language === 'ar'
+                      ? 'أدخل النسبة فقط إذا كنت تعرفها بالفعل، مع احتساب دخل الزوج/الزوجة والمنح عند الاقتضاء. إذا لم تكن متأكداً، اترك الخانة فارغة؛ لن يستنتج ميزان النسبة من الدخل الصافي أو يخمّنها.'
+                      : 'À remplir uniquement si vous connaissez déjà ce ratio, en tenant compte du revenu du conjoint et des primes applicables. En cas de doute, laissez vide : Mizen ne le déduira pas du revenu net et ne l’estimera pas.'}
+                  </p>
                 </div>
 
                 <div>
