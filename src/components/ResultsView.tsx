@@ -684,6 +684,45 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                   </div>
                 </div>
 
+                {/* Applicant actions are separated from questions only the institution can confirm. */}
+                {(item.applicationReadiness.missingApplicantFields.length > 0 ||
+                  item.applicationReadiness.lenderConfirmationFields.length > 0) && (
+                  <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-3 text-xs mb-4">
+                    <h4 className="font-bold text-slate-900">
+                      {language === 'ar' ? 'ما الذي ينقص لحسم النتيجة؟' : 'Ce qui reste à compléter ou à confirmer'}
+                    </h4>
+                    {item.applicationReadiness.missingApplicantFields.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="font-semibold text-amber-950">
+                          {language === 'ar' ? 'معلومات يمكنكم تقديمها' : 'Informations à renseigner'}
+                        </p>
+                        <ul className="list-disc pl-5 rtl:pr-5 space-y-1 text-slate-700">
+                          {item.applicationReadiness.missingApplicantFields.map((field) => (
+                            <li key={field.key}>{field.label[language]}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {item.applicationReadiness.lenderConfirmationFields.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="font-semibold text-amber-950">
+                          {language === 'ar' ? 'تأكيد مطلوب من المؤسسة' : 'Confirmations à obtenir auprès de l’institution'}
+                        </p>
+                        <ul className="list-disc pl-5 rtl:pr-5 space-y-1 text-slate-700">
+                          {item.applicationReadiness.lenderConfirmationFields.map((field) => (
+                            <li key={field.key}>{field.label[language]}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <p className="text-slate-600 leading-relaxed">
+                      {language === 'ar'
+                        ? 'هذه نقاط متابعة وليست موافقة تمويلية أو قائمة وثائق رسمية.'
+                        : 'Ces points servent à préparer la suite ; ils ne constituent ni un accord de financement ni une liste officielle de pièces.'}
+                    </p>
+                  </div>
+                )}
+
                 {/* 4. FINANCIAL SCENARIO / ILLUSTRATION (WHERE VERIFIED) */}
                 {costEstimate && (
                   <div className="p-4 rounded-2xl bg-white border border-slate-200 text-xs space-y-2 mb-4">
